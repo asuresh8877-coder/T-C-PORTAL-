@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Psychrometric Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      color: #1f2937;
+      background: linear-gradient(135deg, #f8fafc 0%, rgba(239,246,255,.35) 50%, #f1f5f9 100%);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+      position: relative;
+      z-index: 30;
+    }
+    header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; color: rgba(255,255,255,.92); }
+    .back {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 0.75rem; border-radius: 0.55rem;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.8); text-decoration: none; font-size: 0.85rem; font-weight: 500;
+    }
+    .back:hover { background: rgba(255,255,255,.1); color: #fff; }
+    .ico {
+      padding: 0.45rem; border-radius: 0.55rem;
+      background: rgba(59,130,246,.2); border: 1px solid rgba(96,165,250,.3);
+      display: inline-flex;
+    }
+    .hdr-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center; }
+    .hdr-btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.45rem 0.75rem; border-radius: 0.55rem; border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05); color: rgba(255,255,255,.75);
+      font-size: 0.8rem; font-weight: 500; cursor: pointer; font-family: inherit;
+    }
+    .hdr-btn:hover, .hdr-btn.is-on { background: rgba(255,255,255,.1); color: #fff; }
+    .hdr-btn.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .hdr-btn svg { flex-shrink: 0; }
+    .pop-wrap { position: relative; }
+    .pop {
+      position: absolute; right: 0; top: calc(100% + 0.45rem);
+      width: 260px; background: #fff; color: #111827;
+      border: 1px solid #e5e7eb; border-radius: 0.85rem;
+      box-shadow: 0 16px 40px rgb(15 23 42 / 0.18); padding: 0.85rem 0.9rem; z-index: 40;
+    }
+    .pop h3 { margin: 0 0 0.65rem; font-size: 0.68rem; letter-spacing: 0.08em; color: #6b7280; font-weight: 700; }
+    .pop label.f { margin-top: 0.55rem; }
+    .choice { display: flex; gap: 0.35rem; }
+    .choice button {
+      flex: 1; border: 0; background: #f1f5f9; color: #374151; border-radius: 0.45rem;
+      padding: 0.45rem 0.3rem; font-weight: 700; font-size: 0.72rem; cursor: pointer; font-family: inherit;
+    }
+    .choice button.is-on { background: #2563eb; color: #fff; }
+    main { flex: 1; min-height: 0; display: flex; gap: 1rem; padding: 1rem 1.15rem; overflow: hidden; }
+    main.is-wide .left { display: none; }
+    .left {
+      width: 420px; flex: 0 0 420px; min-height: 0; max-height: 100%;
+      display: flex; flex-direction: column; gap: 0.75rem;
+      overflow-x: hidden; overflow-y: auto; padding-right: 0.35rem; padding-bottom: 0.5rem;
+      scrollbar-width: thin; scrollbar-color: #64748b #e2e8f0;
+    }
+    .left::-webkit-scrollbar { width: 10px; }
+    .left::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; }
+    .left::-webkit-scrollbar-thumb { background: #64748b; border-radius: 8px; border: 2px solid #e2e8f0; }
+    .right {
+      flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column;
+      background: rgba(255,255,255,.95); border: 1px solid rgba(226,232,240,.9);
+      border-radius: 0.85rem; box-shadow: 0 4px 16px rgb(15 23 42 / 0.06); overflow: hidden;
+      position: relative;
+    }
+    .mode-tabs {
+      display: flex; gap: 0.25rem; padding: 0.35rem; background: rgba(255,255,255,.9);
+      border: 1px solid rgba(226,232,240,.9); border-radius: 0.85rem; box-shadow: 0 2px 8px rgb(15 23 42 / 0.04);
+      flex-shrink: 0;
+    }
+    .mode-tabs button {
+      flex: 1; border: 0; background: transparent; color: #6b7280;
+      padding: 0.55rem 0.25rem; border-radius: 0.55rem; font-size: 0.68rem; font-weight: 600;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem;
+      font-family: inherit;
+    }
+    .mode-tabs button:hover { background: rgba(243,244,246,.85); color: #374151; }
+    .mode-tabs button.is-on { background: #2563eb; color: #fff; box-shadow: 0 1px 3px rgb(37 99 235 / 0.3); }
+    .mode-tabs svg { display: block; }
+    .panel {
+      background: rgba(255,255,255,.95); border: 1px solid rgba(226,232,240,.9);
+      border-radius: 0.85rem; overflow: hidden; box-shadow: 0 4px 14px rgb(15 23 42 / 0.05);
+      flex-shrink: 0;
+    }
+    .panel-h {
+      padding: 0.7rem 1rem; color: #fff; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em;
+      background: linear-gradient(90deg, #2563eb, #1d4ed8);
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .panel-h.heat { background: linear-gradient(90deg, #f97316, #ea580c); }
+    .panel-h.ahu { background: linear-gradient(90deg, #7c3aed, #4f46e5); }
+    .panel-h .sub { display: block; font-size: 0.68rem; font-weight: 500; opacity: 0.85; }
+    .ghost {
+      border: 1px solid rgba(255,255,255,.45); background: transparent; color: #fff;
+      border-radius: 0.4rem; padding: 0.25rem 0.55rem; font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .ghost:hover { background: rgba(255,255,255,.15); }
+    .panel-b { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    label.f { display: block; font-size: 0.7rem; font-weight: 600; color: #6b7280; margin-bottom: 0.3rem; }
+    label.f select {
+      background: transparent; border: 0; color: #2563eb; font-size: 0.7rem; font-weight: 600;
+      cursor: pointer; outline: none; padding: 0; margin: 0; font-family: inherit;
+    }
+    input.inp, select.inp {
+      width: 100%; border: 1px solid #e5e7eb; border-radius: 0.55rem;
+      padding: 0.5rem 0.7rem; font-size: 0.875rem; font-variant-numeric: tabular-nums;
+      font-family: inherit; color: #111827; background: #fff;
+    }
+    input.inp:focus, select.inp:focus {
+      outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.18);
+    }
+    .stream { border: 1px solid #f3f4f6; border-radius: 0.55rem; overflow: hidden; }
+    .stream-h { padding: 0.4rem 0.7rem; font-size: 0.75rem; font-weight: 600; color: #fff; }
+    .stream-b { padding: 0.7rem; display: flex; flex-direction: column; gap: 0.55rem; background: rgba(249,250,251,.5); }
+    .stream-b.coil-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; }
+    .sky { background: #0ea5e9; } .indigo { background: #6366f1; }
+    .orange { background: #f97316; } .teal { background: #14b8a6; }
+    .amber { background: #f59e0b; } .emerald { background: #10b981; }
+    .btn {
+      width: 100%; border: 0; border-radius: 0.55rem; padding: 0.65rem;
+      background: #2563eb; color: #fff; font-weight: 600; font-size: 0.875rem; cursor: pointer; font-family: inherit;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .btn.heat { background: #f97316; }
+    .btn.heat:hover { background: #ea580c; }
+    .btn.ahu { background: #4f46e5; }
+    .btn.ahu:hover { background: #4338ca; }
+    .seg { display: flex; gap: 0.35rem; }
+    .seg button {
+      flex: 1; border: 1px solid #fed7aa; background: #fff; color: #9a3412;
+      border-radius: 0.45rem; padding: 0.45rem 0.35rem; font-size: 0.66rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; line-height: 1.25;
+    }
+    .seg button.is-on { background: #f97316; color: #fff; border-color: #f97316; }
+    .check { display: flex; align-items: center; gap: 0.45rem; font-size: 0.72rem; font-weight: 700; color: #4b5563; letter-spacing: 0.03em; }
+    .results-h, .pin-h {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; color: #6b7280;
+    }
+    .icon-btn { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 0.15rem; border-radius: 0.3rem; }
+    .icon-btn:hover { background: #f1f5f9; color: #1e293b; }
+    .result-row, .pin-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      padding: 0.38rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem;
+    }
+    .result-row span, .pin-row span { color: #6b7280; font-weight: 600; }
+    .result-row strong, .pin-row strong { color: #111827; font-variant-numeric: tabular-nums; }
+    .result-row .u, .pin-row .u { color: #9ca3af; font-weight: 600; margin-left: 0.2rem; }
+    .perf { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.45rem; }
+    .perf .cell { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.5rem; }
+    .perf .k { font-size: 0.6rem; font-weight: 700; color: #6b7280; letter-spacing: 0.04em; }
+    .perf .v { margin-top: 0.12rem; font-size: 0.95rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .perf .u { font-size: 0.68rem; color: #9ca3af; font-weight: 600; margin-left: 0.15rem; }
+    .note { font-size: 0.68rem; color: #6b7280; line-height: 1.35; }
+    .callout {
+      border-left: 4px solid #60a5fa; background: rgba(239,246,255,.55);
+      border-radius: 0.45rem; padding: 0.6rem 0.75rem; font-size: 0.8rem;
+    }
+    .callout.mix { border-color: #fbbf24; background: rgba(255,251,235,.7); }
+    .callout.cool { border-color: #60a5fa; }
+    .callout.sa { border-color: #818cf8; background: rgba(238,242,255,.55); }
+    .callout.room { border-color: #34d399; background: rgba(236,253,245,.55); }
+    .callout.rec { border-color: #a78bfa; background: rgba(245,243,255,.7); }
+    .callout .t { font-size: 0.65rem; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
+    .pin-empty { font-size: 0.75rem; color: #9ca3af; padding: 0.35rem 0 0.1rem; }
+    .linkish { border: 0; background: transparent; color: #2563eb; font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .layer-bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 0.85rem; border-bottom: 1px solid #f3f4f6; background: rgba(249,250,251,.7);
+    }
+    .layer-bar .lab { font-size: 0.7rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 0.25rem; }
+    .layer-btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.35rem 0.65rem; border-radius: 0.4rem; border: 1px solid #e5e7eb;
+      background: #fff; font-size: 0.75rem; font-weight: 500; color: #374151; cursor: pointer; font-family: inherit;
+    }
+    .layer-btn.off { opacity: 0.45; }
+    .swatch { width: 28px; height: 0; border-radius: 0; display: inline-block; border-top: 3px solid #2563eb; background: none; }
+    .swatch.wb { border-top-color: #059669; }
+    .swatch.enth { border-top: 3px dashed #d97706; }
+    .swatch.vol { border-top: 3px dotted #7c3aed; }
+    .coil-h { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .switch i {
+      position: absolute; inset: 0; background: #cbd5e1; border-radius: 999px; cursor: pointer; display: block;
+    }
+    .switch i:before {
+      content: ""; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px;
+      background: #fff; border-radius: 50%; transition: transform 0.15s;
+    }
+    .switch input:checked + i { background: #2563eb; }
+    .switch input:checked + i:before { transform: translateX(16px); }
+    .switch.heat input:checked + i { background: #ea580c; }
+    .cap-meta { font-size: 0.68rem; color: #4b5563; font-weight: 600; margin: 0.15rem 0 0.4rem; }
+    .cap-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+    .cap-table th { text-align: right; color: #6b7280; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; padding: 0.2rem; }
+    .cap-table th:first-child, .cap-table td:first-child { text-align: left; }
+    .cap-table td { text-align: right; padding: 0.32rem 0.2rem; border-top: 1px solid #e5e7eb; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .cap-table tr.sum td { border-top: 2px solid #cbd5e1; }
+    #chart { flex: 1; min-height: 0; width: 100%; }
+    .chart-tip {
+      position: absolute;
+      z-index: 8;
+      pointer-events: none;
+      background: #ecfdf5;
+      border: 1px solid #6ee7b7;
+      border-radius: 0.45rem;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #065f46;
+      line-height: 1.35;
+      box-shadow: 0 6px 16px rgb(15 23 42 / 0.12);
+      white-space: nowrap;
+    }
+    .guide-btn {
+      position: absolute; top: 3.15rem; right: 0.65rem; z-index: 5;
+      border: 1px solid #e5e7eb; background: #fff; color: #374151;
+      border-radius: 999px; padding: 0.3rem 0.65rem; font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgb(15 23 42 / 0.06);
+    }
+    .guide-pop { top: 5.4rem; right: 0.65rem; width: 280px; }
+    .guide-pop p { margin: 0.35rem 0; font-size: 0.75rem; color: #374151; line-height: 1.4; }
+    .hidden { display: none !important; }
+    @media (max-width: 980px) {
+      body { overflow: auto; height: auto; }
+      main { flex-direction: column; overflow: visible; }
+      .left { width: 100%; flex-basis: auto; max-height: none; overflow: visible; }
+      .right { min-height: 520px; }
+      #chart { min-height: 420px; }
+    }
+    @media print {
+      .hdr-actions, .mode-tabs, .guide-btn, .pop { display: none !important; }
+      body, main, .left { overflow: visible; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;align-items:center;gap:0.75rem">
+      <a class="back" href="#" id="backLink">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Back to PHC
+      </a>
+      <div class="ico">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="2"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+      </div>
+      <h1>Psychrometric Calculator</h1>
+    </div>
+    <div class="hdr-actions">
+      <div class="pop-wrap">
+        <button type="button" class="hdr-btn" id="btnSettings" title="Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span id="settingsLabel">SI · Alt 0 m · ρ</span>
+        </button>
+        <div class="pop hidden" id="settingsPop">
+          <h3>SETTINGS</h3>
+          <label class="f" for="setAlt">Altitude (m)</label>
+          <input class="inp" id="setAlt" type="number" step="1" value="0" />
+          <label class="f">Unit system</label>
+          <div class="choice" id="unitChoice">
+            <button type="button" data-unit="si" class="is-on">SI</button>
+            <button type="button" data-unit="ip">IP</button>
+          </div>
+          <label class="f">Air density</label>
+          <div class="choice" id="densChoice">
+            <button type="button" data-dens="actual" class="is-on">Actual</button>
+            <button type="button" data-dens="standard">Standard (1.2 kg/m³)</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="hdr-btn" id="btnPin" title="Pin the points on the chart">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+        Pin
+      </button>
+      <button type="button" class="hdr-btn" id="btnWide" title="Widen the chart">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        Wide
+      </button>
+      <button type="button" class="hdr-btn primary" id="btnExport">Export PDF</button>
+    </div>
+  </header>
+
+  <main id="layout">
+    <div class="left" id="leftPane">
+      <div class="mode-tabs" id="modes">
+        <button type="button" data-mode="point" class="is-on" title="Point State">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          Point State
+        </button>
+        <button type="button" data-mode="mix" title="Mixing">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M6 8v2a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V8"/><path d="M12 14v2"/></svg>
+          Mixing
+        </button>
+        <button type="button" data-mode="cool" title="Cooling">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M4.9 6.5l14.2 11M19.1 6.5 4.9 17.5"/><path d="M12 6l2-2M12 6 10 4M12 18l2 2M12 18l-2 2M8 8 6 7M16 8l2-1M8 16l-2 1M16 16l2 1"/></svg>
+          Cooling
+        </button>
+        <button type="button" data-mode="heat" title="Heating">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.5-.8-2.5-1.2-4.2C9.4 6.2 10 4 12 2c.4 2.2 2 3.2 2.6 5.2.5 1.6.4 2.8-.1 4.1A2.5 2.5 0 0 0 15.5 14.5 4.5 4.5 0 1 1 8.5 14.5z"/></svg>
+          Heating
+        </button>
+        <button type="button" data-mode="ahu" title="AHU Process">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 10h.01M15 10h.01"/></svg>
+          AHU Process
+        </button>
+      </div>
+
+      <div class="panel" id="panel-point">
+        <div class="panel-h">Point State Calculator</div>
+        <div class="panel-b">
+          <div class="grid2">
+            <div>
+              <label class="f" id="lab_p_db">Dry Bulb (°C)</label>
+              <input class="inp" id="p_db" data-u="temp" type="number" step="0.1" value="25" />
+            </div>
+            <div>
+              <label class="f">
+                <select id="p_humType">
+                  <option value="wb">Wet Bulb (°C)</option>
+                  <option value="rh">RH (%)</option>
+                  <option value="dp">Dew Point (°C)</option>
+                  <option value="hr">Hum. Ratio (g/kg)</option>
+                </select>
+              </label>
+              <input class="inp" id="p_hum" data-u="hum" type="number" step="0.1" value="18" />
+            </div>
+          </div>
+          <button type="button" class="btn" id="btnPoint">Calculate</button>
+          <div>
+            <div class="results-h">RESULTS <button type="button" class="icon-btn" id="btnCopyPoint" title="Copy results">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button></div>
+            <div id="pointMetrics"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="panel-mix">
+        <div class="panel-h">Air Mixing Calculator</div>
+        <div class="panel-b">
+          <div class="grid2">
+            <div class="stream">
+              <div class="stream-h sky">Stream A</div>
+              <div class="stream-b">
+                <div><label class="f" id="lab_ma_flow">Flow (CMH)</label><input class="inp" id="ma_flow" data-u="flow" type="number" value="3600" /></div>
+                <div><label class="f" id="lab_ma_db">Dry Bulb (°C)</label><input class="inp" id="ma_db" data-u="temp" type="number" step="0.1" value="25" /></div>
+                <div>
+                  <label class="f"><select id="ma_humType"><option value="wb">Wet Bulb (°C)</option><option value="rh">RH (%)</option></select></label>
+                  <input class="inp" id="ma_hum" data-u="hum" type="number" step="0.1" value="18" />
+                </div>
+              </div>
+            </div>
+            <div class="stream">
+              <div class="stream-h indigo">Stream B</div>
+              <div class="stream-b">
+                <div><label class="f" id="lab_mb_flow">Flow (CMH)</label><input class="inp" id="mb_flow" data-u="flow" type="number" value="1800" /></div>
+                <div><label class="f" id="lab_mb_db">Dry Bulb (°C)</label><input class="inp" id="mb_db" data-u="temp" type="number" step="0.1" value="35" /></div>
+                <div>
+                  <label class="f"><select id="mb_humType"><option value="rh">RH (%)</option><option value="wb">Wet Bulb (°C)</option></select></label>
+                  <input class="inp" id="mb_hum" data-u="hum" type="number" step="0.1" value="50" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn" id="btnMix">Calculate</button>
+          <div>
+            <div class="results-h">MIXED AIR RESULT</div>
+            <div id="mixMetrics"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="panel-cool">
+        <div class="panel-h">Cooling Coil Calculator</div>
+        <div class="panel-b">
+          <div><label class="f" id="lab_c_flow">Volume Flow (CMH)</label><input class="inp" id="c_flow" data-u="flow" type="number" value="3600" /></div>
+          <div class="grid2">
+            <div class="stream">
+              <div class="stream-h orange">Entering Air</div>
+              <div class="stream-b">
+                <div><label class="f" id="lab_ce_db">Dry Bulb (°C)</label><input class="inp" id="ce_db" data-u="temp" type="number" step="0.1" value="25" /></div>
+                <div>
+                  <label class="f"><select id="ce_humType"><option value="wb">Wet Bulb (°C)</option><option value="rh">RH (%)</option></select></label>
+                  <input class="inp" id="ce_hum" data-u="hum" type="number" step="0.1" value="18" />
+                </div>
+              </div>
+            </div>
+            <div class="stream">
+              <div class="stream-h teal">Leaving Air</div>
+              <div class="stream-b">
+                <div><label class="f" id="lab_cl_db">Dry Bulb (°C)</label><input class="inp" id="cl_db" data-u="temp" type="number" step="0.1" value="12" /></div>
+                <div>
+                  <label class="f"><select id="cl_humType"><option value="wb">Wet Bulb (°C)</option><option value="rh">RH (%)</option></select></label>
+                  <input class="inp" id="cl_hum" data-u="hum" type="number" step="0.1" value="11" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <label class="check"><input type="checkbox" id="c_water" /> WATER-SIDE COMPARISON</label>
+          <div class="grid2 hidden" id="waterBox">
+            <div><label class="f" id="lab_ewt">EWT (°C)</label><input class="inp" id="c_ewt" data-u="temp" type="number" step="0.1" value="7" /></div>
+            <div><label class="f" id="lab_lwt">LWT (°C)</label><input class="inp" id="c_lwt" data-u="temp" type="number" step="0.1" value="12" /></div>
+            <div style="grid-column:span 2"><label class="f" id="lab_wflow">Flow (L/s)</label><input class="inp" id="c_wflow" data-u="water" type="number" step="0.01" value="1" /></div>
+          </div>
+          <button type="button" class="btn" id="btnCool">Calculate</button>
+          <div>
+            <div class="results-h">COIL PERFORMANCE</div>
+            <div class="perf" id="coolMetrics" style="margin-top:0.45rem"></div>
+            <div id="waterOut"></div>
+            <p class="note">Air-side total uses the entering and leaving enthalpy. Water-side capacity is flow × 4.186 × (LWT − EWT).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="panel-heat">
+        <div class="panel-h heat">Heating Coil Calculator</div>
+        <div class="panel-b">
+          <div>
+            <label class="f">Calculate from</label>
+            <div class="seg" id="heatMode">
+              <button type="button" data-heat="db" class="is-on">Leaving DB = Sensible kW</button>
+              <button type="button" data-heat="kw">Sensible kW = Leaving DB</button>
+            </div>
+          </div>
+          <div class="grid2">
+            <div><label class="f" id="lab_h_flow">Volume Flow (CMH)</label><input class="inp" id="h_flow" data-u="flow" type="number" value="3600" /></div>
+            <div id="heatDbWrap"><label class="f" id="lab_hl_db">Leaving DB (°C)</label><input class="inp" id="hl_db" data-u="temp" type="number" step="0.1" value="35" /></div>
+            <div id="heatKwWrap" class="hidden"><label class="f" id="lab_h_kw">Sensible (kW)</label><input class="inp" id="h_kw" data-u="kw" type="number" step="0.1" value="20" /></div>
+          </div>
+          <div class="stream">
+            <div class="stream-h amber">Entering Air</div>
+            <div class="stream-b">
+              <div><label class="f" id="lab_he_db">Dry Bulb (°C)</label><input class="inp" id="he_db" data-u="temp" type="number" step="0.1" value="15" /></div>
+              <div>
+                <label class="f"><select id="he_humType"><option value="wb">Wet Bulb (°C)</option><option value="rh">RH (%)</option></select></label>
+                <input class="inp" id="he_hum" data-u="hum" type="number" step="0.1" value="10" />
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn heat" id="btnHeat">Calculate Sensible Capacity</button>
+          <div>
+            <div class="results-h">SENSIBLE CAPACITY</div>
+            <div id="heatMetrics"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="panel-ahu">
+        <div class="panel-h ahu">
+          <span>AHU Process Builder<span class="sub">Recirculated room air + fresh air</span></span>
+          <button type="button" class="ghost" id="btnAhuReset">Reset</button>
+        </div>
+        <div class="panel-b">
+          <div class="grid2">
+            <div class="stream">
+              <div class="stream-h emerald">Return Air (RA)</div>
+              <div class="stream-b">
+                <div><label class="f" id="lab_ra_flow">Flow (CMH)</label><input class="inp" id="ra_flow" data-u="flow" type="number" value="3600" /></div>
+                <div><label class="f" id="lab_ra_db">Dry Bulb (°C)</label><input class="inp" id="ra_db" data-u="temp" type="number" step="0.1" value="24" /></div>
+                <div>
+                  <label class="f"><select id="ra_humType"><option value="wb">Wet Bulb (°C)</option><option value="rh">RH (%)</option></select></label>
+                  <input class="inp" id="ra_hum" data-u="hum" type="number" step="0.1" value="17" />
+                </div>
+              </div>
+            </div>
+            <div class="stream">
+              <div class="stream-h amber">Fresh Air (FA)</div>
+              <div class="stream-b">
+                <div><label class="f" id="lab_oa_flow">Flow (CMH)</label><input class="inp" id="oa_flow" data-u="flow" type="number" value="1200" /></div>
+                <div><label class="f" id="lab_oa_db">Dry Bulb (°C)</label><input class="inp" id="oa_db" data-u="temp" type="number" step="0.1" value="32" /></div>
+                <div>
+                  <label class="f"><select id="oa_humType"><option value="wb">Wet Bulb (°C)</option><option value="rh">RH (%)</option></select></label>
+                  <input class="inp" id="oa_hum" data-u="hum" type="number" step="0.1" value="26" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="callout mix" id="ahuMix"></div>
+          <div class="stream">
+            <div class="stream-h coil-h" style="background:#0f766e">
+              <span>Pre-Cool Coil</span>
+              <label class="switch" title="Pre-Cool Coil"><input type="checkbox" id="pc_on" /><i></i></label>
+            </div>
+            <div class="stream-b coil-row hidden" id="pcBox">
+              <div><label class="f" id="lab_pc_db">Leaving DB (°C)</label><input class="inp" id="pc_db" data-u="temp" type="number" step="0.1" value="18" /></div>
+              <div>
+                <label class="f"><select id="pc_humType"><option value="rh">RH (%)</option><option value="wb">Wet Bulb (°C)</option></select></label>
+                <input class="inp" id="pc_hum" data-u="hum" type="number" step="0.1" value="80" />
+              </div>
+            </div>
+          </div>
+          <div class="stream">
+            <div class="stream-h" style="background:#2563eb">Main Cooling Coil</div>
+            <div class="stream-b coil-row">
+              <div><label class="f" id="lab_mc_db">Leaving DB (°C)</label><input class="inp" id="mc_db" data-u="temp" type="number" step="0.1" value="13" /></div>
+              <div>
+                <label class="f"><select id="mc_humType"><option value="rh">RH (%)</option><option value="wb">Wet Bulb (°C)</option></select></label>
+                <input class="inp" id="mc_hum" data-u="hum" type="number" step="0.1" value="95" />
+              </div>
+            </div>
+          </div>
+          <div class="callout cool" id="ahuOff"></div>
+          <div class="stream">
+            <div class="stream-h coil-h" style="background:#9a3412">
+              <span>Reheat Coil</span>
+              <label class="switch heat" title="Reheat Coil"><input type="checkbox" id="rh_on" /><i></i></label>
+            </div>
+            <div class="stream-b hidden" id="rhBox">
+              <label class="f" id="lab_rh_db">Leaving DB (°C)</label>
+              <input class="inp" id="rh_db" data-u="temp" type="number" step="0.1" value="16" />
+            </div>
+          </div>
+          <div class="callout sa hidden" id="ahuSupply"></div>
+          <button type="button" class="btn ahu" id="btnAhu">Calculate AHU Process</button>
+          <div class="callout room" id="ahuRoom"></div>
+          <div class="callout rec" id="ahuRec"></div>
+          <div class="callout sa" id="ahuCap"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="pinPanel">
+        <div class="panel-b">
+          <div class="pin-h">PINNED POINTS <button type="button" class="linkish" id="btnClearPins">Clear All</button></div>
+          <div id="pinList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="layer-bar">
+        <span class="lab">Layers</span>
+        <button type="button" class="layer-btn" data-layer="rh"><span class="swatch"></span>RH (%)</button>
+        <button type="button" class="layer-btn" data-layer="wb"><span class="swatch wb"></span><span id="labWb">Wet Bulb (°C)</span></button>
+        <button type="button" class="layer-btn" data-layer="h"><span class="swatch enth"></span><span id="labH">Enthalpy (kJ/kg)</span></button>
+        <button type="button" class="layer-btn" data-layer="v"><span class="swatch vol"></span><span id="labV">Sp. Volume (m³/kg)</span></button>
+      </div>
+      <button type="button" class="guide-btn" id="btnGuide">Guide</button>
+      <div class="pop guide-pop hidden" id="guidePop">
+        <h3>CHART GUIDE</h3>
+        <p><strong style="color:#dc2626">Saturation</strong> — 100% relative humidity.</p>
+        <p><strong style="color:#2563eb">RH</strong> — lines of constant relative humidity.</p>
+        <p><strong style="color:#059669">Wet bulb</strong> — lines of constant wet-bulb temperature.</p>
+        <p><strong style="color:#d97706">Enthalpy</strong> — dashed lines of constant enthalpy.</p>
+        <p><strong style="color:#7c3aed">Specific volume</strong> — dotted lines of constant volume.</p>
+        <p>Pin keeps a point on the chart. Wide hides the side panel so the chart fills the page.</p>
+      </div>
+      <div id="chart"></div>
+      <div id="chartTip" class="chart-tip hidden"></div>
+    </div>
+  </main>
+
+  <script>
+(function () {
+  'use strict';
+
+  var mode = 'point';
+  var heatFrom = 'db';
+  var unit = 'si';
+  var densMode = 'actual';
+  var altitude = 0;
+  var layers = { rh: true, wb: true, h: true, v: true };
+  var points = [];
+  var lines = [];
+  var pins = [];
+  var lastText = '';
+  var ahuCsv = '';
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function round(n, d) {
+    if (!isFinite(n)) return '—';
+    var f = Math.pow(10, d == null ? 2 : d);
+    return (Math.round(n * f) / f).toFixed(d == null ? 2 : d);
+  }
+  function $(id) { return document.getElementById(id); }
+  function Patm() {
+    var h = Math.max(Number(altitude) || 0, 0);
+    if (h < 1) return 101325;
+    var p = 101325 * Math.pow(1 - 2.25577e-5 * h, 5.25588);
+    return p > 20000 ? p : 20000;
+  }
+  function pws(Tc) { return 610.94 * Math.exp((17.625 * Tc) / (Tc + 243.04)); }
+  function dewFromPw(pw) {
+    var ln = Math.log(Math.max(pw, 1e-9) / 610.94);
+    return (243.04 * ln) / (17.625 - ln);
+  }
+  function WfromPw(pw) { var P = Patm(); return 0.621945 * pw / Math.max(P - pw, 1); }
+  function pwFromW(W) { var P = Patm(); return (W * P) / (0.621945 + W); }
+  function enthalpy(T, W) { return 1.006 * T + W * (2501 + 1.86 * T); }
+  function specificVolume(T, W) { return (287.055 * (T + 273.15) * (1 + 1.6078 * W)) / Patm(); }
+  function rhFromDbWb(db, wb) {
+    wb = Math.min(wb, db);
+    var Wsat = WfromPw(pws(wb));
+    var W = ((2501 - 2.386 * wb) * Wsat - 1.006 * (db - wb)) / (2501 + 1.805 * db - 4.186 * wb);
+    if (!(W >= 0)) W = 0;
+    return clamp((pwFromW(W) / pws(db)) * 100, 0, 100);
+  }
+  function wbFromDbRh(db, rh) {
+    var lo = Math.min(-20, db - 50), hi = db, mid, i;
+    for (i = 0; i < 56; i++) {
+      mid = (lo + hi) / 2;
+      if (rhFromDbWb(db, mid) > rh) hi = mid; else lo = mid;
+    }
+    return (lo + hi) / 2;
+  }
+  function stateFrom(db, humType, hum) {
+    db = Number(db); hum = Number(hum);
+    var RH, WB, DP, pw, W;
+    if (humType === 'wb') {
+      WB = Math.min(hum, db);
+      RH = rhFromDbWb(db, WB);
+      pw = (RH / 100) * pws(db);
+      DP = dewFromPw(pw);
+      W = WfromPw(pw);
+    } else if (humType === 'dp') {
+      DP = hum; pw = pws(DP);
+      RH = clamp((pw / pws(db)) * 100, 0, 100);
+      W = WfromPw(pw);
+      WB = wbFromDbRh(db, RH);
+    } else if (humType === 'hr') {
+      W = Math.max(hum, 0) / 1000;
+      pw = pwFromW(W);
+      RH = clamp((pw / pws(db)) * 100, 0, 100);
+      DP = dewFromPw(pw);
+      WB = wbFromDbRh(db, RH);
+    } else {
+      RH = clamp(hum, 0, 100);
+      pw = (RH / 100) * pws(db);
+      W = WfromPw(pw);
+      DP = dewFromPw(pw);
+      WB = wbFromDbRh(db, RH);
+    }
+    var h = enthalpy(db, W);
+    var v = specificVolume(db, W);
+    return { db: db, wb: WB, dp: DP, rh: RH, W: W, wG: W * 1000, h: h, v: v, dens: (1 + W) / v };
+  }
+  function rho(s) { return densMode === 'standard' ? 1.2 : s.dens; }
+  function massFlow(cmh, s) { return (cmh / 3600) * rho(s); }
+  function siTemp(v) { v = Number(v); return unit === 'ip' ? (v - 32) * 5 / 9 : v; }
+  function siFlow(v) { v = Number(v) || 0; return unit === 'ip' ? v * 1.6990108 : v; }
+  function siHum(type, v) {
+    v = Number(v);
+    if (type === 'rh') return v;
+    if (type === 'hr') return unit === 'ip' ? v / 7 : v;
+    return siTemp(v);
+  }
+  function siWater(v) { v = Number(v) || 0; return unit === 'ip' ? v / 15.850323 : v; }
+  function siKw(v) { v = Number(v) || 0; return unit === 'ip' ? v / 3412.142 : v; }
+  function dT(c, d) { return unit === 'ip' ? round(c * 9 / 5 + 32, d == null ? 2 : d) : round(c, d == null ? 2 : d); }
+  function dW(g) { return unit === 'ip' ? round(g * 7, 2) : round(g, 2); }
+  function dH(k) { return unit === 'ip' ? round(k / 2.326, 2) : round(k, 2); }
+  function dV(m) { return unit === 'ip' ? round(m * 16.01846, 3) : round(m, 3); }
+  function dP(pa) { var kpa = pa / 1000; return unit === 'ip' ? round(kpa * 0.145038, 3) : round(kpa, 2); }
+  function dKw(k) { return unit === 'ip' ? round(k * 3412.142, 0) : round(k, 2); }
+  function dFlow(cmh) { return unit === 'ip' ? round(cmh / 1.6990108, 0) : round(cmh, 0); }
+  function uT() { return unit === 'ip' ? '°F' : '°C'; }
+  function uW() { return unit === 'ip' ? 'gr/lb' : 'g/kg'; }
+  function uH() { return unit === 'ip' ? 'Btu/lb' : 'kJ/kg'; }
+  function uV() { return unit === 'ip' ? 'ft³/lb' : 'm³/kg'; }
+  function uP() { return unit === 'ip' ? 'psia' : 'kPa'; }
+  function uQ() { return unit === 'ip' ? 'CFM' : 'CMH'; }
+  function uKw() { return unit === 'ip' ? 'Btu/h' : 'kW'; }
+  function uWs() { return unit === 'ip' ? 'GPM' : 'L/s'; }
+  function row(name, val, un) {
+    return '<div class="result-row"><span>' + name + '</span><strong>' + val + '<span class="u">' + un + '</span></strong></div>';
+  }
+  function stateRows(s) {
+    return row('Dry Bulb', dT(s.db), uT()) +
+      row('Wet Bulb', dT(s.wb), uT()) +
+      row('Rel. Humidity', round(s.rh, 2), '%') +
+      row('Dew Point', dT(s.dp), uT()) +
+      row('Hum. Ratio', dW(s.wG), uW()) +
+      row('Enthalpy', dH(s.h), uH()) +
+      row('Sp. Volume', dV(s.v), uV());
+  }
+  function readState(dbId, typeId, humId) {
+    var typ = $(typeId).value;
+    return stateFrom(siTemp($(dbId).value), typ, siHum(typ, $(humId).value));
+  }
+  function mixState(a, b, qa, qb) {
+    var ma = massFlow(qa, a), mb = massFlow(qb, b), m = ma + mb;
+    var Wm = m > 0 ? (ma * a.W + mb * b.W) / m : a.W;
+    var hm = m > 0 ? (ma * a.h + mb * b.h) / m : a.h;
+    var Tm = (hm - Wm * 2501) / (1.006 + 1.86 * Wm);
+    var mix = stateFrom(Tm, 'hr', Wm * 1000);
+    mix.W = Wm; mix.wG = Wm * 1000; mix.h = hm; mix.v = specificVolume(Tm, Wm); mix.dens = (1 + Wm) / mix.v;
+    return { mix: mix, m: m, q: qa + qb };
+  }
+
+  function renderPins() {
+    var el = $('pinList');
+    if (!pins.length) {
+      el.innerHTML = '<div class="pin-empty">No pinned points yet. Use Pin to keep the current points on the chart.</div>';
+      return;
+    }
+    el.innerHTML = pins.map(function (p, i) {
+      return '<div class="pin-row"><span>P' + (i + 1) + '</span><strong>' + dT(p.db, 1) + uT() + ', ' + dW(p.wG) + ' ' + uW() + '</strong></div>';
+    }).join('');
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('#modes button').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-mode') === m);
+    });
+    ['point', 'mix', 'cool', 'heat', 'ahu'].forEach(function (id) {
+      $('panel-' + id).classList.toggle('hidden', id !== m);
+    });
+    run();
+  }
+
+  function calcPoint() {
+    var s = readState('p_db', 'p_humType', 'p_hum');
+    lastText = 'Atm. Pressure ' + dP(Patm()) + ' ' + uP() + '\n' +
+      'Dry Bulb ' + dT(s.db) + ' ' + uT() + '\nWet Bulb ' + dT(s.wb) + ' ' + uT() + '\n' +
+      'Rel. Humidity ' + round(s.rh, 2) + ' %\nDew Point ' + dT(s.dp) + ' ' + uT() + '\n' +
+      'Hum. Ratio ' + dW(s.wG) + ' ' + uW() + '\nEnthalpy ' + dH(s.h) + ' ' + uH() + '\n' +
+      'Sp. Volume ' + dV(s.v) + ' ' + uV();
+    $('pointMetrics').innerHTML = row('Atm. Pressure', dP(Patm()), uP()) + stateRows(s);
+    points = [{ db: s.db, wG: s.wG, h: s.h, label: 'P', color: '#dc2626' }];
+    lines = [];
+    drawChart();
+  }
+
+  function calcMix() {
+    var a = readState('ma_db', 'ma_humType', 'ma_hum');
+    var b = readState('mb_db', 'mb_humType', 'mb_hum');
+    var qa = siFlow($('ma_flow').value), qb = siFlow($('mb_flow').value);
+    var mixed = mixState(a, b, qa, qb);
+    var mix = mixed.mix;
+    $('mixMetrics').innerHTML = stateRows(mix) +
+      row('Vol. Flow', dFlow(mixed.q), uQ()) +
+      row('Mass Flow', round(mixed.m, 3), 'kg/s');
+    points = [
+      { db: a.db, wG: a.wG, h: a.h, label: 'MA', color: '#0ea5e9' },
+      { db: mix.db, wG: mix.wG, h: mix.h, label: 'Mix', color: '#f59e0b' },
+      { db: b.db, wG: b.wG, h: b.h, label: 'MB', color: '#6366f1' }
+    ];
+    lines = [
+      { x: [a.db, mix.db], y: [a.wG, mix.wG], color: '#f59e0b' },
+      { x: [b.db, mix.db], y: [b.wG, mix.wG], color: '#6366f1' }
+    ];
+    drawChart();
+  }
+
+  function calcCool() {
+    var e = readState('ce_db', 'ce_humType', 'ce_hum');
+    var l = readState('cl_db', 'cl_humType', 'cl_hum');
+    var cmh = siFlow($('c_flow').value);
+    var m = massFlow(cmh, e);
+    var total = m * (e.h - l.h);
+    var sens = m * 1.006 * (e.db - l.db);
+    var lat = total - sens;
+    var shr = total !== 0 ? sens / total : 0;
+    var cond = m * Math.max(e.W - l.W, 0) * 3600;
+    var kgh = m * 3600;
+    function cell(k, v, un) {
+      return '<div class="cell"><div class="k">' + k + '</div><div class="v">' + v + '<span class="u">' + un + '</span></div></div>';
+    }
+    $('coolMetrics').innerHTML =
+      cell('TOTAL', dKw(total), uKw()) + cell('SENSIBLE', dKw(sens), uKw()) + cell('SHR', round(shr, 3), '') +
+      cell('LATENT', dKw(lat), uKw()) + cell('CONDENSATION', round(cond, 2), 'L/h') + cell('MASS FLOW', round(kgh, 0), 'kg/h');
+    var waterOn = $('c_water').checked;
+    $('waterBox').classList.toggle('hidden', !waterOn);
+    if (waterOn) {
+      var ewt = siTemp($('c_ewt').value), lwt = siTemp($('c_lwt').value);
+      var ls = siWater($('c_wflow').value);
+      var wkw = ls * 4.186 * (lwt - ewt);
+      $('waterOut').innerHTML = '<div class="result-row" style="margin-top:0.45rem"><span>WATER-SIDE CAPACITY</span><strong>' + dKw(wkw) + '<span class="u">' + uKw() + '</span></strong></div>';
+    } else $('waterOut').innerHTML = '';
+    points = [
+      { db: e.db, wG: e.wG, h: e.h, label: 'On', color: '#f97316' },
+      { db: l.db, wG: l.wG, h: l.h, label: 'Off', color: '#14b8a6' }
+    ];
+    lines = [{ x: [e.db, l.db], y: [e.wG, l.wG], color: '#dc2626' }];
+    drawChart();
+  }
+
+  function calcHeat() {
+    var e = readState('he_db', 'he_humType', 'he_hum');
+    var cmh = siFlow($('h_flow').value);
+    var m = massFlow(cmh, e);
+    var ldb, sens;
+    if (heatFrom === 'kw') {
+      sens = siKw($('h_kw').value);
+      ldb = e.db + (m > 0 ? sens / (m * 1.006) : 0);
+    } else {
+      ldb = siTemp($('hl_db').value);
+      sens = m * 1.006 * (ldb - e.db);
+    }
+    var l = stateFrom(ldb, 'hr', e.wG);
+    l.W = e.W; l.wG = e.wG; l.h = enthalpy(ldb, e.W); l.v = specificVolume(ldb, e.W); l.dens = (1 + e.W) / l.v;
+    $('heatMetrics').innerHTML =
+      '<div class="result-row"><span>Sensible</span><strong>' + dKw(sens) + '<span class="u">' + uKw() + '</span></strong></div>' +
+      '<div class="result-row"><span>Leaving DB</span><strong>' + dT(l.db) + '<span class="u">' + uT() + '</span></strong></div>' +
+      stateRows(l);
+    points = [
+      { db: e.db, wG: e.wG, h: e.h, label: 'On', color: '#f59e0b' },
+      { db: l.db, wG: l.wG, h: l.h, label: 'Off', color: '#ea580c' }
+    ];
+    lines = [{ x: [e.db, l.db], y: [e.wG, l.wG], color: '#dc2626' }];
+    drawChart();
+  }
+
+  function card(title, s, extra) {
+    return '<div class="t">' + title + '</div>' +
+      '<div class="result-row"><span>DB</span><strong>' + dT(s.db, 1) + ' ' + uT() + '</strong></div>' +
+      '<div class="result-row"><span>WB</span><strong>' + dT(s.wb, 1) + ' ' + uT() + '</strong></div>' +
+      '<div class="result-row"><span>RH</span><strong>' + round(s.rh, 1) + ' %</strong></div>' +
+      '<div class="result-row"><span>HR</span><strong>' + dW(s.wG) + ' ' + uW() + '</strong></div>' +
+      '<div class="result-row"><span>h</span><strong>' + dH(s.h, 1) + ' ' + uH() + '</strong></div>' +
+      (extra || '');
+  }
+
+  function coolDuty(enter, leave, m) {
+    var total = m * (enter.h - leave.h);
+    var sens = m * 1.006 * (enter.db - leave.db);
+    var lat = total - sens;
+    return {
+      total: total, sens: sens, lat: lat,
+      shr: total !== 0 ? sens / total : 0,
+      cond: m * Math.max(enter.W - leave.W, 0) * 3600
+    };
+  }
+  function heatDuty(enter, leave, m) {
+    var sens = m * 1.006 * (leave.db - enter.db);
+    return { total: sens, sens: sens, lat: 0, shr: sens !== 0 ? 1 : 0, cond: 0 };
+  }
+  function sameMoisture(db, src) {
+    var s = stateFrom(db, 'hr', src.wG);
+    s.W = src.W; s.wG = src.wG; s.h = enthalpy(db, src.W);
+    s.v = specificVolume(db, src.W); s.dens = (1 + src.W) / s.v;
+    return s;
+  }
+  function dutyBits(name, d) {
+    return [name, dKw(d.total), dKw(d.sens), dKw(d.lat), round(d.shr, 2)].join(',');
+  }
+
+  function calcAhu() {
+    var ra = readState('ra_db', 'ra_humType', 'ra_hum');
+    var oa = readState('oa_db', 'oa_humType', 'oa_hum');
+    var qRa = siFlow($('ra_flow').value), qOa = siFlow($('oa_flow').value);
+    var mixed = mixState(ra, oa, qRa, qOa);
+    var mix = mixed.mix;
+    var qMix = qRa + qOa;
+    var mMix = densMode === 'standard' ? (qMix / 3600) * 1.2 : (qMix / 3600) / mix.v;
+    var preOn = $('pc_on').checked;
+    var heatOn = $('rh_on').checked;
+    $('pcBox').classList.toggle('hidden', !preOn);
+    $('rhBox').classList.toggle('hidden', !heatOn);
+    var enter = mix;
+    var pre = null;
+    var preD = null;
+    if (preOn) {
+      pre = readState('pc_db', 'pc_humType', 'pc_hum');
+      preD = coolDuty(mix, pre, mMix);
+      enter = pre;
+    }
+    var off = readState('mc_db', 'mc_humType', 'mc_hum');
+    var mainD = coolDuty(enter, off, mMix);
+    var supply = off;
+    var heatD = null;
+    if (heatOn) {
+      supply = sameMoisture(siTemp($('rh_db').value), off);
+      heatD = heatDuty(off, supply, mMix);
+    }
+    var roomTot = mMix * (ra.h - supply.h);
+    var roomSens = mMix * 1.006 * (ra.db - supply.db);
+    var roomD = { total: roomTot, sens: roomSens, lat: roomTot - roomSens, shr: roomTot !== 0 ? roomSens / roomTot : 0, cond: 0 };
+    var duties = [];
+    if (preD) duties.push(['Pre-Cool', preD, '#0f766e']);
+    duties.push(['Main Cooling', mainD, '#2563eb']);
+    if (heatD) duties.push(['Reheat', heatD, '#ea580c']);
+    duties.push(['Room Load', roomD, '#059669']);
+    var sum = { total: 0, sens: 0, lat: 0, shr: 0, cond: 0 };
+    duties.forEach(function (d) {
+      if (d[0] === 'Room Load') return;
+      sum.total += d[1].total; sum.sens += d[1].sens; sum.lat += d[1].lat;
+    });
+    sum.shr = sum.total !== 0 ? sum.sens / sum.total : 0;
+    $('ahuMix').innerHTML = card('Mixed air (entering coil)', mix, row('Flow', dFlow(qRa + qOa), uQ()));
+    $('ahuOff').innerHTML = card('Off coil air', off,
+      row('Total', dKw(mainD.total), uKw()) + row('Sens', dKw(mainD.sens), uKw()) +
+      row('Lat', dKw(mainD.lat), uKw()) + row('SHR', round(mainD.shr, 2), '') +
+      row('Cond.', round(mainD.cond, 1), 'L/h'));
+    $('ahuSupply').classList.toggle('hidden', !heatOn);
+    if (heatOn) {
+      $('ahuSupply').innerHTML = card('Supply air (after reheat)', supply,
+        row('Total', dKw(heatD.total), uKw()) + row('Sens', dKw(heatD.sens), uKw()) +
+        row('Lat', dKw(heatD.lat), uKw()) + row('SHR', round(heatD.shr, 2), ''));
+    }
+    $('ahuRoom').innerHTML = card('Room / return air', ra,
+      row('Total', dKw(roomD.total), uKw()) + row('Sens', dKw(roomD.sens), uKw()) +
+      row('Lat', dKw(roomD.lat), uKw()) + row('SHR', round(roomD.shr, 2), ''));
+    $('ahuRec').innerHTML = card('Recirculated', ra, row('Flow', dFlow(qRa), uQ()));
+    var body = duties.map(function (d) {
+      return '<tr><td style="color:' + d[2] + '">' + d[0] + '</td><td>' + dKw(d[1].total) + '</td><td>' + dKw(d[1].sens) + '</td><td>' + dKw(d[1].lat) + '</td><td>' + round(d[1].shr, 2) + '</td></tr>';
+    }).join('');
+    $('ahuCap').innerHTML =
+      '<div class="t" style="display:flex;align-items:center;justify-content:space-between">CAPACITY SUMMARY' +
+      '<button type="button" class="icon-btn" data-dl="ahu" title="Download summary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></button></div>' +
+      '<div class="cap-meta">Mass flow: ' + round(mMix, 3) + ' kg/s | Vol. flow: ' + dFlow(qRa + qOa) + ' ' + uQ() + '</div>' +
+      '<table class="cap-table"><thead><tr><th>STREAM</th><th>TOTAL</th><th>SENSIBLE</th><th>LATENT</th><th>SHR</th></tr></thead><tbody>' +
+      body +
+      '<tr class="sum"><td>SUM</td><td>' + dKw(sum.total) + '</td><td>' + dKw(sum.sens) + '</td><td>' + dKw(sum.lat) + '</td><td>' + round(sum.shr, 2) + '</td></tr>' +
+      '</tbody></table>';
+    ahuCsv = 'Mass flow kg/s,' + round(mMix, 3) + '\nVol flow,' + dFlow(qRa + qOa) + ',' + uQ() + '\nStream,Total,Sensible,Latent,SHR\n' +
+      duties.map(function (d) { return dutyBits(d[0], d[1]); }).join('\n') + '\n' + dutyBits('SUM', sum) + '\n';
+    points = [
+      { db: oa.db, wG: oa.wG, h: oa.h, label: 'OA', color: '#f59e0b' },
+      { db: ra.db, wG: ra.wG, h: ra.h, label: 'RA', color: '#10b981' },
+      { db: mix.db, wG: mix.wG, h: mix.h, label: 'Mix', color: '#d97706' }
+    ];
+    lines = [
+      { x: [ra.db, mix.db], y: [ra.wG, mix.wG], color: '#f59e0b' },
+      { x: [oa.db, mix.db], y: [oa.wG, mix.wG], color: '#f59e0b' }
+    ];
+    var from = mix;
+    if (pre) {
+      points.push({ db: pre.db, wG: pre.wG, h: pre.h, label: 'Pre', color: '#0f766e' });
+      lines.push({ x: [from.db, pre.db], y: [from.wG, pre.wG], color: '#0f766e' });
+      from = pre;
+    }
+    points.push({ db: off.db, wG: off.wG, h: off.h, label: 'Off', color: '#2563eb' });
+    lines.push({ x: [from.db, off.db], y: [from.wG, off.wG], color: '#2563eb' });
+    if (heatOn) {
+      points.push({ db: supply.db, wG: supply.wG, h: supply.h, label: 'SA', color: '#ea580c' });
+      lines.push({ x: [off.db, supply.db], y: [off.wG, supply.wG], color: '#ea580c' });
+      lines.push({ x: [supply.db, ra.db], y: [supply.wG, ra.wG], color: '#10b981' });
+    } else {
+      lines.push({ x: [off.db, ra.db], y: [off.wG, ra.wG], color: '#10b981' });
+    }
+    drawChart();
+  }
+
+  function xOf(c) { return unit === 'ip' ? c * 9 / 5 + 32 : c; }
+  function yOf(g) { return unit === 'ip' ? g * 7 : g; }
+
+  function lineAngle(t1, w1, t2, w2) {
+    var dx = xOf(t2) - xOf(t1);
+    var dy = yOf(w2) - yOf(w1);
+    if (!dx && !dy) return 0;
+    return Math.atan2(dy, dx) * 180 / Math.PI;
+  }
+  function note(x, y, text, angle, color, size) {
+    return {
+      x: x, y: y, text: text, textangle: angle || 0, showarrow: false,
+      font: { size: size || 11, color: color, family: 'Plus Jakarta Sans' },
+      bgcolor: 'rgba(255,255,255,0.9)', borderpad: 1, cliponaxis: false
+    };
+  }
+  function chartNotes() {
+    var out = [];
+    var tMin = -5, tMax = 50, wMax = 32, t, s, s2;
+    if (layers.rh) {
+      [10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(function (rh) {
+        var pick = null;
+        for (t = 44; t >= 6; t -= 0.5) {
+          s = stateFrom(t, 'rh', rh);
+          if (s.wG > 4 && s.wG < 28) { pick = { t: t, s: s }; break; }
+        }
+        if (!pick) return;
+        s2 = stateFrom(pick.t + 1, 'rh', rh);
+        out.push(note(xOf(pick.t), yOf(pick.s.wG), '<b>' + rh + '%</b>', lineAngle(pick.t, pick.s.wG, pick.t + 1, s2.wG), '#1d4ed8', 11));
+      });
+      var word = 'SATURATION';
+      var n = 0;
+      var lastT = -99;
+      for (t = 14; t <= 46 && n < word.length; t += 0.35) {
+        s = stateFrom(t, 'rh', 100);
+        if (s.wG < 7 || s.wG > 27) continue;
+        if (t - lastT < 1.55) continue;
+        s2 = stateFrom(Math.min(t + 0.8, 50), 'rh', 100);
+        out.push(note(xOf(t), yOf(s.wG), '<b>' + word.charAt(n) + '</b>', lineAngle(t, s.wG, t + 0.8, s2.wG), '#dc2626', 13));
+        lastT = t;
+        n++;
+      }
+    }
+    if (layers.wb) {
+      var wb;
+      for (wb = 0; wb <= 30; wb += 5) {
+        s = stateFrom(wb, 'rh', 100);
+        var label = unit === 'ip' ? round(wb * 9 / 5 + 32, 0) : String(wb);
+        out.push(note(xOf(wb), yOf(s.wG), '<b>' + label + '°</b>', 0, '#047857', 11));
+      }
+    }
+    if (layers.h) {
+      var hVal;
+      for (hVal = 10; hVal <= 120; hVal += 10) {
+        var leftW = (hVal - 1.006 * tMin) / (2501 + 1.86 * tMin);
+        var pt = null;
+        if (leftW >= 0 && leftW * 1000 <= wMax) pt = { t: tMin, w: leftW * 1000 };
+        else {
+          var wTop = 0.032;
+          var tTop = (hVal - wTop * 2501) / (1.006 + wTop * 1.86);
+          if (tTop >= tMin && tTop <= tMax) pt = { t: tTop, w: wMax };
+        }
+        if (!pt) continue;
+        var w2 = (hVal - 1.006 * (pt.t + 4)) / (2501 + 1.86 * (pt.t + 4));
+        var ang = lineAngle(pt.t, pt.w, pt.t + 4, Math.max(w2, 0) * 1000);
+        var hTxt = unit === 'ip' ? round(hVal / 2.326, 0) : String(hVal);
+        out.push(note(xOf(pt.t), yOf(pt.w), '<b>' + hTxt + '</b>', ang, '#b45309', 10));
+      }
+    }
+    if (layers.v) {
+      [0.76, 0.78, 0.80, 0.82, 0.84, 0.86, 0.88, 0.90, 0.92].forEach(function (vv) {
+        var t0 = vv * Patm() / 287.055 - 273.15;
+        if (t0 < tMin || t0 > tMax) return;
+        var vTxt = unit === 'ip' ? round(vv * 16.01846, 2) : vv.toFixed(2);
+        out.push(note(xOf(t0), yOf(1.2), '<b>' + vTxt + '</b>', 76, '#6d28d9', 9));
+      });
+    }
+    return out;
+  }
+
+  function buildChartBase() {
+    var t, traces = [];
+    var tMin = -5, tMax = 50, wMax = 32;
+    function pushLine(xs, ys, color, width, dash, opacity) {
+      if (xs.length < 2) return;
+      traces.push({
+        x: xs, y: ys, mode: 'lines', hoverinfo: 'skip', showlegend: false,
+        line: { color: color, width: width, dash: dash || 'solid' }, opacity: opacity == null ? 1 : opacity
+      });
+    }
+    if (layers.rh) {
+      [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].forEach(function (rhPct) {
+        var xs = [], ys = [];
+        for (t = tMin; t <= tMax; t += 0.5) {
+          var s = stateFrom(t, 'rh', rhPct);
+          if (s.wG <= wMax) { xs.push(xOf(t)); ys.push(yOf(s.wG)); }
+        }
+        pushLine(xs, ys, rhPct === 100 ? '#dc2626' : '#2563eb', rhPct === 100 ? 2.5 : 1.35);
+      });
+    }
+    if (layers.wb) {
+      var wb;
+      for (wb = 0; wb <= 30; wb += 1) {
+        var xs2 = [], ys2 = [];
+        for (t = wb; t <= tMax; t += 0.5) {
+          var s2 = stateFrom(t, 'wb', wb);
+          if (s2.wG <= wMax && s2.wG >= 0) { xs2.push(xOf(t)); ys2.push(yOf(s2.wG)); }
+        }
+        var major = wb % 5 === 0;
+        pushLine(xs2, ys2, '#059669', major ? 1.2 : 0.7, 'solid', major ? 1 : 0.35);
+      }
+    }
+    if (layers.h) {
+      var hVal;
+      for (hVal = 10; hVal <= 120; hVal += 5) {
+        var xs3 = [], ys3 = [];
+        for (t = tMin; t <= tMax; t += 1) {
+          var W = (hVal - 1.006 * t) / (2501 + 1.86 * t);
+          if (W >= 0 && W * 1000 <= wMax) { xs3.push(xOf(t)); ys3.push(yOf(W * 1000)); }
+        }
+        var majorH = hVal % 10 === 0;
+        pushLine(xs3, ys3, '#d97706', majorH ? 1 : 0.6, 'dash', majorH ? 1 : 0.35);
+      }
+    }
+    if (layers.v) {
+      var vi;
+      for (vi = 0; vi <= 8; vi++) {
+        var vv = 0.76 + vi * 0.02;
+        var xs4 = [], ys4 = [];
+        for (t = tMin; t <= tMax; t += 1) {
+          var Tk = t + 273.15;
+          var Wv = (vv * Patm() / (287.055 * Tk) - 1) / 1.6078;
+          if (Wv >= 0 && Wv * 1000 <= wMax) { xs4.push(xOf(t)); ys4.push(yOf(Wv * 1000)); }
+        }
+        pushLine(xs4, ys4, '#7c3aed', 1, 'dot', 1);
+      }
+    }
+    return traces;
+  }
+
+  function markerTrace(list, textSize) {
+    return {
+      x: list.map(function (p) { return xOf(p.db); }),
+      y: list.map(function (p) { return yOf(p.wG); }),
+      customdata: list.map(function (p) { return p.h; }),
+      mode: 'markers+text',
+      text: list.map(function (p) { return p.label; }),
+      textposition: 'top right',
+      textfont: { size: textSize, color: '#1e293b', family: 'Plus Jakarta Sans' },
+      marker: { size: textSize > 11 ? 9 : 11, color: list.map(function (p) { return p.color; }), line: { width: 2, color: '#fff' } },
+      hoverinfo: 'skip',
+      showlegend: false
+    };
+  }
+
+  function drawChart() {
+    var traces = buildChartBase();
+    lines.forEach(function (ln) {
+      traces.push({
+        x: ln.x.map(xOf), y: ln.y.map(yOf), mode: 'lines',
+        line: { color: ln.color, width: 2.6 }, hoverinfo: 'skip', showlegend: false
+      });
+    });
+    if (pins.length) traces.push(markerTrace(pins.map(function (p, i) {
+      return { db: p.db, wG: p.wG, h: p.h, label: 'P' + (i + 1), color: '#64748b' };
+    }), 11));
+    if (points.length) traces.push(markerTrace(points, 12));
+    var x0 = unit === 'ip' ? 20 : -5, x1 = unit === 'ip' ? 125 : 50;
+    var y1 = unit === 'ip' ? 224 : 32;
+    var layout = {
+      margin: { l: 48, r: 62, t: 28, b: 52 },
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: '#fff',
+      xaxis: {
+        title: { text: 'DRY BULB TEMPERATURE — ' + uT(), font: { size: 12, color: '#374151' } },
+        range: [x0, x1], dtick: unit === 'ip' ? 10 : 5,
+        gridcolor: 'rgba(0,0,0,0.08)', zeroline: false, tickfont: { color: '#6b7280', size: 11 },
+        minor: { dtick: unit === 'ip' ? 2 : 1, gridcolor: 'rgba(0,0,0,0.05)', showgrid: true }
+      },
+      yaxis: {
+        title: { text: 'HUMIDITY RATIO — ' + (unit === 'ip' ? 'gr/lb' : 'g/kg') + ' OF DRY AIR', font: { size: 12, color: '#374151' } },
+        range: [0, y1], dtick: unit === 'ip' ? 14 : 2,
+        gridcolor: 'rgba(0,0,0,0.08)', zeroline: false, side: 'right', tickfont: { color: '#6b7280', size: 11 },
+        minor: { dtick: unit === 'ip' ? 2 : 0.4, gridcolor: 'rgba(0,0,0,0.05)', showgrid: true }
+      },
+      annotations: chartNotes(),
+      font: { family: 'Plus Jakarta Sans, system-ui' },
+      hovermode: false
+    };
+    var el = $('chart');
+    if (window.Plotly) {
+      Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false });
+      bindChartTip();
+    }
+  }
+
+  var tipBound = false;
+  function bindChartTip() {
+    if (tipBound) return;
+    tipBound = true;
+    var gd = $('chart');
+    var tip = $('chartTip');
+    gd.addEventListener('mousemove', function (ev) {
+      var lay = gd._fullLayout;
+      if (!lay || !lay.xaxis || !lay.yaxis) return;
+      var rect = gd.getBoundingClientRect();
+      var x = lay.xaxis.p2d(ev.clientX - rect.left);
+      var y = lay.yaxis.p2d(ev.clientY - rect.top);
+      var db = unit === 'ip' ? (x - 32) * 5 / 9 : x;
+      var wG = unit === 'ip' ? y / 7 : y;
+      var x0 = unit === 'ip' ? 20 : -5, x1 = unit === 'ip' ? 125 : 50, y1 = unit === 'ip' ? 224 : 32;
+      if (!isFinite(x) || !isFinite(y) || x < x0 || x > x1 || y < 0 || y > y1) {
+        tip.classList.add('hidden');
+        return;
+      }
+      var W = Math.max(wG, 0) / 1000;
+      var h = enthalpy(db, W);
+      var rh = clamp((pwFromW(W) / pws(db)) * 100, 0, 100);
+      var wb = wbFromDbRh(db, rh);
+      tip.innerHTML = 'h ' + dH(h) + ' ' + uH() + '<br>DB ' + dT(db, 1) + ' ' + uT() + '<br>WB ' + dT(wb, 1) + ' ' + uT() + '<br>W ' + dW(wG) + ' ' + uW();
+      var host = gd.parentElement.getBoundingClientRect();
+      var left = ev.clientX - host.left + 16;
+      var top = ev.clientY - host.top + 16;
+      if (left > host.width - 140) left = ev.clientX - host.left - 130;
+      if (top > host.height - 80) top = ev.clientY - host.top - 78;
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+      tip.classList.remove('hidden');
+    });
+    gd.addEventListener('mouseleave', function () { tip.classList.add('hidden'); });
+  }
+
+  function run() {
+    if (mode === 'point') calcPoint();
+    else if (mode === 'mix') calcMix();
+    else if (mode === 'cool') calcCool();
+    else if (mode === 'heat') calcHeat();
+    else calcAhu();
+  }
+
+  function humOptionLabel(type) {
+    if (type === 'wb') return 'Wet Bulb (' + uT() + ')';
+    if (type === 'dp') return 'Dew Point (' + uT() + ')';
+    if (type === 'hr') return 'Hum. Ratio (' + uW() + ')';
+    return 'RH (%)';
+  }
+  function refreshHumSelects() {
+    document.querySelectorAll('select[id$="humType"]').forEach(function (sel) {
+      Array.prototype.forEach.call(sel.options, function (opt) { opt.text = humOptionLabel(opt.value); });
+    });
+  }
+  function refreshLabels() {
+    var pairs = {
+      lab_p_db: 'Dry Bulb (' + uT() + ')', lab_ma_db: 'Dry Bulb (' + uT() + ')', lab_mb_db: 'Dry Bulb (' + uT() + ')',
+      lab_ce_db: 'Dry Bulb (' + uT() + ')', lab_cl_db: 'Dry Bulb (' + uT() + ')', lab_he_db: 'Dry Bulb (' + uT() + ')',
+      lab_hl_db: 'Leaving DB (' + uT() + ')', lab_ra_db: 'Dry Bulb (' + uT() + ')', lab_oa_db: 'Dry Bulb (' + uT() + ')',
+      lab_mc_db: 'Leaving DB (' + uT() + ')', lab_pc_db: 'Leaving DB (' + uT() + ')', lab_rh_db: 'Leaving DB (' + uT() + ')',
+      lab_ewt: 'EWT (' + uT() + ')', lab_lwt: 'LWT (' + uT() + ')',
+      lab_ma_flow: 'Flow (' + uQ() + ')', lab_mb_flow: 'Flow (' + uQ() + ')', lab_c_flow: 'Volume Flow (' + uQ() + ')',
+      lab_h_flow: 'Volume Flow (' + uQ() + ')', lab_ra_flow: 'Flow (' + uQ() + ')', lab_oa_flow: 'Flow (' + uQ() + ')',
+      lab_wflow: 'Flow (' + uWs() + ')', lab_h_kw: 'Sensible (' + uKw() + ')'
+    };
+    Object.keys(pairs).forEach(function (id) { if ($(id)) $(id).textContent = pairs[id]; });
+    $('labWb').textContent = 'Wet Bulb (' + uT() + ')';
+    $('labH').textContent = 'Enthalpy (' + uH() + ')';
+    $('labV').textContent = 'Sp. Volume (' + uV() + ')';
+    var alt = Math.round(Number(altitude) || 0);
+    $('settingsLabel').textContent = (unit === 'ip' ? 'IP' : 'SI') + ' · Alt ' + alt + ' m · ρ' + (densMode === 'standard' ? ' std' : '');
+    refreshHumSelects();
+    renderPins();
+  }
+
+  var humPairs = [
+    ['p_hum', 'p_humType'], ['ma_hum', 'ma_humType'], ['mb_hum', 'mb_humType'],
+    ['ce_hum', 'ce_humType'], ['cl_hum', 'cl_humType'], ['he_hum', 'he_humType'],
+    ['ra_hum', 'ra_humType'], ['oa_hum', 'oa_humType'], ['mc_hum', 'mc_humType'], ['pc_hum', 'pc_humType']
+  ];
+  function convertNumber(el, from, to) {
+    var v = Number(el.value);
+    if (!isFinite(v)) return;
+    var kind = el.getAttribute('data-u');
+    if (kind === 'temp') el.value = round(from === 'si' ? v * 9 / 5 + 32 : (v - 32) * 5 / 9, 2);
+    else if (kind === 'flow') el.value = round(from === 'si' ? v / 1.6990108 : v * 1.6990108, 1);
+    else if (kind === 'kw') el.value = round(from === 'si' ? v * 3412.142 : v / 3412.142, 2);
+    else if (kind === 'water') el.value = round(from === 'si' ? v * 15.850323 : v / 15.850323, 3);
+  }
+  function setUnit(next) {
+    if (next === unit) return;
+    var prev = unit;
+    document.querySelectorAll('input[data-u="temp"], input[data-u="flow"], input[data-u="kw"], input[data-u="water"]').forEach(function (el) {
+      convertNumber(el, prev, next);
+    });
+    humPairs.forEach(function (pair) {
+      var typ = $(pair[1]).value;
+      var el = $(pair[0]);
+      var v = Number(el.value);
+      if (!isFinite(v)) return;
+      if (typ === 'hr') el.value = round(prev === 'si' ? v * 7 : v / 7, 2);
+      else if (typ === 'wb' || typ === 'dp') el.value = round(prev === 'si' ? v * 9 / 5 + 32 : (v - 32) * 5 / 9, 2);
+    });
+    unit = next;
+    document.querySelectorAll('#unitChoice button').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-unit') === unit);
+    });
+    refreshLabels();
+    run();
+  }
+
+  document.getElementById('modes').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-mode]');
+    if (b) setMode(b.getAttribute('data-mode'));
+  });
+  document.querySelectorAll('.layer-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var key = btn.getAttribute('data-layer');
+      layers[key] = !layers[key];
+      btn.classList.toggle('off', !layers[key]);
+      run();
+    });
+  });
+  ['btnPoint', 'btnMix', 'btnCool', 'btnHeat', 'btnAhu'].forEach(function (id) {
+    $(id).addEventListener('click', run);
+  });
+  document.querySelectorAll('input.inp, select').forEach(function (el) {
+    if (el.id === 'setAlt') return;
+    el.addEventListener('change', run);
+  });
+  $('c_water').addEventListener('change', run);
+  $('heatMode').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-heat]');
+    if (!b) return;
+    heatFrom = b.getAttribute('data-heat');
+    document.querySelectorAll('#heatMode button').forEach(function (x) {
+      x.classList.toggle('is-on', x === b);
+    });
+    $('heatDbWrap').classList.toggle('hidden', heatFrom !== 'db');
+    $('heatKwWrap').classList.toggle('hidden', heatFrom !== 'kw');
+    run();
+  });
+  $('btnAhuReset').addEventListener('click', function () {
+    $('ra_flow').value = unit === 'ip' ? round(3600 / 1.6990108, 0) : 3600;
+    $('oa_flow').value = unit === 'ip' ? round(1200 / 1.6990108, 0) : 1200;
+    $('ra_db').value = unit === 'ip' ? round(24 * 9 / 5 + 32, 2) : 24;
+    $('oa_db').value = unit === 'ip' ? round(32 * 9 / 5 + 32, 2) : 32;
+    $('ra_humType').value = 'wb'; $('oa_humType').value = 'wb';
+    $('ra_hum').value = unit === 'ip' ? round(17 * 9 / 5 + 32, 2) : 17;
+    $('oa_hum').value = unit === 'ip' ? round(26 * 9 / 5 + 32, 2) : 26;
+    $('mc_db').value = unit === 'ip' ? round(13 * 9 / 5 + 32, 2) : 13;
+    $('mc_humType').value = 'rh'; $('mc_hum').value = 95;
+    $('pc_on').checked = false; $('rh_on').checked = false;
+    $('pcBox').classList.add('hidden'); $('rhBox').classList.add('hidden');
+    $('pc_db').value = unit === 'ip' ? round(18 * 9 / 5 + 32, 2) : 18;
+    $('pc_humType').value = 'rh'; $('pc_hum').value = 80;
+    $('rh_db').value = unit === 'ip' ? round(16 * 9 / 5 + 32, 2) : 16;
+    refreshHumSelects();
+    run();
+  });
+  function wireCoil(chk, box) {
+    $(chk).addEventListener('change', function () {
+      $(box).classList.toggle('hidden', !$(chk).checked);
+      run();
+    });
+  }
+  wireCoil('pc_on', 'pcBox');
+  wireCoil('rh_on', 'rhBox');
+  $('ahuCap').addEventListener('click', function (ev) {
+    if (!ev.target.closest('[data-dl="ahu"]') || !ahuCsv) return;
+    var blob = new Blob([ahuCsv], { type: 'text/csv' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ahu-capacity-summary.csv';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+  $('btnSettings').addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    $('settingsPop').classList.toggle('hidden');
+    $('guidePop').classList.add('hidden');
+  });
+  $('btnGuide').addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    $('guidePop').classList.toggle('hidden');
+    $('settingsPop').classList.add('hidden');
+  });
+  document.addEventListener('click', function () {
+    $('settingsPop').classList.add('hidden');
+    $('guidePop').classList.add('hidden');
+  });
+  $('settingsPop').addEventListener('click', function (ev) { ev.stopPropagation(); });
+  $('guidePop').addEventListener('click', function (ev) { ev.stopPropagation(); });
+  $('setAlt').addEventListener('input', function () {
+    altitude = Number($('setAlt').value) || 0;
+    refreshLabels();
+    run();
+  });
+  $('unitChoice').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-unit]');
+    if (b) setUnit(b.getAttribute('data-unit'));
+  });
+  $('densChoice').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-dens]');
+    if (!b) return;
+    densMode = b.getAttribute('data-dens');
+    document.querySelectorAll('#densChoice button').forEach(function (x) {
+      x.classList.toggle('is-on', x === b);
+    });
+    refreshLabels();
+    run();
+  });
+  $('btnPin').addEventListener('click', function () {
+    points.forEach(function (p) {
+      pins.push({ db: p.db, wG: p.wG, h: p.h });
+    });
+    renderPins();
+    drawChart();
+  });
+  $('btnClearPins').addEventListener('click', function () {
+    pins = [];
+    renderPins();
+    drawChart();
+  });
+  $('btnWide').addEventListener('click', function () {
+    $('layout').classList.toggle('is-wide');
+    $('btnWide').classList.toggle('is-on');
+    setTimeout(function () { if (window.Plotly) Plotly.Plots.resize('chart'); }, 40);
+  });
+  $('btnCopyPoint').addEventListener('click', function () {
+    if (!lastText || !navigator.clipboard) return;
+    navigator.clipboard.writeText(lastText);
+  });
+  $('backLink').addEventListener('click', function (ev) {
+    ev.preventDefault();
+    try {
+      if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'wepl-nav', id: 'dashboard' }, '*');
+    } catch (e) {}
+    if (window.top === window && document.referrer) history.back();
+  });
+  $('btnExport').addEventListener('click', function () { window.print(); });
+  $('p_humType').addEventListener('change', function () {
+    var map = { wb: 18, rh: 55, dp: 14, hr: 10 };
+    var base = map[$('p_humType').value];
+    if (base == null) base = 18;
+    var typ = $('p_humType').value;
+    if (unit === 'ip' && (typ === 'wb' || typ === 'dp')) $('p_hum').value = round(base * 9 / 5 + 32, 1);
+    else if (unit === 'ip' && typ === 'hr') $('p_hum').value = round(base * 7, 1);
+    else $('p_hum').value = base;
+    run();
+  });
+
+  refreshLabels();
+  renderPins();
+  run();
+  window.addEventListener('resize', function () {
+    if (window.Plotly) Plotly.Plots.resize('chart');
+  });
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ROOM SURFACE AREA & AIR FLOW REPORT | WEPL T&C Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Three.js UMD & OrbitControls (100% Reliable Offline & Local File:// Support) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- jsPDF & AutoTable for Professional Engineering PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#1d4ed8',
+              600: '#1e40af',
+              700: '#1e3a8a',
+              800: '#172554',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Clean Light Theme Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    .input-focus {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .input-focus:focus {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    }
+
+    /* Strict Touch Scrolling Prevention for CAD Canvas */
+    #cadCanvas2D, #canvasContainer2D, #container3D {
+      touch-action: none !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- TOP HEADER & BRANDING NAV WITH CAPITALIZED NAME & BEAUTIFUL AIRFLOW ICON -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo + Capitalized Title + Airflow Icon -->
+      <div class="flex items-center space-x-3 sm:space-x-4">
+        
+        <!-- Logo or Fallback -->
+        <a href="index.html" class="flex items-center" title="Back to WEPL T&C Portal">
+          <img src="wepl_logo.png" alt="WEPL Logo" class="h-9 w-auto max-w-[130px] object-contain" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+          <div id="logoFallback" class="hidden items-center justify-center w-10 h-10 rounded-xl bg-blue-700 text-white font-black text-xl shadow-md shadow-blue-500/20">
+            W
+          </div>
+        </a>
+
+        <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
+
+        <!-- Header Title & Airflow Badge -->
+        <div class="flex flex-col">
+          <div class="flex items-center space-x-2">
+            
+            <!-- Beautiful Airflow & Surface Area Icon -->
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center shadow-sm shadow-blue-500/30 flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Wind / Airflow Waves passing through Room Dimension Enclosure -->
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3M4 8a4 4 0 014-4h8M4 16a4 4 0 004 4h8" />
+              </svg>
+            </div>
+
+            <!-- Capitalized Header Title -->
+            <h1 class="font-black text-slate-900 text-sm sm:text-base lg:text-lg tracking-tight uppercase">
+              ROOM SURFACE AREA & AIR FLOW REPORT
+            </h1>
+
+            <a href="index.html" class="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wide hover:bg-blue-100 transition">
+              WEPL T&C Portal
+            </a>
+          </div>
+          <p class="text-[11px] text-slate-500 hidden sm:block font-medium">Cleanroom HVAC Enclosure Calculations & Commissioning Specification</p>
+        </div>
+
+      </div>
+
+      <!-- Quick Preset & Global Controls -->
+      <div class="flex items-center space-x-2 sm:space-x-3 no-print">
+        
+        <!-- Preset Rooms Dropdown -->
+        <div class="relative inline-block text-left">
+          <select id="selectRoomPreset" class="bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 hover:bg-slate-50 transition cursor-pointer shadow-2xs">
+            <option value="lshape_wepl">Standard WEPL L-Enclosure (6 Segments)</option>
+            <option value="ushape">U-Shaped Cleanroom (8 Segments)</option>
+            <option value="rectangle">Rectangular Cleanroom (4 Segments)</option>
+            <option value="tshape">T-Shaped Room (8 Segments)</option>
+            <option value="octagon">Octagonal Airlock (8 Segments)</option>
+            <option value="custom">Custom Drawn Room</option>
+          </select>
+        </div>
+
+        <!-- Unit Selector Switcher -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <button type="button" id="unitM" class="px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer">
+            Meters (m)
+          </button>
+          <button type="button" id="unitMM" class="px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+            Millimeters (mm)
+          </button>
+        </div>
+
+        <!-- Reset Button -->
+        <button id="btnReset" type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition shadow-2xs cursor-pointer" title="Reset to standard default dimensions">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span class="hidden md:inline">Reset</span>
+        </button>
+
+        <!-- Professional PDF Export Button -->
+        <button id="btnExportPDF" type="button" class="inline-flex items-center px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm shadow-blue-500/20 transition-colors cursor-pointer">
+          <svg class="w-4 h-4 mr-1.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>Export Engineering PDF</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-[1750px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 space-y-4">
+    
+    <!-- PROJECT & ROOM METADATA BAR + COMMISSIONING PARAMETERS -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-center">
+      
+      <!-- Project Name Input -->
+      <div>
+        <label for="inputProjectName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+          🏢 Project Name
+        </label>
+        <input
+          type="text"
+          id="inputProjectName"
+          value="WEPL Cleanroom Facility Alpha"
+          class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-blue-600 focus:bg-white"
+          placeholder="e.g. WEPL Cleanroom Facility Alpha"
+        />
+      </div>
+
+      <!-- Room Name Input (Dynamically renders on 2D Blueprint Canvas) -->
+      <div>
+        <label for="inputRoomName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+          🏷️ Room / Suite Name (Live on 2D Plan)
+        </label>
+        <input
+          type="text"
+          id="inputRoomName"
+          value="ISO Class 7 Production Suite"
+          class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-blue-600 focus:bg-white"
+          placeholder="e.g. ISO Class 7 Production Suite"
+        />
+      </div>
+
+      <!-- Enclosure Clear Height (H) -->
+      <div>
+        <label for="inputHeight" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+          📏 Enclosure Clear Height (H)
+        </label>
+        <div class="relative">
+          <input
+            type="number"
+            step="any"
+            id="inputHeight"
+            value="2.7"
+            class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-3 pr-10 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-blue-600 focus:bg-white"
+          />
+          <span class="unit-label absolute right-3 top-1.5 text-xs font-semibold text-slate-400">m</span>
+        </div>
+      </div>
+
+      <!-- Spec Factor & Flow Mode -->
+      <div class="flex items-center space-x-2">
+        <div class="w-1/2">
+          <label for="specMultiplier" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+            ⚡ Spec Factor
+          </label>
+          <div class="relative">
+            <input
+              type="number"
+              step="any"
+              id="specMultiplier"
+              value="10"
+              class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-3 pr-7 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-emerald-600 focus:bg-white"
+            />
+            <span class="absolute right-2.5 top-1.5 text-xs font-semibold text-emerald-600">×</span>
+          </div>
+        </div>
+        <div class="w-1/2">
+          <label for="specMode" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+            🎯 Flow Base
+          </label>
+          <select id="specMode" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white">
+            <option value="surface">Surface m²</option>
+            <option value="ach">Room ACH</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SPLIT STUDIO GRID: 2D & 3D VIEWPORTS (LEFT 8 COLS) + RESULTS DASHBOARD (RIGHT 4 COLS) -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+      
+      <!-- LEFT WORKSPACE: 2D FLOOR PLAN EDITOR + 3D VIEWPORT (8 Cols) -->
+      <div class="xl:col-span-8 space-y-5">
+        
+        <!-- TOP ROW: SIDE-BY-SIDE 2D CAD CANVAS & 3D ISOMETRIC VIEWPORT -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          
+          <!-- 1. INTERACTIVE 2D FLOOR PLAN CAD EDITOR (LIGHT THEME) -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col h-[530px]">
+            
+            <!-- 2D Canvas Header & Toolbar -->
+            <div class="px-4 py-2.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">2D</span>
+                <span class="font-bold text-slate-900 text-xs sm:text-sm">2D Interactive Blueprint Plan</span>
+              </div>
+
+              <!-- 2D Action Tools -->
+              <div class="flex items-center space-x-1.5 text-xs">
+                <button type="button" id="toolSelect" class="px-3 py-1.5 rounded-lg font-bold bg-blue-600 text-white shadow-xs transition cursor-pointer" title="Select and Drag Vertices">
+                  🖐️ Edit Layout
+                </button>
+                <button type="button" id="toolDraw" class="px-3 py-1.5 rounded-lg font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Click to draw room vertices sequentially">
+                  ✏️ Draw Walls
+                </button>
+                <button type="button" id="btnToggleSnap" class="px-2.5 py-1.5 rounded-lg font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Toggle Grid Snapping">
+                  🧲 Snap: <span id="snapStatusText" class="font-bold text-blue-600">0.1m</span>
+                </button>
+                <button type="button" id="btnFit2D" class="p-1.5 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Fit to screen">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Drawing Mode Helper Banner -->
+            <div id="drawModeBanner" class="hidden px-4 py-2 bg-emerald-600 text-white text-xs font-semibold flex items-center justify-between shadow-xs">
+              <span class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                <span id="drawBannerText">✏️ Draw Walls Active: Tap anywhere to place blue corners.</span>
+              </span>
+              <div class="space-x-1.5">
+                <button type="button" id="btnFinishDraw" class="hidden bg-white text-emerald-900 px-2.5 py-1 rounded text-xs font-bold hover:bg-emerald-50 transition shadow-2xs cursor-pointer">🎯 Close Room</button>
+                <button type="button" id="btnCancelDraw" class="bg-emerald-800 text-white px-2.5 py-1 rounded text-xs hover:bg-emerald-900 transition cursor-pointer">Cancel</button>
+              </div>
+            </div>
+
+            <!-- 2D Canvas Container -->
+            <div class="relative flex-1 bg-slate-100/70 overflow-hidden select-none border-b border-slate-100" id="canvasContainer2D">
+              <canvas id="cadCanvas2D" class="w-full h-full block touch-none select-none"></canvas>
+              
+              <!-- Floating Coordinates & Zoom Readout -->
+              <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 flex items-center space-x-3 shadow-2xs pointer-events-none">
+                <span id="canvasCoordReadout">X: 0.00m, Y: 0.00m</span>
+                <span class="text-slate-300">|</span>
+                <span id="canvasZoomReadout">Zoom: 100%</span>
+              </div>
+
+              <!-- Quick Instruction Toast -->
+              <div id="canvasToast" class="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-blue-700 shadow-sm pointer-events-none transition-all">
+                💡 Click dimension badges to edit wall lengths
+              </div>
+            </div>
+
+            <!-- 2D Status / Footer -->
+            <div class="px-4 py-2 bg-white text-xs text-slate-500 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-700" id="statPointCount">6 Vertices</span>
+                <span>•</span>
+                <span class="font-mono text-blue-700 font-bold" id="statPerimeter2D">Perimeter: 23.220 m</span>
+              </div>
+              <span class="text-[11px] text-slate-400">Drag Vertices • Click Badges • Draw Walls</span>
+            </div>
+
+          </div>
+
+          <!-- 2. SYNCHRONIZED THREE.JS 3D VIEWPORT -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col h-[530px]">
+            
+            <!-- 3D Viewport Header & Enhanced Camera Controls Toolbar -->
+            <div class="px-3 py-2 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-1.5">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">3D</span>
+                <span class="font-bold text-slate-900 text-xs sm:text-sm">3D Extruded Model</span>
+              </div>
+
+              <!-- 3D Interactive Controls Toolbar -->
+              <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                
+                <!-- Wall Material Dropdown List -->
+                <div class="flex items-center space-x-1 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 shadow-2xs">
+                  <label for="selectWallMaterial" class="font-bold text-slate-500">Wall:</label>
+                  <select id="selectWallMaterial" class="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer">
+                    <option value="brick">Brick Wall (Masonry)</option>
+                    <option value="cleanroom">Cleanroom Panel (White)</option>
+                    <option value="blueprint" selected>Blueprint Blue (Default)</option>
+                    <option value="glass">Structural Glass</option>
+                    <option value="steel">Stainless Steel Panel</option>
+                    <option value="concrete">Concrete Plaster</option>
+                  </select>
+                </div>
+
+                <!-- Auto-Spin 360 Toggle -->
+                <button type="button" id="btnToggleSpin" class="px-2 py-1 rounded-md font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer" title="Toggle 360 Automatic Spin">
+                  🔄 Spin: <span id="spinStateText">ON</span>
+                </button>
+
+                <!-- Camera Angle Presets -->
+                <button type="button" id="btnViewIso" class="px-1.5 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Isometric Perspective View">
+                  Iso
+                </button>
+                <button type="button" id="btnViewTop" class="px-1.5 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Top-Down Plan View">
+                  Top
+                </button>
+                <button type="button" id="btnViewFront" class="px-1.5 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Front Elevation View">
+                  Front
+                </button>
+
+                <!-- Ceiling Toggle -->
+                <button type="button" id="btnToggleCeiling" class="px-2 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Toggle Ceiling Visibility">
+                  Ceiling: <span id="ceilingStateText" class="font-bold text-blue-600">ON</span>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- 3D WebGL Canvas Container -->
+            <div class="relative flex-1 bg-slate-100/60 overflow-hidden select-none border-b border-slate-100 cursor-grab" id="container3D">
+              <!-- Overlay HUD Badges -->
+              <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 shadow-2xs pointer-events-none">
+                <span id="hudWallMaterialLabel">Wall: Blueprint Blue</span>
+              </div>
+
+              <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-mono font-bold text-emerald-700 shadow-2xs pointer-events-none" id="hud3DVolume">
+                V = 66.343 m³
+              </div>
+            </div>
+
+            <!-- 3D Status Footer -->
+            <div class="px-4 py-2 bg-white text-xs text-slate-500 flex items-center justify-between">
+              <span class="font-bold text-slate-700">WebGL 3D Engine • Architectural Light Studio</span>
+              <span class="font-mono text-indigo-700 font-bold" id="statWallArea3D">Wall Surface: 62.694 m²</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- BOTTOM ROW OF WORKSPACE: DETAILED WALL SEGMENTS SCHEDULE TABLE -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center">
+                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Wall Segments & Boundary Envelope Schedule
+              </h3>
+              <p class="text-xs text-slate-500">Every boundary wall segment computed with real-time length, area, and direct dimension editing.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full font-mono" id="tableSummaryPerimeter">
+                Perimeter: 23.220 m
+              </span>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700 border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 font-extrabold uppercase tracking-wider border-b border-slate-200">
+                  <th class="py-2.5 px-3">Wall ID</th>
+                  <th class="py-2.5 px-3">Start (X, Y)</th>
+                  <th class="py-2.5 px-3">End (X, Y)</th>
+                  <th class="py-2.5 px-3">Length</th>
+                  <th class="py-2.5 px-3">Height</th>
+                  <th class="py-2.5 px-3">Wall Area (m²)</th>
+                  <th class="py-2.5 px-3 text-right">Quick Edit</th>
+                </tr>
+              </thead>
+              <tbody id="wallTableBody" class="divide-y divide-slate-100 font-mono">
+                <!-- Populated dynamically by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR: RESULTS DASHBOARD PANEL (4 Cols) -->
+      <div class="xl:col-span-4 space-y-5 lg:sticky lg:top-20">
+        
+        <!-- MAIN RESULTS CARD WITH CAPITALIZED HEADER & AIRFLOW ICON -->
+        <div class="bg-white rounded-3xl border-2 border-blue-500/20 p-6 shadow-xl shadow-blue-500/5 relative overflow-hidden print-shadow-none">
+          
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/30">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3M4 8a4 4 0 014-4h8M4 16a4 4 0 004 4h8" />
+                </svg>
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                  T&C Calculation Engine
+                </span>
+                <h2 class="text-sm sm:text-base font-black text-slate-900 mt-0.5 uppercase tracking-tight">
+                  ROOM SURFACE AREA & AIR FLOW REPORT
+                </h2>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-emerald-600 font-mono font-bold">● Real-Time</span>
+            </div>
+          </div>
+
+          <!-- PRIMARY HERO STAT: COMBINED TOTAL SURFACE AREA -->
+          <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 text-white rounded-2xl p-5 shadow-lg shadow-blue-700/20 mb-4 relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="relative z-10">
+              <div class="flex items-center justify-between text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">
+                <span>Combined Total Surface Area (A_total)</span>
+                <span class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">Floor + Ceiling + Walls</span>
+              </div>
+              <div class="flex items-baseline space-x-2 my-2">
+                <span id="resTotalSurfaceArea" class="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-white">
+                  111.837
+                </span>
+                <span class="text-lg font-bold text-blue-200">m²</span>
+              </div>
+              <p class="text-xs text-blue-100/80 font-mono">
+                A_total = A_floor/ceiling + A_walls
+              </p>
+            </div>
+          </div>
+
+          <!-- SECONDARY HERO STAT: SPEC AIRFLOW / VOLUME FLOW RATE -->
+          <div class="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white rounded-2xl p-5 shadow-lg shadow-emerald-700/20 mb-5 relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="relative z-10">
+              <div class="flex items-center justify-between text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-1">
+                <span>Total Specification Volume / Airflow</span>
+                <span class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-mono" id="badgeMultiplier">× 10.0</span>
+              </div>
+              <div class="flex items-baseline space-x-2 my-2">
+                <span id="resSpecFlowRate" class="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-white">
+                  1118.370
+                </span>
+                <span class="text-base sm:text-lg font-bold text-emerald-100">CMH (m³/h)</span>
+              </div>
+              <!-- Multi-Unit Conversions -->
+              <div class="flex items-center justify-between pt-2 border-t border-emerald-500/40 text-xs text-emerald-100 font-mono">
+                <span>CFM: <strong id="resFlowCFM" class="text-white">658.248 CFM</strong></span>
+                <span>L/s: <strong id="resFlowLs" class="text-white">310.658 L/s</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- STRUCTURED BREAKDOWN CARDS -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">Geometric Enclosure Metrics</h3>
+
+            <!-- Item 1: Floor & Ceiling Area -->
+            <div class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+                  FC
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">Floor & Ceiling Dual Area</div>
+                  <div class="text-[11px] text-slate-500 font-mono">2 × Shoelace Polygon Area</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div id="resFloorCeilingArea" class="text-base font-extrabold font-mono text-slate-900">49.143 m²</div>
+                <div id="resSingleFloorArea" class="text-[10px] font-semibold text-indigo-600 font-mono">Floor: 24.571 m²</div>
+              </div>
+            </div>
+
+            <!-- Item 2: Vertical Wall Area -->
+            <div class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                  WA
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">Total Vertical Wall Area</div>
+                  <div class="text-[11px] text-slate-500 font-mono">Perimeter (P) × Height (H)</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div id="resWallArea" class="text-base font-extrabold font-mono text-slate-900">62.694 m²</div>
+                <div id="resPerimeterStat" class="text-[10px] font-semibold text-blue-600 font-mono">P: 23.220 m</div>
+              </div>
+            </div>
+
+            <!-- Item 3: Room Internal Volume -->
+            <div class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
+                  V
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">Enclosed Cleanroom Volume</div>
+                  <div class="text-[11px] text-slate-500 font-mono">Floor Area × Height (H)</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div id="resRoomVolume" class="text-base font-extrabold font-mono text-slate-900">66.343 m³</div>
+                <div id="resRoomVolumeCuFt" class="text-[10px] font-semibold text-amber-600 font-mono">2,342.9 ft³</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- STEP-BY-STEP CALCULATION AUDIT ACCORDION -->
+          <div class="mt-5 pt-4 border-t border-slate-200">
+            <details class="group">
+              <summary class="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-slate-700 hover:text-blue-600 transition">
+                <span class="flex items-center">
+                  <svg class="w-4 h-4 mr-1.5 text-slate-400 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                  View Step-by-Step Mathematical Proof
+                </span>
+                <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Shoelace Audit</span>
+              </summary>
+              <div class="mt-3 p-4 bg-slate-900 text-slate-200 rounded-xl font-mono text-xs space-y-3">
+                <div>
+                  <p class="text-slate-400 text-[11px]">// 1. Shoelace Polygon Formula (Floor & Ceiling):</p>
+                  <p class="text-blue-300 font-medium" id="mathStep1">A_floor = 24.571 m² → A_floor/ceiling = 2 × 24.571 = 49.143 m²</p>
+                </div>
+                <div>
+                  <p class="text-slate-400 text-[11px]">// 2. Total Perimeter & Wall Surface Area:</p>
+                  <p class="text-blue-300 font-medium" id="mathStep2">P = ∑(wall lengths) = 23.220 m</p>
+                  <p class="text-blue-300 font-medium" id="mathStep3">A_walls = 23.220 m × 2.700 m = 62.694 m²</p>
+                </div>
+                <div>
+                  <p class="text-slate-400 text-[11px]">// 3. Combined Total Surface Area:</p>
+                  <p class="text-emerald-400 font-bold" id="mathStep4">A_total = 49.143 + 62.694 = 111.837 m²</p>
+                </div>
+                <div>
+                  <p class="text-slate-400 text-[11px]">// 4. Airflow Specification (CMH / CFM):</p>
+                  <p class="text-emerald-400 font-bold" id="mathStep5">Spec Flow Rate = 111.837 × 10 = 1118.370 CMH (658.248 CFM)</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="mt-5 space-y-2 no-print">
+            <button id="btnCopyReport" type="button" class="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs tracking-wide transition shadow-sm cursor-pointer">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+              </svg>
+              <span id="copyBtnText">Copy Engineering Specification Report</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- DIRECT DIMENSION EDITING MODAL -->
+  <div id="dimModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-5 transform transition-all">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center space-x-2">
+          <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" id="modalWallIdBadge">W</span>
+          <h3 class="font-bold text-slate-900 text-sm" id="modalWallTitle">Edit Wall Dimension</h3>
+        </div>
+        <button type="button" id="btnDimModalClose" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="my-4 space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">New Target Length:</label>
+          <div class="relative">
+            <input
+              type="number"
+              step="any"
+              id="modalDimInput"
+              class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-3 pr-10 py-2 text-sm font-bold text-slate-900 input-focus outline-none focus:border-blue-600"
+              placeholder="e.g. 4.847"
+            />
+            <span class="unit-label absolute right-3 top-2.5 text-xs font-semibold text-slate-400">m</span>
+          </div>
+        </div>
+
+        <div class="p-2.5 bg-blue-50 rounded-xl text-[11px] text-blue-900">
+          <p class="font-medium">Adjusting this dimension moves the connected vertex along the wall vector while maintaining geometric alignment.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+        <button type="button" id="btnDimModalCancel" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" id="btnDimModalApply" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer">
+          Apply Dimension
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 mt-8 py-5 no-print">
+    <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+      <div class="flex items-center space-x-2">
+        <div class="w-4 h-4 rounded bg-blue-600 text-white flex items-center justify-center text-[10px]">W</div>
+        <p>© 2026 WEPL T&C Portal. ROOM SURFACE AREA & AIR FLOW REPORT.</p>
+      </div>
+      <p class="font-mono text-slate-400">Precision: 3-Decimal Places (m² / CMH / CFM) • Shoelace Engine</p>
+    </div>
+  </footer>
+
+  <!-- ROBUST JAVASCRIPT CAD & CALCULATION ENGINE -->
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. DATA STATE & PRESETS
+      // =========================================================================
+      let currentUnit = 'm';
+      let currentTool = 'select'; // 'select' or 'draw'
+      let isDrawing = false;
+      let drawPoints = [];
+      let currentHoverWorldPos = null;
+      let snapGridSizeMeters = 0.1;
+
+      // 3D Viewport Flags & Material State
+      let showCeiling = true;
+      let isAutoRotating = true;
+      let selectedWallMaterialType = 'blueprint';
+
+      // Geometric Presets
+      const PRESETS = {
+        lshape_wepl: [
+          { x: 0.000, y: 0.000 },
+          { x: 0.000, y: 7.761 },
+          { x: 3.849, y: 7.761 },
+          { x: 3.849, y: 2.914 },
+          { x: 2.030, y: 2.914 },
+          { x: 2.030, y: 0.000 }
+        ],
+        ushape: [
+          { x: 0.000, y: 0.000 },
+          { x: 0.000, y: 6.000 },
+          { x: 6.000, y: 6.000 },
+          { x: 6.000, y: 0.000 },
+          { x: 4.200, y: 0.000 },
+          { x: 4.200, y: 3.800 },
+          { x: 1.800, y: 3.800 },
+          { x: 1.800, y: 0.000 }
+        ],
+        rectangle: [
+          { x: 0.000, y: 0.000 },
+          { x: 0.000, y: 6.000 },
+          { x: 8.000, y: 6.000 },
+          { x: 8.000, y: 0.000 }
+        ],
+        tshape: [
+          { x: 2.000, y: 0.000 },
+          { x: 2.000, y: 3.500 },
+          { x: 0.000, y: 3.500 },
+          { x: 0.000, y: 6.500 },
+          { x: 6.000, y: 6.500 },
+          { x: 6.000, y: 3.500 },
+          { x: 4.000, y: 3.500 },
+          { x: 4.000, y: 0.000 }
+        ],
+        octagon: [
+          { x: 1.750, y: 0.000 },
+          { x: 0.000, y: 1.750 },
+          { x: 0.000, y: 4.250 },
+          { x: 1.750, y: 6.000 },
+          { x: 4.250, y: 6.000 },
+          { x: 6.000, y: 4.250 },
+          { x: 6.000, y: 1.750 },
+          { x: 4.250, y: 0.000 }
+        ]
+      };
+
+      let vertices = JSON.parse(JSON.stringify(PRESETS.lshape_wepl));
+      let selectedEdgeIndex = -1;
+
+      // =========================================================================
+      // 2. DOM REFERENCES
+      // =========================================================================
+      const inputProjectName = document.getElementById('inputProjectName');
+      const inputRoomName = document.getElementById('inputRoomName');
+
+      const unitBtnM = document.getElementById('unitM');
+      const unitBtnMM = document.getElementById('unitMM');
+      const unitLabels = document.querySelectorAll('.unit-label');
+      const selectRoomPreset = document.getElementById('selectRoomPreset');
+
+      const inputHeight = document.getElementById('inputHeight');
+      const inputSpecMultiplier = document.getElementById('specMultiplier');
+      const selectSpecMode = document.getElementById('specMode');
+      const badgeMultiplier = document.getElementById('badgeMultiplier');
+
+      // Results Elements
+      const resTotalSurfaceArea = document.getElementById('resTotalSurfaceArea');
+      const resSpecFlowRate = document.getElementById('resSpecFlowRate');
+      const resFlowCFM = document.getElementById('resFlowCFM');
+      const resFlowLs = document.getElementById('resFlowLs');
+      const resFloorCeilingArea = document.getElementById('resFloorCeilingArea');
+      const resSingleFloorArea = document.getElementById('resSingleFloorArea');
+      const resWallArea = document.getElementById('resWallArea');
+      const resPerimeterStat = document.getElementById('resPerimeterStat');
+      const resRoomVolume = document.getElementById('resRoomVolume');
+      const resRoomVolumeCuFt = document.getElementById('resRoomVolumeCuFt');
+      const statPerimeter2D = document.getElementById('statPerimeter2D');
+      const statPointCount = document.getElementById('statPointCount');
+      const statWallArea3D = document.getElementById('statWallArea3D');
+      const hud3DVolume = document.getElementById('hud3DVolume');
+      const hudWallMaterialLabel = document.getElementById('hudWallMaterialLabel');
+      const tableSummaryPerimeter = document.getElementById('tableSummaryPerimeter');
+
+      // Math Proof Elements
+      const mathStep1 = document.getElementById('mathStep1');
+      const mathStep2 = document.getElementById('mathStep2');
+      const mathStep3 = document.getElementById('mathStep3');
+      const mathStep4 = document.getElementById('mathStep4');
+      const mathStep5 = document.getElementById('mathStep5');
+
+      // Table body
+      const wallTableBody = document.getElementById('wallTableBody');
+
+      // 2D Canvas Elements
+      const canvas2D = document.getElementById('cadCanvas2D');
+      const ctx2D = canvas2D.getContext('2d');
+      const container2D = document.getElementById('canvasContainer2D');
+      const canvasCoordReadout = document.getElementById('canvasCoordReadout');
+      const canvasZoomReadout = document.getElementById('canvasZoomReadout');
+      const canvasToast = document.getElementById('canvasToast');
+
+      // 2D Tool Buttons
+      const toolSelectBtn = document.getElementById('toolSelect');
+      const toolDrawBtn = document.getElementById('toolDraw');
+      const btnToggleSnap = document.getElementById('btnToggleSnap');
+      const snapStatusText = document.getElementById('snapStatusText');
+      const btnFit2D = document.getElementById('btnFit2D');
+      const drawModeBanner = document.getElementById('drawModeBanner');
+      const drawBannerText = document.getElementById('drawBannerText');
+      const btnFinishDraw = document.getElementById('btnFinishDraw');
+      const btnCancelDraw = document.getElementById('btnCancelDraw');
+
+      // 3D Viewport Controls & Material Dropdown
+      const container3D = document.getElementById('container3D');
+      const selectWallMaterial = document.getElementById('selectWallMaterial');
+      const btnToggleSpin = document.getElementById('btnToggleSpin');
+      const spinStateText = document.getElementById('spinStateText');
+      const btnViewIso = document.getElementById('btnViewIso');
+      const btnViewTop = document.getElementById('btnViewTop');
+      const btnViewFront = document.getElementById('btnViewFront');
+      const btnToggleCeiling = document.getElementById('btnToggleCeiling');
+      const ceilingStateText = document.getElementById('ceilingStateText');
+
+      // Modal Elements
+      const dimModal = document.getElementById('dimModal');
+      const modalWallIdBadge = document.getElementById('modalWallIdBadge');
+      const modalWallTitle = document.getElementById('modalWallTitle');
+      const modalDimInput = document.getElementById('modalDimInput');
+      const btnDimModalClose = document.getElementById('btnDimModalClose');
+      const btnDimModalCancel = document.getElementById('btnDimModalCancel');
+      const btnDimModalApply = document.getElementById('btnDimModalApply');
+
+      // Top Actions
+      const btnReset = document.getElementById('btnReset');
+      const btnCopyReport = document.getElementById('btnCopyReport');
+      const copyBtnText = document.getElementById('copyBtnText');
+      const btnExportPDF = document.getElementById('btnExportPDF');
+
+      // =========================================================================
+      // 3. MATHEMATICAL & GEOMETRIC CALCULATIONS
+      // =========================================================================
+      function calculateShoelaceArea(pts) {
+        if (!pts || pts.length < 3) return 0;
+        let area = 0;
+        const n = pts.length;
+        for (let i = 0; i < n; i++) {
+          const j = (i + 1) % n;
+          area += pts[i].x * pts[j].y;
+          area -= pts[j].x * pts[i].y;
+        }
+        return Math.abs(area) / 2.0;
+      }
+
+      function calculateCentroid(pts) {
+        if (!pts || pts.length === 0) return { x: 0, y: 0 };
+        let cx = 0, cy = 0;
+        pts.forEach(p => { cx += p.x; cy += p.y; });
+        return { x: cx / pts.length, y: cy / pts.length };
+      }
+
+      function calculatePerimeterAndEdges(pts) {
+        if (!pts || pts.length < 2) return { perimeter: 0, edges: [] };
+        let perimeter = 0;
+        const edges = [];
+        const n = pts.length;
+
+        for (let i = 0; i < n; i++) {
+          const j = (i + 1) % n;
+          const dx = pts[j].x - pts[i].x;
+          const dy = pts[j].y - pts[i].y;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          perimeter += len;
+
+          const label = String.fromCharCode(65 + (i % 26)) + (i >= 26 ? Math.floor(i / 26) : '');
+          edges.push({
+            index: i,
+            label: `Wall ${label}`,
+            tag: label.toLowerCase(),
+            p1: pts[i],
+            p2: pts[j],
+            length: len,
+            dx: dx,
+            dy: dy
+          });
+        }
+        return { perimeter, edges };
+      }
+
+      function format3(val) {
+        if (isNaN(val)) return '0.000';
+        return (Math.round((val + Number.EPSILON) * 1000) / 1000).toFixed(3);
+      }
+
+      function toDisplayUnit(valInMeters) {
+        return currentUnit === 'mm' ? (valInMeters * 1000).toFixed(0) : format3(valInMeters);
+      }
+
+      function getClearHeight() {
+        const val = parseFloat(inputHeight.value);
+        if (isNaN(val) || val <= 0) return 2.7;
+        return currentUnit === 'mm' ? val / 1000 : val;
+      }
+
+      // Clean ASCII string sanitizer for jsPDF
+      function sanitizeForPdf(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}]/gu, '')
+          .replace(/∑/g, 'Sum of ')
+          .replace(/→/g, ' to ')
+          .replace(/×/g, 'x')
+          .replace(/²/g, ' sq.m')
+          .replace(/³/g, ' cu.m')
+          .replace(/·/g, '-')
+          .replace(/●/g, '')
+          .replace(/Ø=ÜÍ/g, '')
+          .replace(/Ø<ßâ/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      // =========================================================================
+      // 4. CORE ENGINE RECALCULATION & UI UPDATE
+      // =========================================================================
+      function updateCalculations() {
+        const h = getClearHeight();
+        const { perimeter, edges } = calculatePerimeterAndEdges(vertices);
+        const singleFloorArea = calculateShoelaceArea(vertices);
+        const totalFloorCeilingArea = singleFloorArea * 2;
+        const totalWallArea = perimeter * h;
+        const combinedTotalSurfaceArea = totalFloorCeilingArea + totalWallArea;
+        const roomVolume = singleFloorArea * h;
+
+        const multiplier = parseFloat(inputSpecMultiplier.value) || 0;
+        const mode = selectSpecMode.value;
+
+        let flowCMH = 0;
+        if (mode === 'ach') {
+          flowCMH = roomVolume * multiplier;
+          badgeMultiplier.textContent = `${multiplier.toFixed(1)} ACH`;
+        } else {
+          flowCMH = combinedTotalSurfaceArea * multiplier;
+          badgeMultiplier.textContent = `× ${multiplier.toFixed(1)}`;
+        }
+
+        const flowCFM = flowCMH * 0.588578;
+        const flowLs = flowCMH / 3.6;
+        const roomVolumeCuFt = roomVolume * 35.3147;
+
+        // Update Dashboard
+        resTotalSurfaceArea.textContent = format3(combinedTotalSurfaceArea);
+        resSpecFlowRate.textContent = format3(flowCMH);
+        resFlowCFM.textContent = `${format3(flowCFM)} CFM`;
+        resFlowLs.textContent = `${format3(flowLs)} L/s`;
+
+        resFloorCeilingArea.textContent = `${format3(totalFloorCeilingArea)} m²`;
+        resSingleFloorArea.textContent = `Floor: ${format3(singleFloorArea)} m²`;
+        resWallArea.textContent = `${format3(totalWallArea)} m²`;
+        resPerimeterStat.textContent = `P: ${format3(perimeter)} m`;
+        resRoomVolume.textContent = `${format3(roomVolume)} m³`;
+        resRoomVolumeCuFt.textContent = `${format3(roomVolumeCuFt)} ft³`;
+
+        statPerimeter2D.textContent = `Perimeter: ${format3(perimeter)} m`;
+        statPointCount.textContent = `${vertices.length} Vertices`;
+        statWallArea3D.textContent = `Wall Surface: ${format3(totalWallArea)} m²`;
+        hud3DVolume.textContent = `V = ${format3(roomVolume)} m³`;
+        tableSummaryPerimeter.textContent = `Perimeter: ${format3(perimeter)} m (${format3(perimeter * (currentUnit === 'mm' ? 1000 : 1))} ${currentUnit})`;
+
+        mathStep1.textContent = `A_floor = ${format3(singleFloorArea)} m² → A_floor/ceiling = 2 × ${format3(singleFloorArea)} = ${format3(totalFloorCeilingArea)} m²`;
+        mathStep2.textContent = `P = ∑(wall lengths) = ${format3(perimeter)} m`;
+        mathStep3.textContent = `A_walls = ${format3(perimeter)} m × ${format3(h)} m = ${format3(totalWallArea)} m²`;
+        mathStep4.textContent = `A_total = ${format3(totalFloorCeilingArea)} + ${format3(totalWallArea)} = ${format3(combinedTotalSurfaceArea)} m²`;
+        mathStep5.textContent = `Spec Flow Rate = ${format3(combinedTotalSurfaceArea)} m² × ${multiplier} = ${format3(flowCMH)} CMH (${format3(flowCFM)} CFM)`;
+
+        renderWallTable(edges, h);
+        draw2DCanvas();
+        update3DGeometry();
+      }
+
+      function renderWallTable(edges, h) {
+        wallTableBody.innerHTML = '';
+        edges.forEach((edge, idx) => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-blue-50/50 transition-colors';
+
+          const wallArea = edge.length * h;
+          const unitSym = currentUnit;
+          const displayLen = toDisplayUnit(edge.length);
+          const displayH = toDisplayUnit(h);
+          const p1X = toDisplayUnit(edge.p1.x);
+          const p1Y = toDisplayUnit(edge.p1.y);
+          const p2X = toDisplayUnit(edge.p2.x);
+          const p2Y = toDisplayUnit(edge.p2.y);
+
+          row.innerHTML = `
+            <td class="py-2.5 px-3 font-bold text-blue-700 flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded bg-blue-100 text-blue-800 flex items-center justify-center text-[10px] font-bold">${edge.tag.toUpperCase()}</span>
+              <span>${edge.label}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500">(${p1X}, ${p1Y})</td>
+            <td class="py-2.5 px-3 text-slate-500">(${p2X}, ${p2Y})</td>
+            <td class="py-2.5 px-3 font-bold text-slate-900">${displayLen} ${unitSym}</td>
+            <td class="py-2.5 px-3 text-slate-600">${displayH} ${unitSym}</td>
+            <td class="py-2.5 px-3 font-bold text-indigo-700">${format3(wallArea)} m²</td>
+            <td class="py-2.5 px-3 text-right">
+              <button type="button" class="btn-edit-dim px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200 rounded-md transition shadow-2xs cursor-pointer" data-edge="${idx}">
+                ✏️ Edit Length
+              </button>
+            </td>
+          `;
+          wallTableBody.appendChild(row);
+        });
+
+        wallTableBody.querySelectorAll('.btn-edit-dim').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const idx = parseInt(this.getAttribute('data-edge'), 10);
+            openDimensionModal(idx);
+          });
+        });
+      }
+
+      // =========================================================================
+      // 5. DIRECT DIMENSION EDITING MODAL
+      // =========================================================================
+      function openDimensionModal(edgeIndex) {
+        const { edges } = calculatePerimeterAndEdges(vertices);
+        if (edgeIndex < 0 || edgeIndex >= edges.length) return;
+
+        selectedEdgeIndex = edgeIndex;
+        const edge = edges[edgeIndex];
+
+        modalWallIdBadge.textContent = edge.tag.toUpperCase();
+        modalWallTitle.textContent = `Edit ${edge.label} Length`;
+        modalDimInput.value = currentUnit === 'mm' ? Math.round(edge.length * 1000) : format3(edge.length);
+
+        dimModal.classList.remove('hidden');
+        modalDimInput.focus();
+        modalDimInput.select();
+      }
+
+      function closeDimensionModal() {
+        dimModal.classList.add('hidden');
+        selectedEdgeIndex = -1;
+      }
+
+      function applyNewDimension() {
+        if (selectedEdgeIndex === -1) return;
+
+        const val = parseFloat(modalDimInput.value);
+        if (isNaN(val) || val <= 0) {
+          alert('Please enter a valid positive wall length.');
+          return;
+        }
+
+        const targetLengthMeters = currentUnit === 'mm' ? val / 1000 : val;
+        const n = vertices.length;
+        const i = selectedEdgeIndex;
+        const j = (i + 1) % n;
+
+        const p1 = vertices[i];
+        const p2 = vertices[j];
+
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const currentLen = Math.sqrt(dx * dx + dy * dy);
+
+        if (currentLen < 0.0001) {
+          vertices[j].x = p1.x + targetLengthMeters;
+          vertices[j].y = p1.y;
+        } else {
+          const unitX = dx / currentLen;
+          const unitY = dy / currentLen;
+          vertices[j].x = p1.x + unitX * targetLengthMeters;
+          vertices[j].y = p1.y + unitY * targetLengthMeters;
+        }
+
+        closeDimensionModal();
+        updateCalculations();
+      }
+
+      btnDimModalApply.addEventListener('click', applyNewDimension);
+      btnDimModalCancel.addEventListener('click', closeDimensionModal);
+      btnDimModalClose.addEventListener('click', closeDimensionModal);
+      modalDimInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') applyNewDimension();
+        if (e.key === 'Escape') closeDimensionModal();
+      });
+
+      // =========================================================================
+      // 6. 2D INTERACTIVE CAD CANVAS ENGINE (OUTWARD BADGES)
+      // =========================================================================
+      let panX = 70;
+      let panY = 70;
+      let zoom = 36;
+      let isDraggingVertex = false;
+      let draggedVertexIndex = -1;
+      let isPanning = false;
+      let lastPointerPos = { x: 0, y: 0 };
+      let hoveredVertexIndex = -1;
+      let hoveredEdgeIndex = -1;
+      let isHoveringClosingTarget = false;
+
+      function worldToScreen(wx, wy) {
+        const dpr = window.devicePixelRatio || 1;
+        return {
+          x: panX + wx * zoom,
+          y: (canvas2D.height / dpr) - (panY + wy * zoom)
+        };
+      }
+
+      function screenToWorld(sx, sy) {
+        const dpr = window.devicePixelRatio || 1;
+        return {
+          x: (sx - panX) / zoom,
+          y: ((canvas2D.height / dpr) - sy - panY) / zoom
+        };
+      }
+
+      function snap(val) {
+        return Math.round(val / snapGridSizeMeters) * snapGridSizeMeters;
+      }
+
+      function resizeCanvas() {
+        const rect = container2D.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        canvas2D.width = rect.width * dpr;
+        canvas2D.height = rect.height * dpr;
+        ctx2D.setTransform(1, 0, 0, 1, 0, 0);
+        ctx2D.scale(dpr, dpr);
+        draw2DCanvas();
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+
+      function fit2DView() {
+        const activePts = isDrawing && drawPoints.length > 0 ? drawPoints : vertices;
+        if (!activePts || activePts.length === 0) return;
+
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        activePts.forEach(p => {
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y;
+          if (p.y > maxY) maxY = p.y;
+        });
+
+        const roomW = Math.max(maxX - minX, 2);
+        const roomH = Math.max(maxY - minY, 2);
+        const cw = container2D.clientWidth;
+        const ch = container2D.clientHeight;
+
+        const padding = 110;
+        const zoomX = (cw - padding * 2) / roomW;
+        const zoomY = (ch - padding * 2) / roomH;
+        zoom = Math.min(Math.max(Math.min(zoomX, zoomY), 15), 90);
+
+        const midX = (minX + maxX) / 2;
+        const midY = (minY + maxY) / 2;
+
+        panX = cw / 2 - midX * zoom;
+        panY = ch / 2 - midY * zoom;
+
+        canvasZoomReadout.textContent = `Zoom: ${Math.round((zoom / 36) * 100)}%`;
+        draw2DCanvas();
+      }
+
+      function draw2DCanvas() {
+        const cw = container2D.clientWidth;
+        const ch = container2D.clientHeight;
+        if (cw <= 0 || ch <= 0) return;
+
+        // Clean Background
+        ctx2D.fillStyle = '#f8fafc';
+        ctx2D.fillRect(0, 0, cw, ch);
+
+        // Architectural Grid
+        const gridSpacingMeters = zoom > 50 ? 0.5 : (zoom > 25 ? 1.0 : 2.0);
+        const startWorld = screenToWorld(0, ch);
+        const endWorld = screenToWorld(cw, 0);
+
+        ctx2D.lineWidth = 0.6;
+        ctx2D.strokeStyle = '#e2e8f0';
+
+        ctx2D.beginPath();
+        for (let x = Math.floor(startWorld.x / gridSpacingMeters) * gridSpacingMeters; x <= endWorld.x; x += gridSpacingMeters) {
+          const s = worldToScreen(x, 0);
+          ctx2D.moveTo(s.x, 0);
+          ctx2D.lineTo(s.x, ch);
+        }
+        for (let y = Math.floor(startWorld.y / gridSpacingMeters) * gridSpacingMeters; y <= endWorld.y; y += gridSpacingMeters) {
+          const s = worldToScreen(0, y);
+          ctx2D.moveTo(0, s.y);
+          ctx2D.lineTo(cw, s.y);
+        }
+        ctx2D.stroke();
+
+        // Origin Axes
+        const origin = worldToScreen(0, 0);
+        ctx2D.lineWidth = 1.5;
+        ctx2D.strokeStyle = '#f87171';
+        ctx2D.beginPath();
+        ctx2D.moveTo(origin.x, origin.y);
+        ctx2D.lineTo(origin.x + 35, origin.y);
+        ctx2D.stroke();
+
+        ctx2D.strokeStyle = '#34d399';
+        ctx2D.beginPath();
+        ctx2D.moveTo(origin.x, origin.y);
+        ctx2D.lineTo(origin.x, origin.y - 35);
+        ctx2D.stroke();
+
+        // -----------------------------------------------------------------------
+        // DRAWING MODE
+        // -----------------------------------------------------------------------
+        if (isDrawing) {
+          if (drawPoints.length >= 2) {
+            ctx2D.beginPath();
+            const first = worldToScreen(drawPoints[0].x, drawPoints[0].y);
+            ctx2D.moveTo(first.x, first.y);
+            for (let i = 1; i < drawPoints.length; i++) {
+              const s = worldToScreen(drawPoints[i].x, drawPoints[i].y);
+              ctx2D.lineTo(s.x, s.y);
+            }
+            ctx2D.lineWidth = 3;
+            ctx2D.strokeStyle = '#2563eb';
+            ctx2D.stroke();
+          }
+
+          // Rubberband Preview Line
+          if (drawPoints.length >= 1 && currentHoverWorldPos) {
+            const lastPt = drawPoints[drawPoints.length - 1];
+            const pLastScreen = worldToScreen(lastPt.x, lastPt.y);
+
+            let targetScreen = worldToScreen(currentHoverWorldPos.x, currentHoverWorldPos.y);
+            let targetWorld = currentHoverWorldPos;
+
+            if (drawPoints.length >= 3 && isHoveringClosingTarget) {
+              targetScreen = worldToScreen(drawPoints[0].x, drawPoints[0].y);
+              targetWorld = drawPoints[0];
+            }
+
+            ctx2D.beginPath();
+            ctx2D.setLineDash([5, 5]);
+            ctx2D.moveTo(pLastScreen.x, pLastScreen.y);
+            ctx2D.lineTo(targetScreen.x, targetScreen.y);
+            ctx2D.lineWidth = 2;
+            ctx2D.strokeStyle = isHoveringClosingTarget ? '#059669' : '#d97706';
+            ctx2D.stroke();
+            ctx2D.setLineDash([]);
+
+            const rdx = targetWorld.x - lastPt.x;
+            const rdy = targetWorld.y - lastPt.y;
+            const rLen = Math.sqrt(rdx * rdx + rdy * rdy);
+
+            if (rLen > 0.1) {
+              const midScreen = { x: (pLastScreen.x + targetScreen.x) / 2, y: (pLastScreen.y + targetScreen.y) / 2 };
+              const txt = `${toDisplayUnit(rLen)} ${currentUnit}`;
+              ctx2D.font = "bold 10px 'JetBrains Mono', monospace";
+              const tw = ctx2D.measureText(txt).width + 10;
+
+              ctx2D.fillStyle = '#ffffff';
+              ctx2D.strokeStyle = isHoveringClosingTarget ? '#059669' : '#d97706';
+              ctx2D.lineWidth = 1.2;
+              ctx2D.beginPath();
+              ctx2D.roundRect(midScreen.x - tw / 2, midScreen.y - 10, tw, 18, 4);
+              ctx2D.fill();
+              ctx2D.stroke();
+
+              ctx2D.fillStyle = '#1e293b';
+              ctx2D.textAlign = 'center';
+              ctx2D.textBaseline = 'middle';
+              ctx2D.fillText(txt, midScreen.x, midScreen.y);
+            }
+          }
+
+          // Placed Points
+          drawPoints.forEach((p, idx) => {
+            const s = worldToScreen(p.x, p.y);
+            const isFirst = idx === 0;
+
+            if (isFirst && drawPoints.length >= 3) {
+              const pulseSize = isHoveringClosingTarget ? 22 : 16;
+
+              ctx2D.beginPath();
+              ctx2D.arc(s.x, s.y, pulseSize, 0, Math.PI * 2);
+              ctx2D.fillStyle = isHoveringClosingTarget ? 'rgba(16, 185, 129, 0.35)' : 'rgba(16, 185, 129, 0.2)';
+              ctx2D.fill();
+
+              ctx2D.beginPath();
+              ctx2D.arc(s.x, s.y, pulseSize, 0, Math.PI * 2);
+              ctx2D.lineWidth = 2;
+              ctx2D.strokeStyle = '#059669';
+              ctx2D.stroke();
+
+              ctx2D.beginPath();
+              ctx2D.arc(s.x, s.y, 8, 0, Math.PI * 2);
+              ctx2D.fillStyle = '#10b981';
+              ctx2D.fill();
+              ctx2D.lineWidth = 2;
+              ctx2D.strokeStyle = '#ffffff';
+              ctx2D.stroke();
+
+              const closeTag = '🎯 Click to Close Room';
+              ctx2D.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+              const ctw = ctx2D.measureText(closeTag).width + 12;
+              ctx2D.fillStyle = '#059669';
+              ctx2D.beginPath();
+              ctx2D.roundRect(s.x - ctw / 2, s.y - 32, ctw, 20, 5);
+              ctx2D.fill();
+
+              ctx2D.fillStyle = '#ffffff';
+              ctx2D.textAlign = 'center';
+              ctx2D.textBaseline = 'middle';
+              ctx2D.fillText(closeTag, s.x, s.y - 22);
+
+            } else {
+              ctx2D.beginPath();
+              ctx2D.arc(s.x, s.y, 6.5, 0, Math.PI * 2);
+              ctx2D.fillStyle = '#0284c7';
+              ctx2D.fill();
+              ctx2D.lineWidth = 2;
+              ctx2D.strokeStyle = '#ffffff';
+              ctx2D.stroke();
+
+              ctx2D.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+              ctx2D.fillStyle = '#0369a1';
+              ctx2D.textAlign = 'left';
+              ctx2D.fillText(`V${idx + 1} (${toDisplayUnit(p.x)}, ${toDisplayUnit(p.y)})`, s.x + 10, s.y - 8);
+            }
+          });
+
+        } else {
+          // -----------------------------------------------------------------------
+          // EDIT LAYOUT MODE
+          // -----------------------------------------------------------------------
+          if (vertices.length >= 3) {
+            const centroid = calculateCentroid(vertices);
+            const cScreen = worldToScreen(centroid.x, centroid.y);
+
+            // Polygon Fill
+            ctx2D.beginPath();
+            const first = worldToScreen(vertices[0].x, vertices[0].y);
+            ctx2D.moveTo(first.x, first.y);
+            for (let i = 1; i < vertices.length; i++) {
+              const s = worldToScreen(vertices[i].x, vertices[i].y);
+              ctx2D.lineTo(s.x, s.y);
+            }
+            ctx2D.closePath();
+            ctx2D.fillStyle = 'rgba(37, 99, 235, 0.08)';
+            ctx2D.fill();
+
+            // Wall Outlines
+            ctx2D.beginPath();
+            ctx2D.moveTo(first.x, first.y);
+            for (let i = 1; i < vertices.length; i++) {
+              const s = worldToScreen(vertices[i].x, vertices[i].y);
+              ctx2D.lineTo(s.x, s.y);
+            }
+            ctx2D.closePath();
+            ctx2D.lineWidth = 3;
+            ctx2D.strokeStyle = '#1d4ed8';
+            ctx2D.stroke();
+
+            // Centroid Room Name Label & Area Badge
+            const roomName = (inputRoomName.value || 'Cleanroom Enclosure').trim();
+            const areaTxt = `Area: ${format3(calculateShoelaceArea(vertices))} m²`;
+
+            ctx2D.font = "bold 12px 'Plus Jakarta Sans', sans-serif";
+            const rnw = ctx2D.measureText(roomName).width + 20;
+            
+            ctx2D.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx2D.strokeStyle = '#cbd5e1';
+            ctx2D.lineWidth = 1.2;
+            ctx2D.beginPath();
+            ctx2D.roundRect(cScreen.x - rnw / 2, cScreen.y - 20, rnw, 40, 8);
+            ctx2D.fill();
+            ctx2D.stroke();
+
+            ctx2D.fillStyle = '#1e3a8a';
+            ctx2D.textAlign = 'center';
+            ctx2D.textBaseline = 'middle';
+            ctx2D.fillText(roomName, cScreen.x, cScreen.y - 8);
+
+            ctx2D.font = "bold 11px 'JetBrains Mono', monospace";
+            ctx2D.fillStyle = '#2563eb';
+            ctx2D.fillText(areaTxt, cScreen.x, cScreen.y + 8);
+
+            // Dimension Badges - Placed Outward from Polygon Centroid
+            const { edges } = calculatePerimeterAndEdges(vertices);
+            edges.forEach((edge, idx) => {
+              const p1Screen = worldToScreen(edge.p1.x, edge.p1.y);
+              const p2Screen = worldToScreen(edge.p2.x, edge.p2.y);
+              const midScreen = { x: (p1Screen.x + p2Screen.x) / 2, y: (p1Screen.y + p2Screen.y) / 2 };
+
+              const dx = p2Screen.x - p1Screen.x;
+              const dy = p2Screen.y - p1Screen.y;
+              const len = Math.sqrt(dx * dx + dy * dy);
+              if (len < 10) return;
+
+              let nx = -dy / len;
+              let ny = dx / len;
+
+              const toCentroidX = cScreen.x - midScreen.x;
+              const toCentroidY = cScreen.y - midScreen.y;
+              if (nx * toCentroidX + ny * toCentroidY > 0) {
+                nx = -nx;
+                ny = -ny;
+              }
+
+              const offsetDist = 26;
+              const badgeX = midScreen.x + nx * offsetDist;
+              const badgeY = midScreen.y + ny * offsetDist;
+
+              edge.badgePos = { x: badgeX, y: badgeY };
+
+              ctx2D.beginPath();
+              ctx2D.moveTo(midScreen.x, midScreen.y);
+              ctx2D.lineTo(badgeX, badgeY);
+              ctx2D.lineWidth = 1;
+              ctx2D.strokeStyle = '#cbd5e1';
+              ctx2D.stroke();
+
+              const text = `${edge.tag.toUpperCase()} = ${toDisplayUnit(edge.length)} ${currentUnit}`;
+              ctx2D.font = "bold 11px 'JetBrains Mono', monospace";
+              const textMetrics = ctx2D.measureText(text);
+              const bw = textMetrics.width + 16;
+              const bh = 22;
+
+              ctx2D.fillStyle = (hoveredEdgeIndex === idx) ? '#1d4ed8' : '#ffffff';
+              ctx2D.strokeStyle = (hoveredEdgeIndex === idx) ? '#1e40af' : '#94a3b8';
+              ctx2D.lineWidth = 1.4;
+
+              ctx2D.beginPath();
+              ctx2D.roundRect(badgeX - bw / 2, badgeY - bh / 2, bw, bh, 6);
+              ctx2D.fill();
+              ctx2D.stroke();
+
+              ctx2D.fillStyle = (hoveredEdgeIndex === idx) ? '#ffffff' : '#0f172a';
+              ctx2D.textAlign = 'center';
+              ctx2D.textBaseline = 'middle';
+              ctx2D.fillText(text, badgeX, badgeY);
+            });
+
+            // Vertex Handles
+            vertices.forEach((p, idx) => {
+              const s = worldToScreen(p.x, p.y);
+              const isHovered = hoveredVertexIndex === idx;
+
+              ctx2D.beginPath();
+              ctx2D.arc(s.x, s.y, isHovered ? 8 : 5.5, 0, Math.PI * 2);
+              ctx2D.fillStyle = isHovered ? '#3b82f6' : '#1d4ed8';
+              ctx2D.fill();
+              ctx2D.lineWidth = 2;
+              ctx2D.strokeStyle = '#ffffff';
+              ctx2D.stroke();
+
+              ctx2D.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+              ctx2D.fillStyle = '#334155';
+              ctx2D.textAlign = 'left';
+              ctx2D.fillText(`V${idx + 1}`, s.x + 8, s.y - 8);
+            });
+          }
+        }
+      }
+
+      // =========================================================================
+      // 7. UNIFIED POINTER EVENTS ENGINE
+      // =========================================================================
+      canvas2D.addEventListener('pointerdown', (e) => {
+        if (e.target !== canvas2D) return;
+        
+        try {
+          canvas2D.setPointerCapture(e.pointerId);
+        } catch (err) {}
+
+        const rect = canvas2D.getBoundingClientRect();
+        const pointerX = e.clientX - rect.left;
+        const pointerY = e.clientY - rect.top;
+        const worldPos = screenToWorld(pointerX, pointerY);
+
+        lastPointerPos = { x: pointerX, y: pointerY };
+
+        if (e.button === 1 || e.button === 2 || e.shiftKey) {
+          isPanning = true;
+          return;
+        }
+
+        if (isDrawing) {
+          const snappedPos = { x: snap(worldPos.x), y: snap(worldPos.y) };
+
+          if (drawPoints.length >= 3) {
+            const firstScreen = worldToScreen(drawPoints[0].x, drawPoints[0].y);
+            const distToV1 = Math.hypot(pointerX - firstScreen.x, pointerY - firstScreen.y);
+            if (distToV1 <= 24) {
+              finishCustomDraw();
+              return;
+            }
+          }
+
+          drawPoints.push(snappedPos);
+
+          if (drawPoints.length >= 3) {
+            drawBannerText.textContent = `🎯 Corner ${drawPoints.length} placed! Tap the green glowing V1 target or 'Close Room' to finish.`;
+            btnFinishDraw.classList.remove('hidden');
+          } else {
+            drawBannerText.textContent = `✏️ Placed ${drawPoints.length} point(s). Continue tapping corners around the room perimeter.`;
+          }
+
+          draw2DCanvas();
+          return;
+        }
+
+        // Dimension badge check
+        const { edges } = calculatePerimeterAndEdges(vertices);
+        for (let i = 0; i < edges.length; i++) {
+          if (edges[i].badgePos) {
+            const dist = Math.hypot(pointerX - edges[i].badgePos.x, pointerY - edges[i].badgePos.y);
+            if (dist < 22) {
+              openDimensionModal(i);
+              return;
+            }
+          }
+        }
+
+        // Vertex drag check
+        for (let i = 0; i < vertices.length; i++) {
+          const s = worldToScreen(vertices[i].x, vertices[i].y);
+          if (Math.hypot(pointerX - s.x, pointerY - s.y) < 15) {
+            isDraggingVertex = true;
+            draggedVertexIndex = i;
+            return;
+          }
+        }
+
+        isPanning = true;
+      });
+
+      canvas2D.addEventListener('pointermove', (e) => {
+        const rect = canvas2D.getBoundingClientRect();
+        const pointerX = e.clientX - rect.left;
+        const pointerY = e.clientY - rect.top;
+        const worldPos = screenToWorld(pointerX, pointerY);
+
+        currentHoverWorldPos = { x: snap(worldPos.x), y: snap(worldPos.y) };
+        canvasCoordReadout.textContent = `X: ${worldPos.x.toFixed(2)}m, Y: ${worldPos.y.toFixed(2)}m`;
+
+        if (isPanning) {
+          panX += (pointerX - lastPointerPos.x);
+          panY -= (pointerY - lastPointerPos.y);
+          lastPointerPos = { x: pointerX, y: pointerY };
+          draw2DCanvas();
+          return;
+        }
+
+        if (isDraggingVertex && draggedVertexIndex !== -1) {
+          vertices[draggedVertexIndex].x = snap(worldPos.x);
+          vertices[draggedVertexIndex].y = snap(worldPos.y);
+          updateCalculations();
+          return;
+        }
+
+        hoveredVertexIndex = -1;
+        hoveredEdgeIndex = -1;
+        isHoveringClosingTarget = false;
+
+        if (isDrawing && drawPoints.length >= 3) {
+          const firstScreen = worldToScreen(drawPoints[0].x, drawPoints[0].y);
+          const distToV1 = Math.hypot(pointerX - firstScreen.x, pointerY - firstScreen.y);
+          if (distToV1 <= 24) {
+            isHoveringClosingTarget = true;
+            canvas2D.style.cursor = 'pointer';
+          } else {
+            canvas2D.style.cursor = 'crosshair';
+          }
+        } else if (!isDrawing) {
+          for (let i = 0; i < vertices.length; i++) {
+            const s = worldToScreen(vertices[i].x, vertices[i].y);
+            if (Math.hypot(pointerX - s.x, pointerY - s.y) < 15) {
+              hoveredVertexIndex = i;
+              canvas2D.style.cursor = 'grab';
+              break;
+            }
+          }
+
+          if (hoveredVertexIndex === -1) {
+            const { edges } = calculatePerimeterAndEdges(vertices);
+            for (let i = 0; i < edges.length; i++) {
+              if (edges[i].badgePos && Math.hypot(pointerX - edges[i].badgePos.x, pointerY - edges[i].badgePos.y) < 20) {
+                hoveredEdgeIndex = i;
+                canvas2D.style.cursor = 'pointer';
+                break;
+              }
+            }
+          }
+
+          if (hoveredVertexIndex === -1 && hoveredEdgeIndex === -1) {
+            canvas2D.style.cursor = 'default';
+          }
+        }
+
+        draw2DCanvas();
+      });
+
+      function handlePointerUp(e) {
+        try {
+          if (canvas2D.hasPointerCapture(e.pointerId)) {
+            canvas2D.releasePointerCapture(e.pointerId);
+          }
+        } catch (err) {}
+        
+        isPanning = false;
+        if (isDraggingVertex) {
+          isDraggingVertex = false;
+          draggedVertexIndex = -1;
+          updateCalculations();
+        }
+      }
+
+      canvas2D.addEventListener('pointerup', handlePointerUp);
+      canvas2D.addEventListener('pointercancel', handlePointerUp);
+
+      canvas2D.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = canvas2D.getBoundingClientRect();
+        const pointerX = e.clientX - rect.left;
+        const pointerY = e.clientY - rect.top;
+
+        const worldBefore = screenToWorld(pointerX, pointerY);
+        const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+        zoom = Math.min(Math.max(zoom * zoomFactor, 8), 160);
+
+        const dpr = window.devicePixelRatio || 1;
+        panX = pointerX - worldBefore.x * zoom;
+        panY = (canvas2D.height / dpr - pointerY) - worldBefore.y * zoom;
+
+        canvasZoomReadout.textContent = `Zoom: ${Math.round((zoom / 36) * 100)}%`;
+        draw2DCanvas();
+      }, { passive: false });
+
+      // Mode toggles
+      function enterDrawMode() {
+        currentTool = 'draw';
+        isDrawing = true;
+        drawPoints = [];
+        toolDrawBtn.className = 'px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-xs transition cursor-pointer';
+        toolSelectBtn.className = 'px-3 py-1.5 rounded-lg font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer';
+        drawModeBanner.classList.remove('hidden');
+        btnFinishDraw.classList.add('hidden');
+        drawBannerText.textContent = '✏️ Draw Walls Active: Tap anywhere on the canvas to place room corners.';
+        draw2DCanvas();
+      }
+
+      function exitDrawMode() {
+        currentTool = 'select';
+        isDrawing = false;
+        drawPoints = [];
+        toolSelectBtn.className = 'px-3 py-1.5 rounded-lg font-bold bg-blue-600 text-white shadow-xs transition cursor-pointer';
+        toolDrawBtn.className = 'px-3 py-1.5 rounded-lg font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer';
+        drawModeBanner.classList.add('hidden');
+        btnFinishDraw.classList.add('hidden');
+        draw2DCanvas();
+      }
+
+      function finishCustomDraw() {
+        if (drawPoints.length >= 3) {
+          vertices = JSON.parse(JSON.stringify(drawPoints));
+          selectRoomPreset.value = 'custom';
+          exitDrawMode();
+          updateCalculations();
+          fit2DView();
+
+          canvasToast.textContent = '✅ Room Completed! Switched to Edit Layout Mode.';
+          canvasToast.classList.add('bg-emerald-600', 'text-white');
+          setTimeout(() => {
+            canvasToast.textContent = '💡 Click dimension badges to edit wall lengths';
+            canvasToast.classList.remove('bg-emerald-600', 'text-white');
+          }, 3000);
+        } else {
+          alert('A closed room enclosure requires at least 3 vertices.');
+        }
+      }
+
+      toolSelectBtn.addEventListener('click', exitDrawMode);
+      toolDrawBtn.addEventListener('click', enterDrawMode);
+      btnFinishDraw.addEventListener('click', finishCustomDraw);
+      btnCancelDraw.addEventListener('click', exitDrawMode);
+      btnFit2D.addEventListener('click', fit2DView);
+
+      inputRoomName.addEventListener('input', draw2DCanvas);
+      inputProjectName.addEventListener('input', () => {});
+
+      btnToggleSnap.addEventListener('click', () => {
+        if (snapGridSizeMeters === 0.1) {
+          snapGridSizeMeters = 0.5;
+          snapStatusText.textContent = '0.5m';
+        } else if (snapGridSizeMeters === 0.5) {
+          snapGridSizeMeters = 1.0;
+          snapStatusText.textContent = '1.0m';
+        } else {
+          snapGridSizeMeters = 0.1;
+          snapStatusText.textContent = '0.1m';
+        }
+      });
+
+      // =========================================================================
+      // 8. PROCEDURAL 3D TEXTURES ENGINE
+      // =========================================================================
+      const proceduralTextures = {};
+
+      function generateBrickTexture() {
+        if (proceduralTextures.brick) return proceduralTextures.brick;
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(0, 0, 512, 512);
+
+        const rows = 16;
+        const cols = 8;
+        const rowH = 512 / rows;
+        const colW = 512 / cols;
+        const mortar = 3.5;
+
+        for (let r = 0; r < rows; r++) {
+          const isOffset = r % 2 === 1;
+          const offsetX = isOffset ? colW / 2 : 0;
+          for (let c = -1; c <= cols; c++) {
+            const x = c * colW + offsetX + mortar / 2;
+            const y = r * rowH + mortar / 2;
+            const w = colW - mortar;
+            const h = rowH - mortar;
+
+            const rVal = 160 + Math.floor(Math.random() * 35);
+            const gVal = 55 + Math.floor(Math.random() * 25);
+            const bVal = 40 + Math.floor(Math.random() * 20);
+            ctx.fillStyle = `rgb(${rVal}, ${gVal}, ${bVal})`;
+            ctx.fillRect(x, y, w, h);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            for (let s = 0; s < 10; s++) {
+              ctx.fillRect(x + Math.random() * w, y + Math.random() * h, 2, 2);
+            }
+          }
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        proceduralTextures.brick = texture;
+        return texture;
+      }
+
+      function generateCleanroomPanelTexture() {
+        if (proceduralTextures.cleanroom) return proceduralTextures.cleanroom;
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, 512, 512);
+
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(256, 0);
+        ctx.lineTo(256, 512);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, 256);
+        ctx.lineTo(512, 256);
+        ctx.stroke();
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        proceduralTextures.cleanroom = texture;
+        return texture;
+      }
+
+      function generateConcreteTexture() {
+        if (proceduralTextures.concrete) return proceduralTextures.concrete;
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(0, 0, 512, 512);
+
+        for (let i = 0; i < 2000; i++) {
+          const val = Math.random() > 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+          ctx.fillStyle = val;
+          ctx.fillRect(Math.random() * 512, Math.random() * 512, Math.random() * 4 + 1, Math.random() * 4 + 1);
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        proceduralTextures.concrete = texture;
+        return texture;
+      }
+
+      function getWallMaterialForType(type, edgeLength, wallHeight) {
+        if (type === 'brick') {
+          const tex = generateBrickTexture();
+          tex.repeat.set(edgeLength / 0.6, wallHeight / 0.6);
+          return new THREE.MeshStandardMaterial({
+            map: tex,
+            roughness: 0.85,
+            metalness: 0.05,
+            side: THREE.DoubleSide
+          });
+        } else if (type === 'cleanroom') {
+          const tex = generateCleanroomPanelTexture();
+          tex.repeat.set(edgeLength / 1.2, wallHeight / 2.7);
+          return new THREE.MeshStandardMaterial({
+            map: tex,
+            roughness: 0.25,
+            metalness: 0.1,
+            color: 0xffffff,
+            side: THREE.DoubleSide
+          });
+        } else if (type === 'glass') {
+          return new THREE.MeshStandardMaterial({
+            color: 0x38bdf8,
+            roughness: 0.1,
+            metalness: 0.3,
+            transparent: true,
+            opacity: 0.35,
+            side: THREE.DoubleSide
+          });
+        } else if (type === 'steel') {
+          return new THREE.MeshStandardMaterial({
+            color: 0xd1d5db,
+            roughness: 0.3,
+            metalness: 0.85,
+            side: THREE.DoubleSide
+          });
+        } else if (type === 'concrete') {
+          const tex = generateConcreteTexture();
+          tex.repeat.set(edgeLength / 2, wallHeight / 2);
+          return new THREE.MeshStandardMaterial({
+            map: tex,
+            roughness: 0.9,
+            metalness: 0.02,
+            side: THREE.DoubleSide
+          });
+        } else {
+          return new THREE.MeshStandardMaterial({
+            color: 0x38bdf8,
+            roughness: 0.2,
+            metalness: 0.1,
+            transparent: false,
+            opacity: 0.92,
+            side: THREE.DoubleSide
+          });
+        }
+      }
+
+      // =========================================================================
+      // 9. SYNCHRONIZED THREE.JS 3D VIEWPORT & CAMERA CONTROLS
+      // =========================================================================
+      let scene3D, camera3D, renderer3D, controls3D;
+      let room3DGroup;
+
+      function init3DViewport() {
+        if (typeof THREE === 'undefined') {
+          console.warn('Three.js not loaded, 3D viewport disabled.');
+          container3D.innerHTML = '<div class="flex items-center justify-center h-full text-xs text-slate-400">3D WebGL initializing...</div>';
+          return;
+        }
+
+        const cw = container3D.clientWidth || 300;
+        const ch = container3D.clientHeight || 300;
+
+        scene3D = new THREE.Scene();
+        scene3D.background = new THREE.Color(0xf8fafc);
+
+        camera3D = new THREE.PerspectiveCamera(40, cw / ch, 0.1, 1000);
+        camera3D.position.set(15, 20, 20);
+
+        renderer3D = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer3D.setSize(cw, ch);
+        renderer3D.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer3D.shadowMap.enabled = true;
+        renderer3D.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        container3D.innerHTML = '';
+        container3D.appendChild(renderer3D.domElement);
+
+        if (typeof THREE.OrbitControls !== 'undefined') {
+          controls3D = new THREE.OrbitControls(camera3D, renderer3D.domElement);
+          controls3D.enableDamping = true;
+          controls3D.dampingFactor = 0.05;
+          controls3D.autoRotate = isAutoRotating;
+          controls3D.autoRotateSpeed = 2.0;
+          controls3D.target.set(2, 1.35, 4);
+        }
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+        scene3D.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+        dirLight.position.set(15, 28, 20);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        scene3D.add(dirLight);
+
+        const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.5);
+        fillLight.position.set(-15, 12, -15);
+        scene3D.add(fillLight);
+
+        const gridHelper = new THREE.GridHelper(30, 30, 0x94a3b8, 0xe2e8f0);
+        gridHelper.position.y = -0.01;
+        scene3D.add(gridHelper);
+
+        room3DGroup = new THREE.Group();
+        scene3D.add(room3DGroup);
+
+        function animate() {
+          requestAnimationFrame(animate);
+          if (controls3D) controls3D.update();
+          if (renderer3D && scene3D && camera3D) {
+            renderer3D.render(scene3D, camera3D);
+          }
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+          const w = container3D.clientWidth;
+          const h = container3D.clientHeight;
+          if (w > 0 && h > 0 && camera3D && renderer3D) {
+            camera3D.aspect = w / h;
+            camera3D.updateProjectionMatrix();
+            renderer3D.setSize(w, h);
+          }
+        });
+      }
+
+      function update3DGeometry() {
+        if (!room3DGroup || !vertices || vertices.length < 3 || typeof THREE === 'undefined') return;
+
+        while (room3DGroup.children.length > 0) {
+          const obj = room3DGroup.children[0];
+          room3DGroup.remove(obj);
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) {
+            if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+            else obj.material.dispose();
+          }
+        }
+
+        const h = getClearHeight();
+
+        const shape = new THREE.Shape();
+        shape.moveTo(vertices[0].x, vertices[0].y);
+        for (let i = 1; i < vertices.length; i++) {
+          shape.lineTo(vertices[i].x, vertices[i].y);
+        }
+        shape.closePath();
+
+        // 1. Floor Slab
+        const floorGeo = new THREE.ShapeGeometry(shape);
+        floorGeo.rotateX(Math.PI / 2);
+        const floorMat = new THREE.MeshStandardMaterial({
+          color: 0x1d4ed8,
+          roughness: 0.25,
+          metalness: 0.2,
+          side: THREE.DoubleSide
+        });
+        const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+        floorMesh.receiveShadow = true;
+        room3DGroup.add(floorMesh);
+
+        // 2. Extruded Walls
+        const edgeLineMat = new THREE.LineBasicMaterial({ color: 0x1e40af, linewidth: 2 });
+
+        for (let i = 0; i < vertices.length; i++) {
+          const j = (i + 1) % vertices.length;
+          const p1 = vertices[i];
+          const p2 = vertices[j];
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const edgeLen = Math.sqrt(dx * dx + dy * dy);
+
+          const wallGeo = new THREE.BufferGeometry();
+          const positions = new Float32Array([
+            p1.x, 0, p1.y,
+            p2.x, 0, p2.y,
+            p2.x, h, p2.y,
+
+            p1.x, 0, p1.y,
+            p2.x, h, p2.y,
+            p1.x, h, p1.y
+          ]);
+          wallGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+          const uvs = new Float32Array([
+            0, 0,
+            edgeLen, 0,
+            edgeLen, h,
+
+            0, 0,
+            edgeLen, h,
+            0, h
+          ]);
+          wallGeo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+          wallGeo.computeVertexNormals();
+
+          const wallMat = getWallMaterialForType(selectedWallMaterialType, edgeLen, h);
+          const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+          wallMesh.castShadow = true;
+          wallMesh.receiveShadow = true;
+          room3DGroup.add(wallMesh);
+
+          const edgeGeo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(p1.x, 0, p1.y),
+            new THREE.Vector3(p1.x, h, p1.y)
+          ]);
+          const edgeLine = new THREE.Line(edgeGeo, edgeLineMat);
+          room3DGroup.add(edgeLine);
+        }
+
+        // 3. Ceiling Cap
+        if (showCeiling) {
+          const ceilingGeo = new THREE.ShapeGeometry(shape);
+          ceilingGeo.rotateX(Math.PI / 2);
+          ceilingGeo.translate(0, h, 0);
+
+          const ceilingMat = new THREE.MeshStandardMaterial({
+            color: 0x93c5fd,
+            roughness: 0.3,
+            metalness: 0.1,
+            transparent: true,
+            opacity: 0.45,
+            side: THREE.DoubleSide
+          });
+          const ceilingMesh = new THREE.Mesh(ceilingGeo, ceilingMat);
+          room3DGroup.add(ceilingMesh);
+        }
+
+        if (controls3D) {
+          let cx = 0, cz = 0;
+          vertices.forEach(v => { cx += v.x; cz += v.y; });
+          cx /= vertices.length;
+          cz /= vertices.length;
+          controls3D.target.set(cx, h / 2, cz);
+        }
+      }
+
+      // Wall Material Selector Listener
+      selectWallMaterial.addEventListener('change', (e) => {
+        selectedWallMaterialType = e.target.value;
+        const selectedText = selectWallMaterial.options[selectWallMaterial.selectedIndex].text;
+        hudWallMaterialLabel.textContent = `Wall: ${selectedText}`;
+        update3DGeometry();
+      });
+
+      // 3D Camera Controls & Toggles
+      btnToggleSpin.addEventListener('click', () => {
+        isAutoRotating = !isAutoRotating;
+        if (controls3D) controls3D.autoRotate = isAutoRotating;
+        spinStateText.textContent = isAutoRotating ? 'ON' : 'OFF';
+        btnToggleSpin.className = isAutoRotating 
+          ? 'px-2 py-1 rounded-md font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer'
+          : 'px-2 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer';
+      });
+
+      btnViewIso.addEventListener('click', () => {
+        let cx = 0, cz = 0;
+        vertices.forEach(v => { cx += v.x; cz += v.y; });
+        cx /= vertices.length;
+        cz /= vertices.length;
+        const h = getClearHeight();
+
+        if (camera3D) camera3D.position.set(cx + 12, h + 14, cz + 14);
+        if (controls3D) controls3D.target.set(cx, h / 2, cz);
+      });
+
+      btnViewTop.addEventListener('click', () => {
+        let cx = 0, cz = 0;
+        vertices.forEach(v => { cx += v.x; cz += v.y; });
+        cx /= vertices.length;
+        cz /= vertices.length;
+
+        if (camera3D) camera3D.position.set(cx, 28, cz + 0.001);
+        if (controls3D) controls3D.target.set(cx, 0, cz);
+      });
+
+      btnViewFront.addEventListener('click', () => {
+        let cx = 0, cz = 0;
+        vertices.forEach(v => { cx += v.x; cz += v.y; });
+        cx /= vertices.length;
+        cz /= vertices.length;
+        const h = getClearHeight();
+
+        if (camera3D) camera3D.position.set(cx, h / 2, cz + 20);
+        if (controls3D) controls3D.target.set(cx, h / 2, cz);
+      });
+
+      btnToggleCeiling.addEventListener('click', () => {
+        showCeiling = !showCeiling;
+        ceilingStateText.textContent = showCeiling ? 'ON' : 'OFF';
+        ceilingStateText.className = showCeiling ? 'font-bold text-blue-600' : 'font-bold text-slate-400';
+        update3DGeometry();
+      });
+
+      // =========================================================================
+      // 10. PRESETS & UNIT SWITCHING
+      // =========================================================================
+      selectRoomPreset.addEventListener('change', (e) => {
+        const key = e.target.value;
+        if (PRESETS[key]) {
+          vertices = JSON.parse(JSON.stringify(PRESETS[key]));
+          updateCalculations();
+          fit2DView();
+        }
+      });
+
+      function switchUnit(newUnit) {
+        if (currentUnit === newUnit) return;
+
+        const factor = newUnit === 'mm' ? 1000 : 0.001;
+        const hVal = parseFloat(inputHeight.value);
+        if (!isNaN(hVal)) {
+          inputHeight.value = newUnit === 'mm' ? Math.round(hVal * factor) : format3(hVal * factor);
+        }
+
+        currentUnit = newUnit;
+        unitLabels.forEach(lbl => lbl.textContent = currentUnit);
+
+        if (currentUnit === 'm') {
+          unitBtnM.className = 'px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer';
+          unitBtnMM.className = 'px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+        } else {
+          unitBtnMM.className = 'px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer';
+          unitBtnM.className = 'px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+        }
+
+        updateCalculations();
+      }
+
+      unitBtnM.addEventListener('click', () => switchUnit('m'));
+      unitBtnMM.addEventListener('click', () => switchUnit('mm'));
+
+      inputHeight.addEventListener('input', updateCalculations);
+      inputSpecMultiplier.addEventListener('input', updateCalculations);
+      selectSpecMode.addEventListener('change', updateCalculations);
+
+      btnReset.addEventListener('click', () => {
+        selectRoomPreset.value = 'lshape_wepl';
+        vertices = JSON.parse(JSON.stringify(PRESETS.lshape_wepl));
+        selectWallMaterial.value = 'blueprint';
+        selectedWallMaterialType = 'blueprint';
+        hudWallMaterialLabel.textContent = 'Wall: Blueprint Blue';
+        inputProjectName.value = 'WEPL Cleanroom Facility Alpha';
+        inputRoomName.value = 'ISO Class 7 Production Suite';
+        inputHeight.value = '2.7';
+        inputSpecMultiplier.value = '10';
+        selectSpecMode.value = 'surface';
+        currentUnit = 'm';
+        unitBtnM.className = 'px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer';
+        unitBtnMM.className = 'px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+        unitLabels.forEach(lbl => lbl.textContent = 'm');
+        updateCalculations();
+        fit2DView();
+      });
+
+      // =========================================================================
+      // 11. COPY SPECIFICATION REPORT
+      // =========================================================================
+      btnCopyReport.addEventListener('click', () => {
+        const { perimeter, edges } = calculatePerimeterAndEdges(vertices);
+        const singleFloor = calculateShoelaceArea(vertices);
+        const h = getClearHeight();
+        const wallMaterialName = selectWallMaterial.options[selectWallMaterial.selectedIndex].text;
+
+        const wallSummary = edges.map(e => `  - ${e.label}: ${toDisplayUnit(e.length)} ${currentUnit} | Wall Area: ${format3(e.length * h)} m²`).join('\n');
+
+        const report = `=====================================================
+ROOM SURFACE AREA & AIR FLOW REPORT
+WEPL TESTING & COMMISSIONING ENGINEERING PORTAL
+=====================================================
+Project: ${inputProjectName.value || 'N/A'}
+Room Suite: ${inputRoomName.value || 'N/A'}
+Geometry Preset: ${selectRoomPreset.options[selectRoomPreset.selectedIndex].text}
+Wall Construction: ${wallMaterialName}
+Unit Mode: ${currentUnit.toUpperCase()}
+Clear Enclosure Height (H): ${inputHeight.value} ${currentUnit}
+Point Count: ${vertices.length} Vertices
+
+WALL SEGMENTS BREAKDOWN:
+${wallSummary}
+Calculated Perimeter (P): ${statPerimeter2D.textContent}
+
+-----------------------------------------------------
+ENGINEERING RESULTS SUMMARY:
+-----------------------------------------------------
+1. Total Floor & Ceiling Area: ${resFloorCeilingArea.textContent} (Single Floor: ${resSingleFloorArea.textContent})
+2. Total Vertical Wall Area:    ${resWallArea.textContent}
+3. Combined Total Surface Area: ${resTotalSurfaceArea.textContent} m²
+4. Spec Multiplier:            ${inputSpecMultiplier.value}x (${selectSpecMode.value})
+5. Final Spec Airflow Rate:    ${resSpecFlowRate.textContent} CMH (${resFlowCFM.textContent} / ${resFlowLs.textContent})
+6. Enclosed Volume:            ${resRoomVolume.textContent} (${resRoomVolumeCuFt.textContent})
+=====================================================
+Generated via WEPL Testing & Commissioning Engineering Portal`;
+
+        navigator.clipboard.writeText(report).then(() => {
+          copyBtnText.textContent = 'Report Copied to Clipboard!';
+          btnCopyReport.classList.remove('bg-slate-900');
+          btnCopyReport.classList.add('bg-emerald-600');
+          setTimeout(() => {
+            copyBtnText.textContent = 'Copy Engineering Specification Report';
+            btnCopyReport.classList.remove('bg-emerald-600');
+            btnCopyReport.classList.add('bg-slate-900');
+          }, 2500);
+        });
+      });
+
+      // =========================================================================
+      // 12. HIGH-RES DEDICATED BLUEPRINT SNAPSHOT GENERATOR FOR PDF
+      // =========================================================================
+      function generateDedicatedBlueprintSnapshot(pts, roomName, heightVal, unitVal) {
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = 1600;
+        offCanvas.height = 1050;
+        const ctx = offCanvas.getContext('2d');
+
+        // Background & subtle grid
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#f1f5f9';
+        for (let x = 0; x < offCanvas.width; x += 40) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, offCanvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < offCanvas.height; y += 40) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(offCanvas.width, y);
+          ctx.stroke();
+        }
+
+        // Compute Bounding Box
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        pts.forEach(p => {
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y;
+          if (p.y > maxY) maxY = p.y;
+        });
+
+        const roomW = Math.max(maxX - minX, 1);
+        const roomH = Math.max(maxY - minY, 1);
+        const padX = 260;
+        const padY = 220;
+        const scaleX = (offCanvas.width - padX * 2) / roomW;
+        const scaleY = (offCanvas.height - padY * 2) / roomH;
+        const sc = Math.min(scaleX, scaleY);
+
+        const midX = (minX + maxX) / 2;
+        const midY = (minY + maxY) / 2;
+        const offX = offCanvas.width / 2 - midX * sc;
+        const offY = offCanvas.height / 2 + midY * sc;
+
+        function toPrintScreen(wx, wy) {
+          return {
+            x: offX + wx * sc,
+            y: offY - wy * sc
+          };
+        }
+
+        // Fill Polygon
+        ctx.beginPath();
+        const p0 = toPrintScreen(pts[0].x, pts[0].y);
+        ctx.moveTo(p0.x, p0.y);
+        for (let i = 1; i < pts.length; i++) {
+          const sp = toPrintScreen(pts[i].x, pts[i].y);
+          ctx.lineTo(sp.x, sp.y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(219, 234, 254, 0.45)';
+        ctx.fill();
+
+        // Outline Walls
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#1e40af';
+        ctx.stroke();
+
+        // Centroid Information Plaque
+        const centroid = calculateCentroid(pts);
+        const cSc = toPrintScreen(centroid.x, centroid.y);
+        const singleArea = calculateShoelaceArea(pts);
+
+        ctx.font = "bold 24px 'Plus Jakarta Sans', sans-serif";
+        const titleStr = sanitizeForPdf(roomName) || 'Room Suite';
+        const areaStr = `Floor Area = ${format3(singleArea)} sq.m`;
+        const tw1 = ctx.measureText(titleStr).width;
+        ctx.font = "bold 20px 'JetBrains Mono', monospace";
+        const tw2 = ctx.measureText(areaStr).width;
+        const boxW = Math.max(tw1, tw2) + 48;
+        const boxH = 80;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#93c5fd';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(cSc.x - boxW / 2, cSc.y - boxH / 2, boxW, boxH, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#1e3a8a';
+        ctx.font = "bold 24px 'Plus Jakarta Sans', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(titleStr, cSc.x, cSc.y - 14);
+
+        ctx.fillStyle = '#2563eb';
+        ctx.font = "bold 19px 'JetBrains Mono', monospace";
+        ctx.fillText(areaStr, cSc.x, cSc.y + 18);
+
+        // Outer Dimension Strings & Badges
+        const { edges } = calculatePerimeterAndEdges(pts);
+        edges.forEach((edge) => {
+          const s1 = toPrintScreen(edge.p1.x, edge.p1.y);
+          const s2 = toPrintScreen(edge.p2.x, edge.p2.y);
+          const mid = { x: (s1.x + s2.x) / 2, y: (s1.y + s2.y) / 2 };
+
+          const dx = s2.x - s1.x;
+          const dy = s2.y - s1.y;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          if (len < 5) return;
+
+          let nx = -dy / len;
+          let ny = dx / len;
+
+          const toCentroidX = cSc.x - mid.x;
+          const toCentroidY = cSc.y - mid.y;
+          if (nx * toCentroidX + ny * toCentroidY > 0) {
+            nx = -nx;
+            ny = -ny;
+          }
+
+          const calloutDist = 48;
+          const badgeX = mid.x + nx * calloutDist;
+          const badgeY = mid.y + ny * calloutDist;
+
+          // Dimension Leader Line
+          ctx.beginPath();
+          ctx.moveTo(mid.x, mid.y);
+          ctx.lineTo(badgeX, badgeY);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#94a3b8';
+          ctx.stroke();
+
+          // Dimension Text Pill
+          const dimText = `${edge.tag.toUpperCase()} = ${toDisplayUnit(edge.length)} ${unitVal}`;
+          ctx.font = "bold 20px 'JetBrains Mono', monospace";
+          const dtw = ctx.measureText(dimText).width + 26;
+          const dth = 40;
+
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = '#1e3a8a';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.roundRect(badgeX - dtw / 2, badgeY - dth / 2, dtw, dth, 8);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(dimText, badgeX, badgeY);
+        });
+
+        // Corner Vertices
+        pts.forEach((p, idx) => {
+          const s = toPrintScreen(p.x, p.y);
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, 9, 0, Math.PI * 2);
+          ctx.fillStyle = '#1d4ed8';
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+
+          ctx.font = "bold 18px 'Plus Jakarta Sans', sans-serif";
+          ctx.fillStyle = '#334155';
+          ctx.textAlign = 'left';
+          ctx.fillText(`V${idx + 1}`, s.x + 14, s.y - 12);
+        });
+
+        // Legend / Scale Stamp
+        ctx.fillStyle = 'rgba(248, 250, 252, 0.95)';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(24, offCanvas.height - 70, 420, 46, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = "bold 15px 'JetBrains Mono', monospace";
+        ctx.fillStyle = '#475569';
+        ctx.textAlign = 'left';
+        ctx.fillText(`SCALE: N.T.S. | UNITS: ${unitVal.toUpperCase()} | H = ${format3(heightVal)}m`, 38, offCanvas.height - 42);
+
+        return offCanvas.toDataURL('image/png');
+      }
+
+      // =========================================================================
+      // 13. PROFESSIONAL PDF REPORT GENERATION (CAPITALIZED HEADER & ICON)
+      // =========================================================================
+      btnExportPDF.addEventListener('click', async () => {
+        if (!window.jspdf) {
+          alert('PDF engine is loading, please try again in a moment.');
+          return;
+        }
+
+        btnExportPDF.innerHTML = '⏳ Generating PDF...';
+        btnExportPDF.disabled = true;
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const h = getClearHeight();
+          const { perimeter, edges } = calculatePerimeterAndEdges(vertices);
+          const singleFloor = calculateShoelaceArea(vertices);
+          const totalFloorCeiling = singleFloor * 2;
+          const totalWallArea = perimeter * h;
+          const totalSurface = totalFloorCeiling + totalWallArea;
+          const volume = singleFloor * h;
+          const multiplier = parseFloat(inputSpecMultiplier.value) || 10;
+          const flowCMH = totalSurface * multiplier;
+          const flowCFM = flowCMH * 0.588578;
+
+          const rawProjectName = (inputProjectName.value || 'Cleanroom Project').trim();
+          const rawRoomName = (inputRoomName.value || 'Production Suite').trim();
+          const projectName = sanitizeForPdf(rawProjectName);
+          const roomName = sanitizeForPdf(rawRoomName);
+
+          const rawPresetText = selectRoomPreset.options[selectRoomPreset.selectedIndex].text;
+          const presetName = sanitizeForPdf(rawPresetText);
+          const rawWallFinish = selectWallMaterial.options[selectWallMaterial.selectedIndex].text;
+          const wallFinishName = sanitizeForPdf(rawWallFinish);
+
+          // 1. Capitalized Header Banner with Stylized Airflow & Surface Icon Badge
+          doc.setFillColor(30, 58, 138); // Navy brand
+          doc.rect(0, 0, pageWidth, 26, 'F');
+
+          // Stylized Vector Airflow Icon Badge in Header
+          doc.setFillColor(37, 99, 235); // Accent Blue Icon Box
+          doc.roundedRect(14, 5, 16, 16, 2.5, 2.5, 'F');
+          
+          // Icon Vector Art: Airflow Lines + Room Box
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(0.6);
+          // Room outline
+          doc.rect(17, 8, 10, 10, 'S');
+          // Airflow stream arrow passing through
+          doc.line(15, 13, 29, 13);
+          doc.line(26, 11, 29, 13);
+          doc.line(26, 15, 29, 13);
+
+          // Capitalized Title Text
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(13);
+          doc.setFont('helvetica', 'bold');
+          doc.text('ROOM SURFACE AREA & AIR FLOW REPORT', 34, 11.5);
+
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'normal');
+          doc.text('WEPL Testing & Commissioning Engineering Specification', 34, 17);
+          doc.text(`Project: ${projectName}   |   Room Suite: ${roomName}`, 34, 22);
+
+          doc.setFontSize(7.5);
+          doc.text(`Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, pageWidth - 14, 11.5, { align: 'right' });
+
+          let y = 33;
+          doc.setTextColor(30, 41, 59);
+          doc.setFontSize(10.5);
+          doc.setFont('helvetica', 'bold');
+          doc.text('1. Enclosure Specification & Layout Snapshots', 14, y);
+
+          y += 5;
+          doc.setFontSize(8.5);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`Preset: ${presetName}   |   Wall Finish: ${wallFinishName}   |   Clear Height: ${inputHeight.value} ${currentUnit}`, 14, y);
+
+          y += 5;
+
+          // 2. High-Res Snapshots (Dedicated Offscreen 2D Blueprint + Optimal 3D Capture)
+          const img2D = generateDedicatedBlueprintSnapshot(vertices, roomName, h, currentUnit);
+
+          // Position 3D camera for a clean isometric snapshot
+          if (camera3D && controls3D && renderer3D && scene3D) {
+            let cx = 0, cz = 0;
+            vertices.forEach(v => { cx += v.x; cz += v.y; });
+            cx /= vertices.length;
+            cz /= vertices.length;
+            camera3D.position.set(cx + 12, h + 14, cz + 14);
+            controls3D.target.set(cx, h / 2, cz);
+            camera3D.updateProjectionMatrix();
+            controls3D.update();
+            renderer3D.render(scene3D, camera3D);
+          }
+          const img3D = renderer3D ? renderer3D.domElement.toDataURL('image/png') : null;
+
+          const imgW = 87;
+          const imgH = 55;
+          doc.addImage(img2D, 'PNG', 14, y, imgW, imgH);
+          if (img3D) {
+            doc.addImage(img3D, 'PNG', 14 + imgW + 5, y, imgW, imgH);
+          }
+
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Figure 1: 2D Blueprint Plan Layout', 14 + imgW / 2, y + imgH + 4.5, { align: 'center' });
+          doc.text(`Figure 2: 3D Extruded Model (${wallFinishName})`, 14 + imgW + 5 + imgW / 2, y + imgH + 4.5, { align: 'center' });
+
+          y += imgH + 11;
+
+          // 3. Specification Summary Table
+          doc.setFontSize(10.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(30, 41, 59);
+          doc.text('2. Surface Area & Airflow Specification Summary', 14, y);
+
+          y += 4;
+          doc.autoTable({
+            startY: y,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold', fontSize: 8.5 },
+            bodyStyles: { fontSize: 8, textColor: [30, 41, 59] },
+            columns: [
+              { header: 'Metric Parameter', dataKey: 'metric' },
+              { header: 'Calculation Method', dataKey: 'formula' },
+              { header: 'Commissioning Value (3-Decimals)', dataKey: 'value' }
+            ],
+            body: [
+              { metric: 'Single Floor Area', formula: 'Shoelace Polygon Algorithm', value: `${format3(singleFloor)} sq.m` },
+              { metric: 'Floor & Ceiling Dual Area', formula: '2 x Single Floor Area', value: `${format3(totalFloorCeiling)} sq.m` },
+              { metric: 'Enclosure Perimeter (P)', formula: `Sum of all wall segments (Wall A to Wall ${String.fromCharCode(65 + (edges.length - 1))})`, value: `${format3(perimeter)} m` },
+              { metric: 'Vertical Wall Envelope Area', formula: 'Perimeter (P) x Height (H)', value: `${format3(totalWallArea)} sq.m` },
+              { metric: 'Wall Construction Finish', formula: 'Architectural Specification', value: wallFinishName },
+              { metric: 'Combined Total Surface Area (A_total)', formula: 'A_floor/ceiling + A_walls', value: `${format3(totalSurface)} sq.m` },
+              { metric: 'Enclosed Cleanroom Volume (V)', formula: 'Single Floor Area x Height (H)', value: `${format3(volume)} cu.m` },
+              { metric: 'Final Airflow Specification Flow Rate', formula: `A_total x ${multiplier} (Spec Factor)`, value: `${format3(flowCMH)} CMH (${format3(flowCFM)} CFM)` }
+            ],
+            margin: { left: 14, right: 14 }
+          });
+
+          y = doc.lastAutoTable.finalY + 7;
+
+          // 4. Wall Segments Schedule Table
+          doc.setFontSize(10.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(30, 41, 59);
+          doc.text('3. Wall Segments Schedule', 14, y);
+
+          y += 4;
+          const tableRows = edges.map(e => [
+            e.label,
+            `(${toDisplayUnit(e.p1.x)}, ${toDisplayUnit(e.p1.y)})`,
+            `(${toDisplayUnit(e.p2.x)}, ${toDisplayUnit(e.p2.y)})`,
+            `${toDisplayUnit(e.length)} ${currentUnit}`,
+            `${toDisplayUnit(h)} ${currentUnit}`,
+            `${format3(e.length * h)} sq.m`
+          ]);
+
+          doc.autoTable({
+            startY: y,
+            theme: 'striped',
+            headStyles: { fillColor: [51, 65, 85], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 7.5, textColor: [30, 41, 59] },
+            head: [['Wall ID', 'Start (X,Y)', 'End (X,Y)', 'Length', 'Height', 'Wall Area (sq.m)']],
+            body: tableRows,
+            margin: { left: 14, right: 14 }
+          });
+
+          y = doc.lastAutoTable.finalY + 8;
+
+          if (y > 250) { doc.addPage(); y = 25; }
+
+          // 5. Verification & QA Sign-Off Block
+          doc.setDrawColor(203, 213, 225);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(14, y, pageWidth - 28, 22, 2, 2, 'FD');
+
+          doc.setFontSize(8.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(30, 58, 138);
+          doc.text('Commissioning Verification & Quality Assurance Sign-Off', 18, y + 6);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Verified compliant with ISO Cleanroom & T&C surface specification requirements for ${projectName}.`, 18, y + 11);
+          doc.text('Inspected By: __________________________    Signature: __________________________    Date: ______________', 18, y + 17);
+
+          const safeFilename = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${roomName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`;
+          doc.save(safeFilename);
+
+        } catch (err) {
+          console.error('PDF Generation Error:', err);
+          alert('Error generating PDF report. Please check console.');
+        } finally {
+          btnExportPDF.innerHTML = `
+            <svg class="w-4 h-4 mr-1.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>Export Engineering PDF</span>
+          `;
+          btnExportPDF.disabled = false;
+        }
+      });
+
+      // =========================================================================
+      // 14. INITIALIZATION
+      // =========================================================================
+      function init() {
+        resizeCanvas();
+        init3DViewport();
+        updateCalculations();
+        fit2DView();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

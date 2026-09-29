@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Duct Sizing Calculator — WEPL T&C</title>
+  <style>
+    :root {
+      --sky-50: #f0f9ff;
+      --sky-100: #e0f2fe;
+      --sky-200: #bae6fd;
+      --sky-300: #7dd3fc;
+      --sky-500: #0ea5e9;
+      --sky-600: #0284c7;
+      --sky-700: #0369a1;
+      --sky-800: #075985;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --card: rgba(255, 255, 255, 0.92);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, #f8fafc 0%, #fff 48%, rgba(240, 249, 255, 0.55) 100%);
+      min-height: 100vh;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #0369a1, #0ea5e9 55%, #0284c7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    }
+    .wrap { width: 100%; max-width: none; margin: 0; padding: 0 1rem 2.5rem; }
+
+    header.glass { padding: 1.1rem 0; margin-bottom: 1.5rem; }
+    .header-inner { width: 100%; max-width: none; margin: 0; padding: 0 1rem; display: flex; align-items: center; gap: 1rem; }
+    .back {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 0.7rem; border-radius: 0.6rem; color: #475569;
+      text-decoration: none; font-weight: 600; font-size: 0.875rem;
+    }
+    .back:hover { color: var(--sky-700); background: rgba(240, 249, 255, 0.85); }
+    .ico-box {
+      padding: 0.75rem; border-radius: 0.85rem;
+      background: linear-gradient(135deg, var(--sky-500), var(--sky-700));
+      box-shadow: 0 10px 24px rgb(12 74 110 / 0.22); color: #fff; display: inline-flex;
+    }
+    header h1 { margin: 0; font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em; }
+    header .sub { margin: 0.15rem 0 0; color: #475569; font-size: 0.875rem; font-weight: 600; }
+
+    .layout { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+    @media (min-width: 1024px) { .layout { grid-template-columns: 1fr 3fr; gap: 1.5rem; } }
+
+    .card {
+      background: var(--card); border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 1rem; padding: 1.25rem; box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
+    }
+    .sticky-panel { position: sticky; top: 0.75rem; max-height: calc(100vh - 1rem); overflow-y: auto; }
+
+    .panel-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .panel-head h2 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+    .panel-head p { margin: 0.1rem 0 0; color: #475569; font-size: 0.75rem; }
+    .mini-ico {
+      padding: 0.45rem; border-radius: 0.7rem; color: #fff;
+      background: linear-gradient(135deg, var(--sky-500), var(--sky-600));
+      display: inline-flex; box-shadow: 0 1px 2px rgb(2 132 199 / 0.25);
+    }
+
+    label.field-label { display: block; font-size: 0.875rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem; }
+    .input-field, select.input-field {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 0.7rem;
+      padding: 0.65rem 0.8rem; font-size: 0.9rem; font-weight: 600; color: var(--ink);
+      background: #fff; outline: none;
+    }
+    .input-field:focus, select.input-field:focus {
+      border-color: var(--sky-500); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+    }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.45rem; }
+    .unit-toggle { display: flex; align-items: center; gap: 0.35rem; }
+    .unit-pill {
+      font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 0.5rem;
+      cursor: pointer; color: #64748b;
+    }
+    .unit-pill.on { background: #e0f2fe; color: var(--sky-700); }
+    .linkish {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      border: 0; background: transparent; color: var(--sky-700);
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; padding: 0;
+    }
+    .linkish:hover { color: var(--sky-800); }
+
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    .type-card {
+      border: 2px solid #e2e8f0; border-radius: 0.85rem; padding: 0.9rem 0.5rem;
+      min-height: 5.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; cursor: pointer; transition: 0.16s ease; background: #fff;
+    }
+    .type-card:hover { border-color: #7dd3fc; background: rgba(240, 249, 255, 0.6); }
+    .type-card.on { border-color: var(--sky-500); background: rgba(240, 249, 255, 0.85); color: var(--sky-700); box-shadow: 0 1px 2px rgb(2 132 199 / 0.12); }
+    .type-card .t { font-weight: 700; }
+    .type-card .s { font-size: 0.7rem; color: #737373; margin-top: 0.25rem; }
+
+    .smart {
+      margin: 1rem 0; padding: 0.9rem; border-radius: 0.85rem;
+      background: rgba(240, 249, 255, 0.85); border: 1px solid rgba(186, 230, 253, 0.9);
+    }
+    .smart h4 { margin: 0; color: var(--sky-800); font-size: 0.95rem; display: flex; align-items: center; gap: 0.45rem; }
+    .smart p { margin: 0.45rem 0 0; font-size: 0.85rem; color: var(--sky-700); }
+    .smart .apply-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem; margin-top: 0.45rem; }
+    .smart .size { font-family: ui-monospace, Consolas, monospace; font-weight: 700; color: var(--sky-800); }
+    .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    .stack { display: flex; flex-direction: column; gap: 1rem; }
+
+    .btn-primary {
+      width: 100%; border: 0; border-radius: 0.75rem; padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, var(--sky-500), var(--sky-700));
+      color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      box-shadow: 0 8px 18px rgb(2 132 199 / 0.25);
+    }
+    .btn-primary:hover { filter: brightness(1.05); }
+    .auto-note {
+      padding: 0.85rem; border-radius: 0.85rem; background: rgba(236, 253, 245, 0.85);
+      border: 1px solid rgba(167, 243, 208, 0.9); display: flex; gap: 0.7rem; align-items: flex-start;
+    }
+    .dot { width: 0.7rem; height: 0.7rem; border-radius: 999px; background: #10b981; margin-top: 0.2rem; flex-shrink: 0; }
+    .auto-note strong { display: block; font-size: 0.85rem; color: #065f46; }
+    .auto-note span { font-size: 0.75rem; color: #047857; }
+
+    .params { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+    @media (min-width: 1024px) { .params { grid-template-columns: repeat(5, 1fr); } }
+    .param {
+      text-align: center; padding: 0.7rem; border-radius: 0.85rem;
+      background: rgba(240, 249, 255, 0.85); border: 1px solid #e0f2fe;
+    }
+    .param .k { font-size: 0.7rem; color: #475569; font-weight: 600; }
+    .param .v { margin-top: 0.2rem; font-family: ui-monospace, Consolas, monospace; font-weight: 800; color: var(--sky-700); font-size: 0.9rem; }
+
+    .viz-card { min-height: 24rem; display: flex; flex-direction: column; }
+    .viz-title { text-align: center; margin-bottom: 0.75rem; }
+    .viz-title h3 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+    .viz-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.15rem; }
+    .duct-frame {
+      position: relative; overflow: hidden; border: 4px solid var(--sky-200);
+      background: linear-gradient(135deg, rgba(240, 249, 255, 0.9), #fff);
+      box-shadow: 0 12px 28px rgb(15 23 42 / 0.08);
+    }
+    .duct-badge {
+      margin-top: 0.9rem; display: inline-flex; background: var(--sky-600); color: #fff;
+      padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700;
+    }
+    .kpi-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.25rem; }
+    @media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    .kpi { text-align: center; padding: 1rem; border-radius: 0.75rem; border: 1px solid; }
+    .kpi-vel { background: linear-gradient(135deg, #faf5ff, #f3e8ff); border-color: #e9d5ff; }
+    .kpi-press { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-color: #fed7aa; }
+    .kpi-sound { background: rgba(240, 249, 255, 0.85); border-color: rgba(186, 230, 253, 0.9); cursor: pointer; }
+    .kpi h4 { margin: 0; font-size: 0.95rem; color: #404040; display: inline; }
+    .kpi .val { margin: 0.35rem 0 0; font-family: ui-monospace, Consolas, monospace; font-weight: 800; font-size: 1.15rem; }
+    .kpi .hint { margin: 0.25rem 0 0; font-size: 0.75rem; font-weight: 600; }
+    .pulse { width: 0.65rem; height: 0.65rem; border-radius: 999px; display: inline-block; margin-right: 0.35rem; animation: pulse 1.4s ease infinite; }
+    @keyframes pulse { 50% { opacity: 0.45; } }
+
+    table.eng { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    table.eng th, table.eng td { padding: 0.65rem 0.75rem; border-bottom: 1px solid #f1f5f9; }
+    table.eng th { text-align: left; background: #f8fafc; font-weight: 800; color: #334155; }
+    table.eng td.r { text-align: right; font-family: ui-monospace, Consolas, monospace; }
+    .sec-sky { background: rgba(240, 249, 255, 0.75); color: var(--sky-800); font-weight: 800; }
+    .sec-green { background: #f0fdf4; color: #166534; font-weight: 800; }
+    .sec-purple { background: #faf5ff; color: #6b21a8; font-weight: 800; }
+    .sec-orange { background: #fff7ed; color: #9a3412; font-weight: 800; }
+    .status {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      padding: 0.9rem; border-radius: 0.75rem; border: 1px solid #bbf7d0; background: #f0fdf4;
+    }
+    .status .pill {
+      display: inline-flex; padding: 0.25rem 0.7rem; border-radius: 999px;
+      font-size: 0.85rem; font-weight: 700; border: 1px solid #bbf7d0; color: #16a34a; background: #f0fdf4;
+    }
+    .assumptions {
+      margin-top: 1.25rem; padding: 1.1rem; border-radius: 0.85rem;
+      background: rgba(248, 250, 252, 0.9); border: 1px solid rgba(226, 232, 240, 0.9);
+    }
+    .assumptions h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
+    .assumptions h4 { margin: 0 0 0.4rem; font-size: 0.85rem; color: #334155; }
+    .assumptions ul { margin: 0; padding-left: 1rem; color: #475569; font-size: 0.85rem; line-height: 1.55; }
+    .assumptions .cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 768px) { .assumptions .cols { grid-template-columns: 1fr 1.4fr; } }
+    .calc-hint {
+      margin: 0; color: #64748b; font-size: 0.8rem; font-weight: 600; line-height: 1.4;
+    }
+
+    .modal-bg {
+      position: fixed; inset: 0; background: rgb(15 23 42 / 0.45); display: none;
+      align-items: center; justify-content: center; padding: 1rem; z-index: 50;
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      width: min(520px, 100%); background: #fff; border-radius: 1rem; padding: 1.1rem;
+      border: 1px solid #e2e8f0; box-shadow: 0 20px 50px rgb(15 23 42 / 0.2);
+    }
+    .modal h3 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    .series-row { display: grid; grid-template-columns: 1fr 110px 36px; gap: 0.45rem; margin-bottom: 0.45rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.85rem; }
+    .btn-ghost {
+      border: 1px solid #cbd5e1; background: #fff; border-radius: 0.6rem;
+      padding: 0.5rem 0.8rem; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+    }
+    .btn-sky {
+      border: 0; background: var(--sky-600); color: #fff; border-radius: 0.6rem;
+      padding: 0.5rem 0.8rem; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header class="glass">
+    <div class="header-inner">
+      <a class="back" href="#" id="backLink" title="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span>Back</span>
+      </a>
+      <div class="ico-box" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+      </div>
+      <div>
+        <h1 class="gradient-text">Duct Sizing Calculator</h1>
+        <p class="sub">Professional HVAC Engineering Tool</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="layout">
+      <aside>
+        <div class="sticky-panel">
+          <div class="card">
+            <div class="panel-head">
+              <div class="mini-ico">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
+              </div>
+              <div>
+                <h2 class="gradient-text">Duct Calculator</h2>
+                <p>HVAC Engineering Tool</p>
+              </div>
+            </div>
+
+            <form id="ductForm" class="stack" onsubmit="return false;">
+              <div>
+                <div class="row-between">
+                  <label class="field-label" style="margin:0">Air Flow *</label>
+                  <div class="unit-toggle">
+                    <button type="button" class="linkish" id="btnSeries" title="Air flow series calculator">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3M21 15H3"/></svg>
+                      Series
+                    </button>
+                    <span style="color:#cbd5e1">|</span>
+                    <label class="unit-pill on" data-unit="cmh"><input type="radio" name="flowUnit" value="cmh" class="sr-only" checked>CMH</label>
+                    <label class="unit-pill" data-unit="ls"><input type="radio" name="flowUnit" value="ls" class="sr-only">L/s</label>
+                  </div>
+                </div>
+                <input id="airFlow" class="input-field" type="number" step="1" min="0" placeholder="Enter air flow in CMH" value="5000">
+              </div>
+
+              <div>
+                <label class="field-label">Duct Type *</label>
+                <div class="type-grid">
+                  <label class="type-card on" data-type="rectangular">
+                    <input type="radio" name="ductType" value="rectangular" class="sr-only" checked>
+                    <div class="t">Rectangular</div>
+                    <div class="s">Width × Height</div>
+                  </label>
+                  <label class="type-card" data-type="round">
+                    <input type="radio" name="ductType" value="round" class="sr-only">
+                    <div class="t">Round</div>
+                    <div class="s">Diameter</div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="smart" id="smartBox">
+                <h4>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg>
+                  Smart Recommendation
+                </h4>
+                <p>For optimal pressure loss (≤ 1 Pa/m):</p>
+                <div class="apply-row">
+                  <span class="size" id="smartSize">—</span>
+                  <button type="button" class="linkish" id="btnApply">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Apply
+                  </button>
+                </div>
+                <p class="text-xs" id="smartMeta" style="font-size:0.75rem;color:#0284c7;margin-top:0.35rem">Expected: —</p>
+              </div>
+
+              <div class="dim-grid" id="rectDims">
+                <div>
+                  <label class="field-label">Width (mm) *</label>
+                  <input id="width" class="input-field" type="number" step="50" min="50" placeholder="e.g., 600" value="660">
+                </div>
+                <div>
+                  <label class="field-label">Height (mm) *</label>
+                  <input id="height" class="input-field" type="number" step="50" min="50" placeholder="e.g., 400" value="600">
+                </div>
+              </div>
+              <div id="roundDims" hidden>
+                <label class="field-label">Diameter (mm) *</label>
+                <input id="diameter" class="input-field" type="number" step="25" min="50" placeholder="e.g., 400" value="400">
+              </div>
+
+              <div>
+                <label class="field-label">Material Type *</label>
+                <select id="materialId" class="input-field"></select>
+              </div>
+
+              <p class="calc-hint">Enter airflow and duct size, then click <strong>Calculate Now</strong>.</p>
+              <button type="button" class="btn-primary" id="btnCalc">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
+                <span>Calculate Now</span>
+              </button>
+
+              <div class="auto-note">
+                <span class="dot"></span>
+                <div>
+                  <strong>Auto-calculate when you finish typing</strong>
+                  <span>Results update when you click outside the size fields.</span>
+                </div>
+              </div>
+
+              <button type="button" class="linkish" id="btnClear" style="color:#64748b">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Clear all inputs
+              </button>
+            </form>
+          </div>
+        </div>
+      </aside>
+
+      <section class="stack" id="resultsPanel">
+        <div id="results"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-bg" id="seriesModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 class="gradient-text">Air Flow Series</h3>
+      <p style="margin:0 0 0.75rem;font-size:0.85rem;color:#64748b">Add branch / zone flows. Total is written to Air Flow.</p>
+      <div id="seriesRows"></div>
+      <button type="button" class="linkish" id="btnAddSeries">+ Add row</button>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="btnSeriesCancel">Cancel</button>
+        <button type="button" class="btn-sky" id="btnSeriesApply">Use total</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  'use strict';
+
+  var RHO = 1.225;
+  var NU = 1.5e-5;
+  var MU = 1.81e-5;
+
+  var MATERIALS = [
+    { id: '1', name: 'PID / PIR Duct', epsMm: 0.03 },
+    { id: '2', name: 'PVC Duct', epsMm: 0.01 },
+    { id: '3', name: 'Stainless Steel Duct', epsMm: 0.045 },
+    { id: '4', name: 'Smooth Plastic', epsMm: 0.0015 },
+    { id: '5', name: 'Fiberglass Duct', epsMm: 0.9 },
+    { id: '6', name: 'Galvanized Steel', epsMm: 0.09 },
+    { id: '7', name: 'Aluminum', epsMm: 0.05 },
+    { id: '8', name: 'Commercial Steel', epsMm: 0.046 },
+    { id: '9', name: 'Asphalted Duct', epsMm: 0.12 },
+    { id: '10', name: 'Cast Iron', epsMm: 0.26 },
+    { id: '11', name: 'Fiberglass Duct Board', epsMm: 0.9 },
+    { id: '12', name: 'Duct with Fiberglass Liner', epsMm: 0.9 },
+    { id: '13', name: 'Flexible Duct', epsMm: 1.5 },
+    { id: '14', name: 'Duct with Perforated Liner', epsMm: 1.0 },
+    { id: '15', name: 'Concrete', epsMm: 0.3 },
+    { id: '16', name: 'Brick', epsMm: 3.0 },
+    { id: '17', name: 'Spiral Duct (Smooth)', epsMm: 0.045 },
+    { id: '18', name: 'Spiral Duct (Rough)', epsMm: 0.15 },
+    { id: '19', name: 'Rectangular Duct (Smooth)', epsMm: 0.09 },
+    { id: '20', name: 'Rectangular Duct (Rough)', epsMm: 0.15 }
+  ];
+
+  var state = {
+    unit: 'cmh',
+    type: 'rectangular',
+    series: [{ label: 'Zone A', flow: 2500 }, { label: 'Zone B', flow: 2500 }]
+  };
+
+  var el = function (id) { return document.getElementById(id); };
+  var fmt = function (n, d) {
+    if (!isFinite(n)) return '—';
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+  };
+  var roundStep = function (n, step) {
+    return Math.max(step, Math.round(n / step) * step);
+  };
+
+  function materialById(id) {
+    return MATERIALS.find(function (m) { return m.id === String(id); }) || MATERIALS[5];
+  }
+
+  function toCms(flow, unit) {
+    return unit === 'ls' ? flow / 1000 : flow / 3600;
+  }
+  function fromCms(cms, unit) {
+    return unit === 'ls' ? cms * 1000 : cms * 3600;
+  }
+
+  /** Huebscher equivalent diameter (m) for rectangular a,b in m. */
+  function deqRect(a, b) {
+    return 1.30 * Math.pow(a * b, 0.625) / Math.pow(a + b, 0.25);
+  }
+  function dhRect(a, b) {
+    return (2 * a * b) / (a + b);
+  }
+
+  /** Colebrook–White friction factor (iterative). */
+  function colebrookF(Re, eps, Dh) {
+    if (Re < 2300) return 64 / Math.max(Re, 1);
+    var f = 0.02, i, term;
+    for (i = 0; i < 30; i++) {
+      term = eps / (3.7 * Dh) + 2.51 / (Re * Math.sqrt(f));
+      f = 1 / Math.pow(-2 * Math.log10(term), 2);
+    }
+    return f;
+  }
+
+  function soundLn(V, A) {
+    if (V <= 0 || A <= 0) return 0;
+    return 10 + 50 * Math.log10(V) + 10 * Math.log10(A);
+  }
+
+  function compute(cms, type, wMm, hMm, dMm, epsMm) {
+    var A, Dh, Deq, w = wMm / 1000, h = hMm / 1000, d = dMm / 1000;
+    if (type === 'round') {
+      A = Math.PI * d * d / 4;
+      Dh = d;
+      Deq = d;
+    } else {
+      A = w * h;
+      Dh = dhRect(w, h);
+      Deq = deqRect(w, h);
+    }
+    var V = cms / Math.max(A, 1e-12);
+    var Re = V * Dh / NU;
+    var regime = Re < 2300 ? 'Laminar' : Re < 4000 ? 'Transitional' : 'Turbulent';
+    var eps = epsMm / 1000;
+    var f = colebrookF(Re, eps, Dh);
+    var Pv = 0.5 * RHO * V * V;
+    var dPdL = f * (1 / Dh) * Pv;
+    var Ln = soundLn(V, A);
+    var dBA = Ln - 10;
+    return {
+      A: A, Dh: Dh, Deq: Deq, V: V, Re: Re, regime: regime, f: f, Pv: Pv,
+      dPdL: dPdL, Ln: Ln, dBA: dBA, epsMm: epsMm, relRough: eps / Dh,
+      wMm: wMm, hMm: hMm, dMm: dMm, type: type
+    };
+  }
+
+  function velocityStatus(V) {
+    if (V < 6) return { color: '#22c55e', text: 'Low (< 6 m/s)', tone: 'good' };
+    if (V < 10) return { color: '#eab308', text: 'Moderate (< 10 m/s)', tone: 'ok' };
+    return { color: '#ef4444', text: 'High (≥ 10 m/s)', tone: 'bad' };
+  }
+  function pressureStatus(dp) {
+    if (dp <= 1) return { color: '#22c55e', text: 'Acceptable', detail: '≤ 1 Pa/m' };
+    if (dp <= 2) return { color: '#eab308', text: 'Acceptable', detail: '≤ 2 Pa/m' };
+    return { color: '#ef4444', text: 'Not acceptable', detail: '> 2 Pa/m' };
+  }
+  function soundStatus(dBA) {
+    if (dBA <= 35) return { color: '#22c55e', text: 'Within limit' };
+    if (dBA <= 45) return { color: '#eab308', text: 'Borderline' };
+    return { color: '#ef4444', text: 'Above limit' };
+  }
+  function systemStatus(r) {
+    var vs = velocityStatus(r.V);
+    if (vs.tone === 'bad' || r.dPdL > 2) return { label: 'Undersized', note: 'High velocity or pressure loss – consider a larger duct', ok: false };
+    if (vs.tone === 'good' && r.dPdL <= 1) return { label: 'Optimal', note: 'Perfect flow characteristics', ok: true };
+    return { label: 'Acceptable', note: 'Within typical design limits', ok: true };
+  }
+
+  /** Recommend size for ΔP/L ≤ 1 Pa/m. */
+  function recommend(cms, type, epsMm) {
+    var target = 1.0;
+    var best = null;
+    if (type === 'round') {
+      var d;
+      for (d = 100; d <= 2000; d += 25) {
+        var r = compute(cms, 'round', d, d, d, epsMm);
+        if (r.dPdL <= target && r.V >= 2 && r.V <= 12) {
+          best = { label: 'Ø ' + d + ' mm', w: d, h: d, d: d, r: r };
+          break;
+        }
+      }
+      if (!best) {
+        d = 400;
+        best = { label: 'Ø ' + d + ' mm', w: d, h: d, d: d, r: compute(cms, 'round', d, d, d, epsMm) };
+      }
+    } else {
+      var aspects = [1, 1.25, 1.5, 2, 2.5, 3];
+      var found = null;
+      aspects.some(function (ar) {
+        var h;
+        for (h = 150; h <= 1200; h += 50) {
+          var w = roundStep(h * ar, 50);
+          var r = compute(cms, 'rectangular', w, h, 0, epsMm);
+          if (r.dPdL <= target && r.V >= 2 && r.V <= 10 && ar <= 4) {
+            found = { label: w + ' × ' + h + ' mm', w: w, h: h, d: 0, r: r };
+            return true;
+          }
+        }
+        return false;
+      });
+      if (!found) {
+        var A = cms / 6;
+        var h0 = roundStep(Math.sqrt(A / 1.5) * 1000, 50);
+        var w0 = roundStep(1.5 * h0, 50);
+        found = { label: w0 + ' × ' + h0 + ' mm', w: w0, h: h0, d: 0, r: compute(cms, 'rectangular', w0, h0, 0, epsMm) };
+      }
+      best = found;
+    }
+    return best;
+  }
+
+  function fillMaterials() {
+    var sel = el('materialId');
+    sel.innerHTML = '<option value="">Select material type</option>' + MATERIALS.map(function (m) {
+      return '<option value="' + m.id + '"' + (m.id === '6' ? ' selected' : '') + '>' + m.name + '</option>';
+    }).join('');
+  }
+
+  function syncTypeUI() {
+    document.querySelectorAll('.type-card').forEach(function (c) {
+      c.classList.toggle('on', c.getAttribute('data-type') === state.type);
+    });
+    el('rectDims').hidden = state.type !== 'rectangular';
+    el('roundDims').hidden = state.type !== 'round';
+  }
+
+  function syncUnitUI() {
+    document.querySelectorAll('.unit-pill').forEach(function (p) {
+      p.classList.toggle('on', p.getAttribute('data-unit') === state.unit);
+    });
+    el('airFlow').placeholder = state.unit === 'ls' ? 'Enter air flow in L/s' : 'Enter air flow in CMH';
+  }
+
+  function currentCms() {
+    return toCms(Number(el('airFlow').value) || 0, state.unit);
+  }
+
+  function updateSmart() {
+    var mat = materialById(el('materialId').value || '6');
+    var cms = currentCms();
+    if (cms <= 0) {
+      el('smartSize').textContent = '—';
+      el('smartMeta').textContent = 'Enter airflow to see a recommendation.';
+      return null;
+    }
+    var rec = recommend(cms, state.type, mat.epsMm);
+    el('smartSize').textContent = rec.label;
+    el('smartMeta').textContent = 'Expected: ' + fmt(rec.r.V, 1) + ' m/s velocity, ' + fmt(rec.r.dPdL, 3) + ' Pa/m pressure loss';
+    return rec;
+  }
+
+  function drawViz(r) {
+    var maxW = 240, maxH = 160, pad = 8;
+    var wPx, hPx;
+    if (r.type === 'round') {
+      var side = Math.min(maxW, maxH);
+      wPx = side; hPx = side;
+    } else {
+      var scale = Math.min(maxW / Math.max(r.wMm, 1), maxH / Math.max(r.hMm, 1));
+      wPx = Math.max(90, r.wMm * scale);
+      hPx = Math.max(70, r.hMm * scale);
+    }
+    var radius = r.type === 'round' ? wPx / 2 : 12;
+    var paths = '';
+    var rows = 5, i;
+    for (i = 0; i < rows; i++) {
+      var y = pad + ((hPx - pad * 2) * (i + 1)) / (rows + 1);
+      var x1 = pad, x2 = wPx - pad;
+      var c1 = x1 + (x2 - x1) * 0.25, c2 = x1 + (x2 - x1) * 0.55;
+      paths += '<path d="M ' + x1 + ' ' + y + ' C ' + c1 + ' ' + (y + 3) + ', ' + c2 + ' ' + (y - 3) + ', ' + x2 + ' ' + y +
+        '" fill="none" stroke="rgba(34,197,94,0.85)" stroke-width="1.2" stroke-linecap="round" ' +
+        'stroke-dasharray="10,18"><animate attributeName="stroke-dashoffset" from="0" to="-28" dur="1.2s" repeatCount="indefinite"/></path>';
+    }
+    return '<div class="duct-frame" style="width:' + wPx + 'px;height:' + hPx + 'px;border-radius:' + radius + 'px">' +
+      '<div style="position:absolute;inset:0;border:4px solid rgba(125,211,252,0.35);border-radius:' + radius + 'px"></div>' +
+      '<svg width="' + wPx + '" height="' + hPx + '" style="position:absolute;inset:0">' + paths + '</svg>' +
+      '<div style="position:absolute;inset:8px;border:2px dashed rgba(125,211,252,0.5);border-radius:' + Math.max(4, radius - 4) + 'px"></div>' +
+      '</div><div style="text-align:center"><span class="duct-badge">' + (r.type === 'round' ? 'Round Duct' : 'Rectangular Duct') + '</span></div>';
+  }
+
+  function renderResults() {
+    var flow = Number(el('airFlow').value) || 0;
+    var mat = materialById(el('materialId').value || '6');
+    if (!el('materialId').value) el('materialId').value = '6';
+    var cms = toCms(flow, state.unit);
+    var w = Number(el('width').value) || 0;
+    var h = Number(el('height').value) || 0;
+    var d = Number(el('diameter').value) || 0;
+    if (cms <= 0 || (state.type === 'rectangular' ? (w <= 0 || h <= 0) : d <= 0)) {
+      el('results').innerHTML = '';
+      return;
+    }
+    var r = compute(cms, state.type, w, h, d, mat.epsMm);
+    var vs = velocityStatus(r.V);
+    var ps = pressureStatus(r.dPdL);
+    var ss = soundStatus(r.dBA);
+    var sys = systemStatus(r);
+    var flowLabel = state.unit === 'ls' ? fmt(flow, 1) + ' L/s' : fmt(flow, 0) + ' CMH';
+
+    var html = '';
+    html += '<div class="card"><div class="panel-head" style="margin-bottom:0.85rem"><div class="mini-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5M3 12A9 3 0 0 0 21 12"/></svg></div><h3 class="gradient-text" style="margin:0;font-size:1.05rem">Current Parameters</h3></div>';
+    html += '<div class="params">';
+    html += '<div class="param"><div class="k">Air Flow</div><div class="v">' + flowLabel + '</div></div>';
+    html += '<div class="param"><div class="k">Duct Type</div><div class="v" style="font-family:inherit;text-transform:capitalize">' + r.type + '</div></div>';
+    if (r.type === 'rectangular') {
+      html += '<div class="param"><div class="k">Width</div><div class="v">' + fmt(r.wMm, 0) + ' mm</div></div>';
+      html += '<div class="param"><div class="k">Height</div><div class="v">' + fmt(r.hMm, 0) + ' mm</div></div>';
+    } else {
+      html += '<div class="param" style="grid-column:span 2"><div class="k">Diameter</div><div class="v">' + fmt(r.dMm, 0) + ' mm</div></div>';
+    }
+    html += '<div class="param"><div class="k">Material</div><div class="v" style="font-family:inherit;font-size:0.75rem" title="' + mat.name + '">' + mat.name + '</div></div>';
+    html += '</div></div>';
+
+    html += '<div class="card viz-card"><div class="viz-title"><h3 class="gradient-text">Air Flow Visualization</h3></div>';
+    html += '<div class="viz-stage">' + drawViz(r) + '</div>';
+    html += '<div class="kpi-grid">';
+    html += '<div class="kpi kpi-vel"><div><span class="pulse" style="background:' + vs.color + '"></span><h4>Velocity</h4></div><p class="val" style="color:#6b21a8">' + fmt(r.V, 2) + ' m/s</p><p class="hint" style="color:' + (vs.tone === 'good' ? '#15803d' : vs.tone === 'ok' ? '#a16207' : '#b91c1c') + '">' + vs.text + '</p></div>';
+    html += '<div class="kpi kpi-press"><div><span class="pulse" style="background:' + ps.color + '"></span><h4>Pressure Loss</h4></div><p class="val" style="color:#ea580c">' + fmt(r.dPdL, 3) + ' Pa/m</p><p class="hint" style="color:' + (r.dPdL <= 1 ? '#16a34a' : r.dPdL <= 2 ? '#ca8a04' : '#dc2626') + '">' + ps.text + '</p></div>';
+    html += '<div class="kpi kpi-sound" id="soundKpi" title="Recommended ambient sound guidance"><div><span class="pulse" style="background:' + ss.color + '"></span><h4>Sound Power</h4> <span style="font-size:0.7rem;font-weight:700;color:' + (ss.color === '#22c55e' ? '#15803d' : '#a16207') + '">' + ss.text + '</span></div><p class="val" style="color:var(--sky-700);font-size:1.45rem">' + fmt(r.dBA, 1) + ' dBA</p><p class="hint" style="color:#737373;font-weight:500">Lₙ ' + fmt(r.Ln, 1) + ' dB (includes −10 dB attenuation)</p><p class="hint" style="color:#737373;font-weight:500;font-size:0.7rem">ASHRAE-style estimate for duct-borne flow noise</p></div>';
+    html += '</div></div>';
+
+    html += '<div class="card"><div class="panel-head"><div class="mini-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div><div><h2 class="gradient-text" style="margin:0;font-size:1.15rem">Engineering Calculations</h2><p>Complete HVAC analysis parameters</p></div></div>';
+    html += '<div style="overflow:auto"><table class="eng"><thead><tr><th>Parameter</th><th style="text-align:right">Value</th><th>Unit</th></tr></thead><tbody>';
+    html += '<tr><td colspan="3" class="sec-sky">BASIC PARAMETERS</td></tr>';
+    html += '<tr><td>Air Flow</td><td class="r">' + (state.unit === 'ls' ? fmt(flow, 1) : fmt(flow, 0)) + '</td><td>' + (state.unit === 'ls' ? 'L/s' : 'CMH') + '</td></tr>';
+    html += '<tr><td>Duct Type</td><td class="r" style="text-transform:capitalize;font-family:inherit">' + r.type + '</td><td>-</td></tr>';
+    html += '<tr><td>Material</td><td class="r" style="font-family:inherit;font-size:0.8rem">' + mat.name + '</td><td>-</td></tr>';
+    html += '<tr><td>Absolute Roughness (ε)</td><td class="r">' + fmt(r.epsMm, 4) + '</td><td>mm</td></tr>';
+    html += '<tr><td colspan="3" class="sec-green">GEOMETRIC PARAMETERS</td></tr>';
+    html += '<tr><td>Cross-Sectional Area</td><td class="r">' + fmt(r.A, 6) + '</td><td>m²</td></tr>';
+    html += '<tr><td>Equivalent Diameter (Deq)</td><td class="r">' + fmt(r.Deq * 1000, 2) + '</td><td>mm</td></tr>';
+    html += '<tr><td>Hydraulic Diameter (Dh)</td><td class="r">' + fmt(r.Dh * 1000, 2) + '</td><td>mm</td></tr>';
+    html += '<tr><td>Relative Roughness (ε/Dh)</td><td class="r">' + fmt(r.relRough, 6) + '</td><td>-</td></tr>';
+    html += '<tr><td colspan="3" class="sec-purple">FLOW PARAMETERS</td></tr>';
+    html += '<tr><td>Air Velocity (V)</td><td class="r">' + fmt(r.V, 2) + '</td><td>m/s</td></tr>';
+    html += '<tr><td>Reynolds Number (Re)</td><td class="r">' + fmt(r.Re, 0) + '</td><td>-</td></tr>';
+    html += '<tr><td>Flow Regime</td><td class="r" style="font-family:inherit;font-weight:700">' + r.regime + '</td><td>-</td></tr>';
+    html += '<tr><td>Velocity Pressure (Pv)</td><td class="r">' + fmt(r.Pv, 2) + '</td><td>Pa</td></tr>';
+    html += '<tr><td>Friction Factor (f)</td><td class="r">' + fmt(r.f, 6) + '</td><td>-</td></tr>';
+    html += '<tr><td colspan="3" class="sec-orange">PRESSURE LOSS</td></tr>';
+    html += '<tr><td>Pressure Loss (ΔP/L)</td><td class="r">' + fmt(r.dPdL, 6) + '</td><td>Pa/m</td></tr>';
+    html += '<tr><td colspan="3" style="padding:0.5rem 0 0"><div class="status"><div style="display:flex;gap:0.7rem;align-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' + (sys.ok ? '#22c55e' : '#eab308') + '" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg><div><div style="font-weight:700">System Status</div><div style="font-size:0.75rem;color:#525252">' + sys.note + '</div></div></div><span class="pill" style="' + (sys.ok ? '' : 'color:#a16207;border-color:#fde68a;background:#fefce8') + '">' + sys.label + '</span></div></td></tr>';
+    html += '</tbody></table></div>';
+
+    html += '<div class="assumptions"><h3>📐 Engineering Assumptions &amp; Standards</h3><div class="cols">';
+    html += '<div><h4>Physical Properties:</h4><ul><li>• Air density (ρ): <span style="font-family:ui-monospace,Consolas,monospace">1.225 kg/m³</span> at 20°C, 1 atm</li><li>• Kinematic viscosity (ν): <span style="font-family:ui-monospace,Consolas,monospace">1.5×10⁻⁵ m²/s</span> at 20°C</li><li>• Dynamic viscosity (μ): <span style="font-family:ui-monospace,Consolas,monospace">1.81×10⁻⁵ Pa·s</span></li></ul></div>';
+    html += '<div><h4>Calculation Methods:</h4><ul><li>• Friction factor: <strong>Colebrook-White equation</strong></li><li>• Reynolds Number: <span style="font-family:ui-monospace,Consolas,monospace">Re = V·Dh/ν</span></li><li>• Pressure loss: <span style="font-family:ui-monospace,Consolas,monospace">ΔP = f·(L/Dh)·(ρV²/2)</span></li><li>• Sound power level: <span style="font-family:ui-monospace,Consolas,monospace">Lₙ = 10 + 50·log₁₀(V) + 10·log₁₀(A)</span> (dB)</li><li>• Estimated dBA: <span style="font-family:ui-monospace,Consolas,monospace">dBA = Lₙ − 10</span> (fixed attenuation)</li></ul></div>';
+    html += '</div><div style="margin-top:1rem;padding-top:0.85rem;border-top:1px solid #e2e8f0"><h4>Design Guidelines (ASHRAE):</h4><ul><li>• Recommended velocity range: <strong>2–15 m/s</strong> for supply/return ducts</li><li>• Low velocity systems: <strong>2–6 m/s</strong> (residential)</li><li>• Medium velocity systems: <strong>6–10 m/s</strong> (commercial)</li><li>• High velocity systems: <strong>10–15 m/s</strong> (industrial)</li><li>• Maximum pressure loss: <strong>1–2 Pa/m</strong> for most applications</li><li>• Flow regime: Turbulent flow (Re &gt; 4000) for accurate pressure loss calculations</li></ul></div></div></div>';
+
+    el('results').innerHTML = html;
+  }
+
+  function calculate() {
+    updateSmart();
+    renderResults();
+  }
+
+  function clearAll() {
+    el('airFlow').value = '';
+    el('width').value = '';
+    el('height').value = '';
+    el('diameter').value = '';
+    el('materialId').value = '6';
+    state.type = 'rectangular';
+    syncTypeUI();
+    updateSmart();
+    el('results').innerHTML = '';
+  }
+
+  function renderSeriesRows() {
+    el('seriesRows').innerHTML = state.series.map(function (row, i) {
+      return '<div class="series-row"><input class="input-field" data-s-label="' + i + '" value="' + row.label + '" placeholder="Label">' +
+        '<input class="input-field" data-s-flow="' + i + '" type="number" step="1" value="' + row.flow + '" placeholder="Flow">' +
+        '<button type="button" class="btn-ghost" data-s-del="' + i + '" style="padding:0.4rem">✕</button></div>';
+    }).join('');
+    el('seriesRows').querySelectorAll('[data-s-label]').forEach(function (inp) {
+      inp.addEventListener('input', function () { state.series[Number(inp.getAttribute('data-s-label'))].label = inp.value; });
+    });
+    el('seriesRows').querySelectorAll('[data-s-flow]').forEach(function (inp) {
+      inp.addEventListener('input', function () { state.series[Number(inp.getAttribute('data-s-flow'))].flow = Number(inp.value) || 0; });
+    });
+    el('seriesRows').querySelectorAll('[data-s-del]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.series.splice(Number(btn.getAttribute('data-s-del')), 1);
+        if (!state.series.length) state.series.push({ label: 'Zone', flow: 0 });
+        renderSeriesRows();
+      });
+    });
+  }
+
+  // events
+  document.querySelectorAll('.unit-pill').forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      var prev = state.unit;
+      var next = pill.getAttribute('data-unit');
+      if (prev === next) return;
+      var cms = toCms(Number(el('airFlow').value) || 0, prev);
+      state.unit = next;
+      el('airFlow').value = cms > 0 ? (next === 'ls' ? Math.round(fromCms(cms, next) * 10) / 10 : Math.round(fromCms(cms, next))) : '';
+      syncUnitUI();
+      calculate();
+    });
+  });
+
+  document.querySelectorAll('.type-card').forEach(function (card) {
+    card.addEventListener('click', function () {
+      state.type = card.getAttribute('data-type');
+      syncTypeUI();
+      updateSmart();
+      calculate();
+    });
+  });
+
+  el('btnApply').addEventListener('click', function () {
+    var rec = updateSmart();
+    if (!rec) return;
+    if (state.type === 'round') el('diameter').value = rec.d;
+    else { el('width').value = rec.w; el('height').value = rec.h; }
+    calculate();
+  });
+
+  el('btnCalc').addEventListener('click', calculate);
+  el('btnClear').addEventListener('click', clearAll);
+  el('materialId').addEventListener('change', calculate);
+  el('airFlow').addEventListener('change', calculate);
+  el('airFlow').addEventListener('input', function () { updateSmart(); });
+  ['width', 'height', 'diameter'].forEach(function (id) {
+    el(id).addEventListener('change', calculate);
+    el(id).addEventListener('blur', calculate);
+  });
+
+  el('btnSeries').addEventListener('click', function () {
+    renderSeriesRows();
+    el('seriesModal').classList.add('open');
+  });
+  el('btnSeriesCancel').addEventListener('click', function () { el('seriesModal').classList.remove('open'); });
+  el('btnAddSeries').addEventListener('click', function () {
+    state.series.push({ label: 'Zone ' + (state.series.length + 1), flow: 0 });
+    renderSeriesRows();
+  });
+  el('btnSeriesApply').addEventListener('click', function () {
+    var total = state.series.reduce(function (a, r) { return a + (Number(r.flow) || 0); }, 0);
+    el('airFlow').value = total;
+    el('seriesModal').classList.remove('open');
+    calculate();
+  });
+  el('seriesModal').addEventListener('click', function (ev) {
+    if (ev.target === el('seriesModal')) el('seriesModal').classList.remove('open');
+  });
+
+  el('backLink').addEventListener('click', function (ev) {
+    ev.preventDefault();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'wepl-nav', id: 'dashboard' }, '*');
+      }
+    } catch (e) { /* ignore */ }
+    if (document.referrer) history.back();
+  });
+
+  fillMaterials();
+  syncTypeUI();
+  syncUnitUI();
+  updateSmart();
+  calculate();
+})();
+  </script>
+</body>
+</html>

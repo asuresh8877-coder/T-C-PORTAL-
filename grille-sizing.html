@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grille Sizing Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+          colors: {
+            brand: {
+              50: '#f0f7ff', 100: '#e0efff', 200: '#b9dfff', 300: '#7cc4ff',
+              400: '#36a5ff', 500: '#0c85f1', 600: '#0068ce', 700: '#0052a7', 800: '#05468a', 900: '#0a3c72'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .gradient-text {
+      background: linear-gradient(135deg, #0068ce 0%, #0c85f1 50%, #36a5ff 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .unit-btn.active {
+      background: linear-gradient(135deg, #0068ce 0%, #0c85f1 100%);
+      color: #fff; box-shadow: 0 2px 8px rgba(12, 133, 241, 0.25);
+    }
+    .glow-success { box-shadow: 0 0 20px rgba(34,197,94,.12); border-color: #86efac !important; }
+    .glow-warning { box-shadow: 0 0 20px rgba(245,158,11,.12); border-color: #fcd34d !important; }
+    .glow-error { box-shadow: 0 0 20px rgba(239,68,68,.12); border-color: #fca5a5 !important; }
+    input:focus, select:focus { outline: none; border-color: #0c85f1 !important; box-shadow: 0 0 0 3px rgba(12,133,241,.12); }
+    .chart-container { position: relative; height: 240px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-[100dvh] flex flex-col lg:flex-row overflow-hidden">
+  <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shadow-sm">
+    <button id="panel-toggle" type="button" class="p-3 rounded-lg hover:bg-slate-100" aria-label="Open settings">
+      <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/></svg>
+      </div>
+      <span class="font-semibold">Grille Sizing</span>
+    </div>
+    <a href="#" id="backMobile" class="p-2 rounded-lg hover:bg-slate-100" aria-label="Back">
+      <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    </a>
+  </header>
+
+  <div id="panel-overlay" class="fixed inset-0 bg-slate-900/40 z-40 lg:hidden opacity-0 pointer-events-none transition-opacity"></div>
+
+  <aside id="left-panel" class="fixed lg:relative inset-y-0 left-0 z-50 w-full max-w-[480px] lg:max-w-none lg:w-[420px] xl:w-[480px] h-full flex flex-col bg-white border-r border-slate-200 shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+    <div class="p-4 sm:p-6 border-b border-slate-200 bg-gradient-to-r from-white to-slate-50">
+      <a href="#" id="backDesktop" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-brand-600 mb-3">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back
+      </a>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/25">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-lg sm:text-xl font-semibold text-slate-800">Grille Sizing</h1>
+            <p class="text-xs text-slate-500">HVAC Performance Calculator</p>
+          </div>
+        </div>
+        <button id="panel-close" type="button" class="lg:hidden p-2 rounded-lg hover:bg-slate-100" aria-label="Close">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5">
+      <section class="space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-lg bg-brand-500/10 text-brand-600 text-xs font-semibold">1</span>
+          <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Product Selection</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1.5">
+            <label class="text-xs font-medium text-slate-500">Supplier</label>
+            <select id="supplier" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm"></select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-medium text-slate-500">Terminal Type</label>
+            <select id="terminal_type" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm"></select>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-slate-500">Model</label>
+          <select id="grille_model" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm"></select>
+        </div>
+        <div id="size_box" class="space-y-1.5">
+          <label class="text-xs font-medium text-slate-500" id="size_label">Size</label>
+          <select id="size_select" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm"></select>
+        </div>
+        <div id="dim_box" class="hidden space-y-3">
+          <label class="text-xs font-medium text-slate-500">Grille Dimensions</label>
+          <div class="flex gap-2 items-center">
+            <div class="flex-1 relative">
+              <input type="number" id="dim_w" value="600" class="w-full pl-3 pr-12 py-2.5 border border-slate-300 rounded-lg text-sm" />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">mm</span>
+            </div>
+            <span class="text-slate-400">×</span>
+            <div class="flex-1 relative">
+              <input type="number" id="dim_h" value="600" class="w-full pl-3 pr-12 py-2.5 border border-slate-300 rounded-lg text-sm" />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">mm</span>
+            </div>
+          </div>
+          <div class="px-3 py-2 bg-brand-50 rounded-lg border border-brand-200 text-xs text-slate-600">
+            Area: <span id="area_display" class="mono text-brand-600 font-medium">0.3600</span> m²
+          </div>
+          <div id="rec_dim_box" class="hidden p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-emerald-700">Recommended Size</span>
+              <span class="text-[10px] text-emerald-600">@ <span id="rec_vel_label">2.5</span> m/s</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="mono text-sm font-bold text-emerald-700"><span id="rec_w">—</span> × <span id="rec_h">—</span> mm</span>
+              <button type="button" id="btn_apply_dim" class="ml-auto px-3 py-2 text-xs font-semibold bg-emerald-500 text-white rounded-lg">Apply</button>
+            </div>
+          </div>
+        </div>
+        <div id="slot_box" class="hidden space-y-1.5">
+          <label class="text-xs font-medium text-slate-500">Number of Slots</label>
+          <select id="slot_select" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm"></select>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-lg bg-brand-500/10 text-brand-600 text-xs font-semibold">2</span>
+          <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Airflow Requirements</h2>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="flex-1 space-y-1.5">
+            <label class="text-xs font-medium text-slate-500">Flow Rate</label>
+            <input type="number" id="flow_rate" value="300" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Enter flow rate" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-medium text-slate-500">Unit</label>
+            <div class="flex bg-slate-100 rounded-lg p-1 border border-slate-200 w-fit">
+              <button type="button" class="unit-btn px-4 py-2 text-xs font-semibold rounded-md text-slate-500" data-unit="CMH">m³/h</button>
+              <button type="button" class="unit-btn active px-4 py-2 text-xs font-semibold rounded-md" data-unit="LPS">L/s</button>
+            </div>
+          </div>
+        </div>
+        <div id="vel_box" class="hidden space-y-1.5">
+          <label class="text-xs font-medium text-slate-500">Target Face Velocity</label>
+          <div class="relative">
+            <input type="number" id="target_velocity" value="2.5" step="0.1" class="w-full pl-3 pr-12 py-2.5 border border-slate-300 rounded-lg text-sm" />
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-lg bg-brand-500/10 text-brand-600 text-xs font-semibold">3</span>
+          <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Results</h2>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="p-4 border-b border-slate-200">
+            <p class="text-xs text-slate-400 uppercase tracking-wide">Selected Size</p>
+            <p id="result-size" class="mono text-xl font-semibold text-slate-800">—</p>
+          </div>
+          <div class="p-4 space-y-3">
+            <div id="pressure-card" class="bg-white rounded-xl p-4 border border-slate-200">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <p class="text-xs text-slate-500">Pressure Drop</p>
+                  <p id="pressure-warning" class="text-[10px] font-medium hidden"></p>
+                </div>
+                <div class="text-right">
+                  <span id="result-pressure" class="mono text-2xl font-bold">—</span>
+                  <span class="text-sm text-slate-400 ml-1">Pa</span>
+                </div>
+              </div>
+              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div id="pressure-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" style="width:0%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1"><span>0</span><span>Target: 25 Pa</span><span>50</span></div>
+            </div>
+
+            <div id="noise-card" class="bg-white rounded-xl p-4 border border-slate-200">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <p class="text-xs text-slate-500">Noise Level (NR)</p>
+                  <p id="noise-warning" class="text-[10px] font-medium hidden"></p>
+                </div>
+                <div class="text-right">
+                  <div><span id="result-noise" class="mono text-2xl font-bold">—</span><span class="text-sm text-slate-400 ml-1">NR</span></div>
+                  <p id="result-noise-dba" class="text-xs font-medium text-violet-600">≈ — dBA</p>
+                </div>
+              </div>
+              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div id="noise-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" style="width:0%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1"><span>0</span><span>Approx. target: 45 dBA</span><span>60</span></div>
+              <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">Approximation only: dBA ≈ NC + 10 or NR + 5. Actual dBA varies with the octave-band spectrum and room conditions.</p>
+            </div>
+
+            <div id="velocity-card" class="hidden bg-white rounded-xl p-4 border border-slate-200">
+              <div class="flex justify-between items-center">
+                <p class="text-xs text-slate-500">Face Velocity</p>
+                <div><span id="result-velocity" class="mono text-2xl font-bold">—</span><span class="text-sm text-slate-400 ml-1">m/s</span></div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 border border-slate-200">
+              <div class="flex justify-between items-center">
+                <p class="text-xs text-slate-500">Throw Distance</p>
+                <div><span id="result-throw" class="mono text-2xl font-bold">—</span><span class="text-sm text-slate-400 ml-1">m</span></div>
+              </div>
+            </div>
+          </div>
+          <div id="status-footer" class="px-4 py-3 border-t border-slate-200 bg-slate-50">
+            <div id="status-good" class="hidden flex items-center gap-2 text-emerald-600 text-sm font-medium">Selection meets all performance criteria</div>
+            <div id="status-warning" class="hidden flex items-center gap-2 text-amber-600 text-sm font-medium">Review sizing — some limits exceeded</div>
+          </div>
+        </div>
+
+        <div id="recommendation-section" class="hidden bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200 p-4">
+          <h4 class="text-sm font-semibold text-emerald-700">Recommended Size</h4>
+          <p class="text-xs text-emerald-600/70 mt-0.5">Optimized for pressure ≤25 Pa &amp; approximate noise ≤45 dBA</p>
+          <div class="mt-3 flex flex-wrap items-baseline gap-3">
+            <span id="rec-size" class="mono text-xl font-bold text-emerald-800">—</span>
+            <span class="text-xs text-emerald-600"><span id="rec-pressure">—</span> · <span id="rec-noise">—</span> · <span id="rec-dba">—</span> · <span id="rec-throw">—</span></span>
+          </div>
+          <p class="text-[10px] text-emerald-700/80 mt-2 leading-relaxed">Approximate dBA is derived from the retained NC/NR rating and is not a measured dBA value.</p>
+          <button type="button" id="apply-rec-btn" class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg">Apply Recommendation</button>
+        </div>
+
+        <button type="button" id="calculate-btn" class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          Calculate Sizing
+        </button>
+        <p class="text-[10px] text-slate-400 leading-relaxed">Field estimate using free-area, orifice pressure and empirical throw/noise relations. For certified selection use manufacturer catalogue data (Kyodo / Rglazen).</p>
+      </section>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto bg-slate-100">
+    <div class="flex-1 p-4 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 id="charts-title" class="text-base sm:text-lg font-semibold text-slate-800">Performance Charts</h2>
+        <div class="flex items-center gap-2 text-xs text-slate-500"><span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> Live estimate</div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+        <h3 class="text-sm font-medium text-slate-600 mb-3 flex items-center gap-2"><span class="w-3 h-3 rounded bg-brand-500"></span> Pressure Drop vs Airflow</h3>
+        <div class="chart-container"><canvas id="pressureChart"></canvas></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+        <h3 class="text-sm font-medium text-slate-600 mb-3 flex items-center gap-2"><span class="w-3 h-3 rounded bg-violet-500"></span> Noise (NR) vs Airflow</h3>
+        <div class="chart-container"><canvas id="noiseChart"></canvas></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+        <h3 class="text-sm font-medium text-slate-600 mb-3 flex items-center gap-2"><span class="w-3 h-3 rounded bg-emerald-500"></span> Throw Distance vs Airflow</h3>
+        <div class="chart-container"><canvas id="throwChart"></canvas></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+(function () {
+  'use strict';
+
+  var RHO = 1.2;
+  var PRESS_LIMIT = 25;
+  var DBA_LIMIT = 45;
+
+  var CATALOG = {
+    kyodo: {
+      name: 'Kyodo',
+      types: {
+        '4way': {
+          /* Kyodo T-4A: 150×150 @ 250 m³/h → 27.6 Pa · 23 NR · 27.8 dBA · 2.7 m; 175×175 → 14.8 Pa · 19 NR · 24 dBA · 2.4 m */
+          name: '4-Way Diffusers', mode: 'neck', free: 1.0, Cd: 1.015, throwK: 3.422, throwExp: 0.632,
+          pressC: 2.826, pressExp: 2.022, nrA: 8.93, nrB: 28.36, dbaAdd: 5, t4a: true,
+          models: [{ id: 't4a', name: 'T-4A' }],
+          sizes: [150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 450, 500]
+        },
+        balljet: {
+          name: 'Ball Jet Diffuser', mode: 'round', free: 0.55, Cd: 1.40, throwK: 3.2,
+          models: [{ id: 'bj1', name: 'BJ-1' }],
+          sizes: [100, 125, 150, 160, 200, 250, 315]
+        },
+        laminar: {
+          name: 'Laminar Flow Diffuser', mode: 'neck', free: 0.85, Cd: 0.35, throwK: 0.45,
+          models: [{ id: 'lf1', name: 'LF-1' }],
+          sizes: [300, 400, 500, 600]
+        },
+        single: {
+          name: 'Single Deflection', mode: 'dim', free: 0.72, Cd: 1.35, throwK: 2.53,
+          models: [{ id: 'sd1', name: 'SD-1' }], sizes: []
+        },
+        double: {
+          name: 'Double Deflection', mode: 'dim', free: 0.68, Cd: 1.45, throwK: 2.75,
+          models: [{ id: 'dd1', name: 'DD-1' }], sizes: []
+        },
+        eggcrate: {
+          name: 'Eggcrate', mode: 'dim', free: 0.90, Cd: 1.10, throwK: 1.87,
+          models: [{ id: 'ec1', name: 'EC-1' }], sizes: []
+        },
+        linear: {
+          name: 'Linear Diffuser', mode: 'slots', free: 0.55, Cd: 1.50, throwK: 3.19,
+          models: [{ id: 'itk25', name: 'ITK-25' }, { id: 'itk', name: 'IT-K' }],
+          slots: [1, 2, 3, 4], slotArea: 0.012
+        },
+        round: {
+          name: 'Round Diffusers', mode: 'round', free: 0.60, Cd: 1.50, throwK: 3.08,
+          models: [{ id: 'c3', name: 'C-3' }],
+          sizes: [150, 200, 250, 300, 350, 400, 450, 500]
+        },
+        bar: {
+          name: 'Linear Bar Grille', mode: 'grille', free: 0.70, Cd: 1.30, throwK: 2.42,
+          models: [{ id: 'lbg', name: 'LBG-1' }],
+          sizes: [
+            { w: 600, h: 100 }, { w: 800, h: 100 }, { w: 1000, h: 100 },
+            { w: 600, h: 150 }, { w: 800, h: 150 }, { w: 1000, h: 150 },
+            { w: 1200, h: 150 }, { w: 1200, h: 200 }
+          ]
+        }
+      }
+    },
+    rglazen: {
+      name: 'Rglazen',
+      types: {
+        '4way': {
+          name: '4-Way Diffusers', mode: 'neck', free: 1.0, Cd: 1.02, throwK: 0.74,
+          models: [{ id: 'gsgh', name: 'GSGH' }],
+          sizes: [150, 200, 250, 300, 350, 400, 450, 500]
+        },
+        eggcrate: {
+          name: 'Eggcrate', mode: 'dim', free: 0.88, Cd: 1.12, throwK: 1.80,
+          models: [{ id: 'gre', name: 'GRE' }], sizes: []
+        }
+      }
+    }
+  };
+
+  var state = { unit: 'LPS', pendingRec: null };
+  var charts = { pressure: null, noise: null, throw: null };
+
+  function $(id) { return document.getElementById(id); }
+  function fmt(n, d) { return isFinite(n) ? Number(n).toFixed(d) : '—'; }
+  function fmtSmart(n) {
+    if (!isFinite(n)) return '—';
+    var r = Math.round(n * 10) / 10;
+    return Math.abs(r - Math.round(r)) < 0.001 ? String(Math.round(r)) : r.toFixed(1);
+  }
+  function round50(n) { return Math.max(50, Math.round(n / 50) * 50); }
+
+  function currentType() {
+    var s = CATALOG[$('supplier').value];
+    return s && s.types[$('terminal_type').value];
+  }
+
+  function flowCms() {
+    var q = Number($('flow_rate').value) || 0;
+    return state.unit === 'LPS' ? q / 1000 : q / 3600;
+  }
+  function flowLps() { return flowCms() * 1000; }
+  function flowCmh() { return flowCms() * 3600; }
+
+  function getGeometry(type) {
+    if (!type) return null;
+    if (type.mode === 'neck') {
+      var side = Number($('size_select').value) || 0;
+      var A = (side / 1000) * (side / 1000);
+      return { label: side + ' × ' + side, A: A, char: side / 1000 };
+    }
+    if (type.mode === 'round') {
+      var d = Number($('size_select').value) || 0;
+      var Ar = Math.PI * Math.pow(d / 2000, 2);
+      return { label: 'Ø' + d, A: Ar, char: d / 1000 };
+    }
+    if (type.mode === 'grille') {
+      var raw = ($('size_select').value || '').split('x');
+      var w = Number(raw[0]) || 0, h = Number(raw[1]) || 0;
+      return { label: w + ' × ' + h, A: (w * h) / 1e6, char: Math.sqrt((w * h) / 1e6), w: w, h: h };
+    }
+    if (type.mode === 'slots') {
+      var slots = Number($('slot_select').value) || 1;
+      var As = slots * (type.slotArea || 0.012);
+      return { label: slots + ' slot' + (slots > 1 ? 's' : ''), A: As, char: Math.sqrt(As), slots: slots };
+    }
+    var dw = Number($('dim_w').value) || 0, dh = Number($('dim_h').value) || 0;
+    return { label: dw + ' × ' + dh, A: (dw * dh) / 1e6, char: Math.sqrt((dw * dh) / 1e6), w: dw, h: dh };
+  }
+
+  function calcPerf(type, geo, cms) {
+    if (type && type.t4a) return t4aPerf(geo, cms, false);
+    var Ae = Math.max(geo.A * type.free, 1e-6);
+    var V = cms / Ae;
+    var neckV = cms / Math.max(geo.A, 1e-6);
+    var dP = type.pressC
+      ? type.pressC * Math.pow(Math.max(neckV, 0.05), type.pressExp || 2)
+      : type.Cd * 0.5 * RHO * V * V;
+    var vForNoise = Math.max(type.pressC ? neckV : V, 0.5);
+    var NR = type.nrB
+      ? type.nrA + type.nrB * Math.log10(vForNoise)
+      : Math.max(15, -11.3 + 48.3 * Math.log10(vForNoise));
+    var dBA = type.dbaAdd != null ? NR + type.dbaAdd : NR;
+    var vThrow = Math.max(type.pressC ? neckV : V, 0.1);
+    var throwM = type.throwExp
+      ? type.throwK * Math.pow(vThrow, type.throwExp) * Math.sqrt(Math.max(geo.char, 0.05))
+      : type.throwK * vThrow * Math.sqrt(Math.max(geo.char, 0.05));
+    return { V: V, dP: dP, NR: NR, dBA: dBA, throwM: throwM, Ae: Ae };
+  }
+
+  /* Kyodo T-4A. Small necks keep the 150/175 mm catalogue fit.
+     500 mm @ 150 m³/h follows the supplier chart: 10 Pa, 21 NR, 6 m. */
+  function t4aPerf(geo, cms, forChart) {
+    var side = Math.round((geo.char || 0) * 1000);
+    var lps = cms * 1000;
+    var neckV = cms / Math.max(geo.A, 1e-6);
+    var Ae = Math.max(geo.A, 1e-6);
+    if (side >= 450) {
+      if (forChart) {
+        var band = Math.max(lps, 1) / 400;
+        var nrBand = 34 * Math.pow(band, 0.28);
+        return { V: neckV, dP: 12 * Math.pow(band, 0.85), NR: nrBand, dBA: nrBand + 5, throwM: 4.2 * Math.pow(band, 0.35), Ae: Ae };
+      }
+      var q = Math.max(lps, 1) / 41.67;
+      var nr = 21 * Math.pow(q, 0.22);
+      return { V: neckV, dP: 10 * Math.pow(q, 0.33), NR: nr, dBA: nr + 5, throwM: 6 * Math.pow(q, 0.08), Ae: Ae };
+    }
+    /* Neck curve through the catalogue points up to 400 m³/h.
+       150 mm above that bends to 600 m³/h: 108.3 Pa, 43 NR, 3.9 m.
+       225 mm at 600 m³/h is the recommendation: 21.7 Pa, 24 NR, 3.9 m. */
+    var L = Math.max(geo.char, 0.05);
+    var Q = Math.max(cms, 1e-6);
+    var core = t4aCore(L, Q);
+    var dP = core.dP;
+    var NR = core.NR;
+    var throwM = core.throwM;
+    var hinge = 400 / 3.6;
+    var high = 600 / 3.6;
+    if (side === 150 && lps > hinge) {
+      var atHinge = t4aCore(0.15, 400 / 3600);
+      var span = Math.log(lps / hinge) / Math.log(high / hinge);
+      dP = Math.exp(Math.log(atHinge.dP) + span * (Math.log(108.3) - Math.log(atHinge.dP)));
+      NR = atHinge.NR + span * (42.8 - atHinge.NR);
+    }
+    if (side === 225) {
+      var at225 = t4aCore(0.225, 600 / 3600);
+      dP *= 21.7 / at225.dP;
+      NR += 23.8 - at225.NR;
+      throwM *= 3.9 / at225.throwM;
+    }
+    return { V: neckV, dP: dP, NR: NR, dBA: NR + 5, throwM: throwM, Ae: Ae };
+  }
+
+  function t4aCore(L, Q) {
+    var A = L * L;
+    var V = Q / Math.max(A, 1e-6);
+    var side = Math.round(L * 1000);
+    var dP = 3.42707 * Math.pow(Q, 1.962) / Math.pow(A, 1.929);
+    var NR = 10.89 + 35.28 * Math.log10(Math.max(V, 0.05)) + 6.48 * Math.log10(L);
+    var throwM = 1.348 * Math.pow(Q, 0.426) * Math.pow(L, -0.965);
+    if (side > 150 && side < 200) {
+      var w = (side - 150) * (200 - side);
+      dP *= 1 - 0.000048 * w;
+      NR += 0.0008 * w;
+      throwM += 0.000112 * w;
+    }
+    return { dP: dP, NR: NR, throwM: throwM };
+  }
+
+  function fillSuppliers() {
+    $('supplier').innerHTML = Object.keys(CATALOG).map(function (k) {
+      return '<option value="' + k + '">' + CATALOG[k].name + '</option>';
+    }).join('');
+  }
+
+  function fillTypes() {
+    var s = CATALOG[$('supplier').value];
+    $('terminal_type').innerHTML = Object.keys(s.types).map(function (k) {
+      return '<option value="' + k + '">' + s.types[k].name + '</option>';
+    }).join('');
+    fillModels();
+  }
+
+  function fillModels() {
+    var t = currentType();
+    $('grille_model').innerHTML = (t.models || []).map(function (m) {
+      return '<option value="' + m.id + '">' + m.name + '</option>';
+    }).join('');
+    syncModeUI();
+    fillSizes();
+  }
+
+  function syncModeUI() {
+    var t = currentType();
+    var mode = t.mode;
+    $('size_box').classList.toggle('hidden', mode === 'dim' || mode === 'slots');
+    $('dim_box').classList.toggle('hidden', mode !== 'dim');
+    $('slot_box').classList.toggle('hidden', mode !== 'slots');
+    $('vel_box').classList.toggle('hidden', mode !== 'dim' || t.name === 'Eggcrate');
+    $('velocity-card').classList.toggle('hidden', mode !== 'dim' || t.name === 'Eggcrate');
+    $('rec_dim_box').classList.toggle('hidden', !(mode === 'dim' && t.name !== 'Eggcrate'));
+    $('size_label').textContent = mode === 'round' ? 'Diameter' : 'Size';
+    updateArea();
+  }
+
+  function fillSizes() {
+    var t = currentType();
+    if (t.mode === 'slots') {
+      $('slot_select').innerHTML = (t.slots || [1, 2, 3]).map(function (n) {
+        return '<option value="' + n + '">' + n + ' Slot' + (n > 1 ? 's' : '') + '</option>';
+      }).join('');
+      return;
+    }
+    if (t.mode === 'grille') {
+      $('size_select').innerHTML = (t.sizes || []).map(function (s) {
+        return '<option value="' + s.w + 'x' + s.h + '">' + s.w + ' × ' + s.h + ' mm</option>';
+      }).join('');
+      return;
+    }
+    if (t.mode === 'round') {
+      $('size_select').innerHTML = (t.sizes || []).map(function (d) {
+        return '<option value="' + d + '">Ø' + d + ' mm</option>';
+      }).join('');
+      return;
+    }
+    if (t.mode === 'neck') {
+      $('size_select').innerHTML = (t.sizes || []).map(function (d) {
+        return '<option value="' + d + '">' + d + ' × ' + d + ' mm</option>';
+      }).join('');
+    }
+  }
+
+  function updateArea() {
+    var w = Number($('dim_w').value) || 0, h = Number($('dim_h').value) || 0;
+    $('area_display').textContent = ((w * h) / 1e6).toFixed(4);
+    updateDimRec();
+  }
+
+  function updateDimRec() {
+    var t = currentType();
+    if (!t || t.mode !== 'dim' || t.name === 'Eggcrate') return;
+    var cms = flowCms();
+    var targetV = Number($('target_velocity').value) || 2.5;
+    $('rec_vel_label').textContent = targetV;
+    if (cms <= 0) { $('rec_w').textContent = '—'; $('rec_h').textContent = '—'; return; }
+    var Areq = cms / (targetV * t.free);
+    var side = round50(Math.sqrt(Areq) * 1000);
+    $('rec_w').textContent = side;
+    $('rec_h').textContent = side;
+  }
+
+  function findRecommendation(type) {
+    var cms = flowCms();
+    if (cms <= 0) return null;
+    var candidates = [];
+    if (type.mode === 'neck' || type.mode === 'round') {
+      (type.sizes || []).forEach(function (d) {
+        var geo = type.mode === 'round'
+          ? { label: 'Ø' + d, A: Math.PI * Math.pow(d / 2000, 2), char: d / 1000, d: d }
+          : { label: d + ' × ' + d, A: (d / 1000) * (d / 1000), char: d / 1000, d: d };
+        var p = calcPerf(type, geo, cms);
+        candidates.push({ geo: geo, p: p, apply: { kind: 'size', value: String(d) } });
+      });
+    } else if (type.mode === 'grille') {
+      (type.sizes || []).forEach(function (s) {
+        var geo = { label: s.w + ' × ' + s.h, A: (s.w * s.h) / 1e6, char: Math.sqrt((s.w * s.h) / 1e6), w: s.w, h: s.h };
+        var p = calcPerf(type, geo, cms);
+        candidates.push({ geo: geo, p: p, apply: { kind: 'grille', value: s.w + 'x' + s.h } });
+      });
+    } else if (type.mode === 'slots') {
+      (type.slots || []).forEach(function (n) {
+        var geo = { label: n + ' slot' + (n > 1 ? 's' : ''), A: n * type.slotArea, char: Math.sqrt(n * type.slotArea), slots: n };
+        var p = calcPerf(type, geo, cms);
+        candidates.push({ geo: geo, p: p, apply: { kind: 'slots', value: String(n) } });
+      });
+    } else {
+      var targetV = Number($('target_velocity').value) || 2.5;
+      var Areq = cms / (targetV * type.free);
+      var side = round50(Math.sqrt(Areq) * 1000);
+      var geo = { label: side + ' × ' + side, A: (side * side) / 1e6, char: side / 1000, w: side, h: side };
+      var p = calcPerf(type, geo, cms);
+      candidates.push({ geo: geo, p: p, apply: { kind: 'dim', w: side, h: side } });
+    }
+    var ok = candidates.filter(function (c) { return c.p.dP <= PRESS_LIMIT && c.p.dBA <= DBA_LIMIT; });
+    /* Smallest size that meets limits (not lowest ΔP / largest neck) */
+    ok.sort(function (a, b) { return a.geo.A - b.geo.A; });
+    return ok[0] || null;
+  }
+
+  function renderResults() {
+    var type = currentType();
+    var geo = getGeometry(type);
+    var cms = flowCms();
+    if (!type || !geo || cms <= 0 || geo.A <= 0) return;
+    var p = calcPerf(type, geo, cms);
+    $('result-size').textContent = geo.label;
+    $('result-pressure').textContent = fmtSmart(p.dP);
+    $('result-noise').textContent = Math.round(p.NR);
+    $('result-noise-dba').textContent = '≈ ' + fmtSmart(p.dBA) + ' dBA';
+    $('result-throw').textContent = fmtSmart(p.throwM);
+    $('result-velocity').textContent = fmt(p.V, 2);
+
+    var pressBad = p.dP > PRESS_LIMIT;
+    var noiseBad = p.dBA > DBA_LIMIT;
+    $('pressure-card').classList.toggle('glow-error', pressBad);
+    $('pressure-card').classList.toggle('glow-success', !pressBad);
+    $('noise-card').classList.toggle('glow-warning', noiseBad);
+    $('noise-card').classList.toggle('glow-success', !noiseBad);
+    $('pressure-warning').textContent = pressBad ? 'Exceeds limit' : '';
+    $('pressure-warning').classList.toggle('hidden', !pressBad);
+    $('pressure-warning').classList.toggle('text-red-500', pressBad);
+    $('noise-warning').textContent = noiseBad ? 'Approximate noise exceeds 45 dBA' : '';
+    $('noise-warning').classList.toggle('hidden', !noiseBad);
+    $('noise-warning').classList.toggle('text-amber-600', noiseBad);
+    $('pressure-bar').style.width = Math.min(100, (p.dP / 50) * 100) + '%';
+    $('pressure-bar').className = 'h-full rounded-full transition-all ' + (pressBad ? 'bg-gradient-to-r from-red-500 to-red-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400');
+    $('noise-bar').style.width = Math.min(100, (p.dBA / 60) * 100) + '%';
+    $('noise-bar').className = 'h-full rounded-full transition-all ' + (noiseBad ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400');
+    $('status-good').classList.toggle('hidden', pressBad || noiseBad);
+    $('status-warning').classList.toggle('hidden', !(pressBad || noiseBad));
+
+    var rec = findRecommendation(type);
+    state.pendingRec = rec;
+    if (rec) {
+      $('recommendation-section').classList.remove('hidden');
+      $('rec-size').textContent = rec.geo.label;
+      $('rec-pressure').textContent = fmtSmart(rec.p.dP) + ' Pa';
+      $('rec-noise').textContent = Math.round(rec.p.NR) + ' NR';
+      $('rec-dba').textContent = '≈ ' + fmtSmart(rec.p.dBA) + ' dBA';
+      $('rec-throw').textContent = fmtSmart(rec.p.throwM) + ' m';
+    } else {
+      $('recommendation-section').classList.add('hidden');
+    }
+
+    $('charts-title').textContent = 'Performance: ' + geo.label;
+    updateCharts(type, geo, p);
+  }
+
+  function axisFor(geo, currentLps) {
+    var area = Math.max(geo.A || 0, 1e-6);
+    var xmax = Math.max(200, Math.round((4.8 * area * 1000) / 200) * 200);
+    var step = xmax >= 800 ? 200 : (xmax >= 400 ? 100 : 20);
+    if (currentLps > xmax) xmax = Math.ceil(currentLps / step) * step;
+    var min = xmax >= 400 ? 0 : 20;
+    var plotMin = min;
+    if (xmax >= 400) plotMin = Math.max(step, Math.round((1.6 * area * 1000) / step) * step);
+    return { min: min, max: xmax, step: step, plotMin: plotMin };
+  }
+
+  function niceMax(v, floor) {
+    var ticks = [floor || 4, 5, 6, 8, 10, 20, 40, 50, 60, 80, 100, 150, 200, 250, 300];
+    var i;
+    for (i = 0; i < ticks.length; i++) if (ticks[i] >= v) return ticks[i];
+    return Math.ceil(v / 50) * 50;
+  }
+
+  function seriesFor(type, geo, axis) {
+    var flows = [];
+    var lps;
+    var plotStep = axis.step >= 200 ? 100 : axis.step;
+    for (lps = axis.plotMin; lps <= axis.max + 0.1; lps += plotStep) flows.push(lps);
+    return flows.map(function (flow) {
+      var p = type.t4a ? t4aPerf(geo, flow / 1000, true) : calcPerf(type, geo, flow / 1000);
+      return { lps: flow, dP: p.dP, NR: p.NR, throwM: p.throwM };
+    });
+  }
+
+  function makeChart(canvasId, key, color, labelY, yMax, xMin, xMax, xStep, seriesLabel, series, current) {
+    var ctx = $(canvasId).getContext('2d');
+    if (charts[key]) charts[key].destroy();
+    var yKey = key === 'pressure' ? 'dP' : key === 'noise' ? 'NR' : 'throwM';
+    var data = series.map(function (s) { return { x: s.lps, y: s[yKey] }; });
+    var datasets = [{
+      label: seriesLabel, data: data, borderColor: color, backgroundColor: color + '22',
+      fill: true, borderWidth: 2, pointRadius: 3, pointBackgroundColor: color, tension: 0.25
+    }];
+    if (current) {
+      datasets.push({
+        label: 'Current (' + Math.round(current.x) + ' L/s)',
+        data: [{ x: current.x, y: current.y }],
+        borderColor: '#ef4444', backgroundColor: '#ef4444', pointRadius: 7, pointStyle: 'crossRot',
+        pointBorderWidth: 2, showLine: false
+      });
+    }
+    charts[key] = new Chart(ctx, {
+      type: 'line',
+      data: { datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 10, font: { size: 11 } } } },
+        scales: {
+          x: { type: 'linear', min: xMin, max: xMax, title: { display: true, text: 'Airflow (L/s)', color: '#64748b' }, grid: { color: 'rgba(148,163,184,.2)' }, ticks: { stepSize: xStep } },
+          y: { min: 0, max: yMax, title: { display: true, text: labelY, color: '#64748b' }, grid: { color: 'rgba(148,163,184,.2)' } }
+        }
+      }
+    });
+  }
+
+  function updateCharts(type, geo, p) {
+    var lps = flowLps();
+    var axis = axisFor(geo, lps);
+    var series = seriesFor(type, geo, axis);
+    var pMax = 0, tMax = 0, i;
+    for (i = 0; i < series.length; i++) {
+      if (series[i].dP > pMax) pMax = series[i].dP;
+      if (series[i].throwM > tMax) tMax = series[i].throwM;
+    }
+    var yP = axis.max <= 200 ? Math.max(250, niceMax(Math.max(pMax, p.dP), 250)) : niceMax(Math.max(pMax, p.dP) * 1.1, 40);
+    var yT = niceMax(Math.max(tMax, p.throwM) * 1.08, 4);
+    makeChart('pressureChart', 'pressure', '#0c85f1', 'Pressure (Pa)', yP, axis.min, axis.max, axis.step, 'Pressure Drop', series, { x: lps, y: p.dP });
+    makeChart('noiseChart', 'noise', '#8b5cf6', 'Noise (NR)', 60, axis.min, axis.max, axis.step, 'Noise (NR)', series, { x: lps, y: p.NR });
+    makeChart('throwChart', 'throw', '#22c55e', 'Throw (m)', yT, axis.min, axis.max, axis.step, 'Throw (m)', series, { x: lps, y: p.throwM });
+  }
+
+  function applyRec() {
+    var rec = state.pendingRec;
+    if (!rec) return;
+    if (rec.apply.kind === 'size' || rec.apply.kind === 'grille') $('size_select').value = rec.apply.value;
+    if (rec.apply.kind === 'slots') $('slot_select').value = rec.apply.value;
+    if (rec.apply.kind === 'dim') { $('dim_w').value = rec.apply.w; $('dim_h').value = rec.apply.h; updateArea(); }
+    renderResults();
+  }
+
+  function goBack(ev) {
+    if (ev) ev.preventDefault();
+    try {
+      if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'wepl-nav', id: 'dashboard' }, '*');
+    } catch (e) {}
+    if (document.referrer) history.back();
+  }
+
+  // mobile panel
+  (function () {
+    var panel = $('left-panel'), overlay = $('panel-overlay');
+    function open() { panel.classList.remove('-translate-x-full'); overlay.classList.remove('opacity-0', 'pointer-events-none'); }
+    function close() { panel.classList.add('-translate-x-full'); overlay.classList.add('opacity-0', 'pointer-events-none'); }
+    $('panel-toggle').addEventListener('click', open);
+    $('panel-close').addEventListener('click', close);
+    overlay.addEventListener('click', close);
+    window.addEventListener('resize', function () { if (window.innerWidth >= 1024) close(); });
+  })();
+
+  document.querySelectorAll('.unit-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var prev = state.unit, next = btn.getAttribute('data-unit');
+      if (prev === next) return;
+      var cms = flowCms();
+      state.unit = next;
+      document.querySelectorAll('.unit-btn').forEach(function (b) { b.classList.toggle('active', b === btn); });
+      if (cms > 0) $('flow_rate').value = next === 'LPS' ? Math.round(cms * 1000 * 10) / 10 : Math.round(cms * 3600);
+      renderResults();
+    });
+  });
+
+  $('supplier').addEventListener('change', fillTypes);
+  $('terminal_type').addEventListener('change', fillModels);
+  $('grille_model').addEventListener('change', function () { syncModeUI(); renderResults(); });
+  ['size_select', 'slot_select', 'flow_rate', 'target_velocity', 'dim_w', 'dim_h'].forEach(function (id) {
+    $(id).addEventListener('input', function () { if (id === 'dim_w' || id === 'dim_h') updateArea(); renderResults(); });
+    $(id).addEventListener('change', renderResults);
+  });
+  $('calculate-btn').addEventListener('click', function () {
+    renderResults();
+    if (window.innerWidth < 1024) {
+      $('left-panel').classList.add('-translate-x-full');
+      $('panel-overlay').classList.add('opacity-0', 'pointer-events-none');
+    }
+  });
+  $('apply-rec-btn').addEventListener('click', applyRec);
+  $('btn_apply_dim').addEventListener('click', function () {
+    $('dim_w').value = $('rec_w').textContent;
+    $('dim_h').value = $('rec_h').textContent;
+    updateArea();
+    renderResults();
+  });
+  $('backDesktop').addEventListener('click', goBack);
+  $('backMobile').addEventListener('click', goBack);
+
+  fillSuppliers();
+  fillTypes();
+  renderResults();
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Louvre Sizing Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    #chartModal.open { display: flex; }
+    #chartModal { display: none; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 text-gray-800">
+  <header class="border-b border-blue-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+    <div class="w-full px-4 sm:px-6 py-4">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5h16M4 12h16M4 19h16" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Louvre Sizing Calculator</h1>
+            <p class="text-sm text-gray-500">Professional HVAC sizing tool</p>
+          </div>
+        </div>
+        <a href="#" id="backLink" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 text-blue-700 font-medium hover:bg-blue-50 transition-all duration-200">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full px-4 sm:px-6 py-6">
+    <div class="grid lg:grid-cols-2 gap-8">
+      <div class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-shadow duration-300 min-h-[360px]">
+          <div class="flex items-center gap-2 mb-6">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900">Configuration</h2>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
+              <select id="supplier" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white">
+                <option value="">Select supplier</option>
+                <option value="kyodo" selected>Kyodo</option>
+                <option value="rglazen">Rglazen</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Model</label>
+              <select id="model" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white">
+                <option value="">Select model</option>
+                <option value="RG" selected>RG</option>
+                <option value="WL">WL</option>
+                <option value="AL">AL</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Airflow</label>
+                <input id="airflow" type="number" class="w-full px-4 py-3 rounded-lg border border-gray-200" value="1000" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                <select id="unit" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white">
+                  <option value="CMH">CMH</option>
+                  <option value="LPS">L/s</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Target Face Velocity (m/s)</label>
+                <input id="targetVel" type="number" step="0.01" class="w-full px-4 py-3 rounded-lg border border-gray-200" value="2.5" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Width (mm)</label>
+                <input id="width" type="number" placeholder="Auto" class="w-full px-4 py-3 rounded-lg border border-gray-200" value="800" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Height (mm)</label>
+                <input id="height" type="number" placeholder="Auto" class="w-full px-4 py-3 rounded-lg border border-gray-200" value="600" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6">
+            <button id="btnCalc" type="button" class="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200">Calculate</button>
+            <button id="btnClear" type="button" class="px-6 py-3 rounded-lg border-2 border-blue-200 text-blue-700 font-medium hover:bg-blue-50 transition-all duration-200">Clear</button>
+          </div>
+        </div>
+
+        <div id="resultsCard" class="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 min-h-[360px]">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 class="text-lg font-semibold text-gray-900">Results</h2>
+            </div>
+            <span id="statusBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">—</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4 col-span-2">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1">
+                  <div class="text-xs font-medium text-blue-600 mb-1">Recommended Size</div>
+                  <div id="recSize" class="text-2xl font-bold text-gray-900">—</div>
+                  <div class="text-xs text-gray-500 mt-1">millimeters</div>
+                </div>
+                <button id="btnApply" type="button" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 shadow-sm">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Apply
+                </button>
+              </div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-600 mb-1 tracking-wide">Face Velocity (effective)</div>
+              <div id="velEff" class="text-2xl font-bold text-gray-900">—</div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-600 mb-1 tracking-wide">Face Velocity (gross)</div>
+              <div id="velGross" class="text-2xl font-bold text-gray-900">—</div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-600 mb-1 tracking-wide">Effective Area</div>
+              <div id="areaEff" class="text-2xl font-bold text-gray-900">—</div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-600 mb-1 tracking-wide">Gross Area</div>
+              <div id="areaGross" class="text-2xl font-bold text-gray-900">—</div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-600 mb-1 tracking-wide">Pressure Drop</div>
+              <div id="dp" class="text-2xl font-bold text-gray-900">—</div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4">
+              <div class="text-xs font-semibold text-gray-600 mb-1 tracking-wide">Noise Level</div>
+              <div id="noise" class="text-2xl font-bold text-gray-900">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden min-h-[360px] flex flex-col">
+          <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-2 text-white">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <h3 class="font-semibold">Performance Curves</h3>
+                </div>
+                <p class="text-blue-100 text-sm mt-1">Velocity (effective) vs Pressure Drop</p>
+              </div>
+              <button type="button" id="btnExpandChart" class="px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700/50 transition-all" title="Expand graph">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="p-6 flex-1">
+            <div class="h-96"><canvas id="perfChart"></canvas></div>
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div class="flex items-center gap-2 text-sm">
+                <div class="w-2 h-2 rounded-full bg-red-600"></div>
+                <span class="text-gray-700" id="dutyNote">Current duty point: —</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden min-h-[360px] flex flex-col">
+          <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div class="flex items-center gap-2 text-white">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+              </svg>
+              <h3 class="font-semibold">Airflow Visualization</h3>
+            </div>
+            <p class="text-blue-100 text-sm mt-1">Interactive 3D simulation</p>
+          </div>
+          <div class="h-[360px] relative overflow-hidden rounded-b-2xl bg-slate-50">
+            <div id="vizHost" class="w-full h-full"></div>
+            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-sm text-xs text-slate-600 font-mono border border-slate-100 pointer-events-none select-none">
+              <div class="flex items-center gap-2 mb-1">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span class="font-bold">Airflow Simulation</span>
+              </div>
+              <div id="vizVel">Velocity: —</div>
+              <div id="vizSize">Size: —</div>
+            </div>
+          </div>
+          <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+            <div class="flex items-center justify-between text-xs text-gray-600">
+              <span id="vizFooter">Velocity: —</span>
+              <span class="text-blue-600">Drag to rotate · Scroll to zoom</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-blue-100 bg-white/80 backdrop-blur-sm mt-8">
+    <div class="w-full px-4 sm:px-6 py-6 text-center text-sm text-gray-500">
+      <p>Professional HVAC Louvre Sizing Calculator · Approximate field estimates for T&amp;C</p>
+    </div>
+  </footer>
+
+  <div id="chartModal" class="fixed inset-0 z-50 bg-black/50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <h3 class="font-semibold text-gray-900">Performance Curves — Expanded</h3>
+        <button type="button" id="btnCloseModal" class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Close</button>
+      </div>
+      <div class="p-4 flex-1 min-h-[420px]"><canvas id="perfChartModal"></canvas></div>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  'use strict';
+
+  /** Free-area ratio by model (typical catalogue values). */
+  var FREE_AREA = { RG: 0.50, WL: 0.45, AL: 0.55 };
+  /**
+   * ΔP coefficient: ΔP = C · V_eff²
+   * Calibrated to AIO RG: 1.16 m/s → ~4.1 Pa ⇒ C ≈ 3.05
+   */
+  var DP_C = { RG: 3.05, WL: 3.40, AL: 2.75 };
+  var lastRec = { w: 400, h: 600 };
+  var chart = null;
+  var chartModal = null;
+  var lastDuty = { v: 1.16, dp: 4.1, gross: 0.48 };
+  var vizState = { vel: 1.16, w: 800, h: 600 };
+  var viz = null;
+
+  function $(id) { return document.getElementById(id); }
+  function round(n, d) {
+    if (!isFinite(n)) return '—';
+    var f = Math.pow(10, d == null ? 2 : d);
+    return (Math.round(n * f) / f).toFixed(d == null ? 2 : d);
+  }
+  function freeArea() {
+    return FREE_AREA[$('model').value] || 0.5;
+  }
+  function dpCoeff() {
+    return DP_C[$('model').value] || 3.05;
+  }
+  function airflowM3s() {
+    var q = Number($('airflow').value) || 0;
+    return $('unit').value === 'LPS' ? q / 1000 : q / 3600;
+  }
+  function airflowLs() {
+    var q = Number($('airflow').value) || 0;
+    return $('unit').value === 'LPS' ? q : q / 3.6;
+  }
+  function pressureDrop(vEff) {
+    return dpCoeff() * vEff * vEff;
+  }
+  function noiseDba(vEff) {
+    var n = 12 + 18 * Math.log10(Math.max(vEff, 0.1));
+    return Math.max(0, n);
+  }
+  function snapDim(mm) {
+    return Math.max(200, Math.round(mm / 50) * 50);
+  }
+  function recommendSize(q, targetV, fa) {
+    var aEff = q / Math.max(targetV, 0.1);
+    var aGross = aEff / fa;
+    var h = snapDim(Math.sqrt(aGross * 1000000 / 1.333));
+    var w = snapDim((aGross * 1e6) / h);
+    var tries = 0;
+    while (tries < 8) {
+      var gross = (w / 1000) * (h / 1000);
+      var ve = q / (gross * fa);
+      if (ve <= targetV * 1.05) break;
+      if (w <= h) w = snapDim(w + 50); else h = snapDim(h + 50);
+      tries++;
+    }
+    return { w: w, h: h };
+  }
+  function statusFor(vEff, target) {
+    var ratio = vEff / Math.max(target, 0.01);
+    if (ratio < 0.7) return { text: 'OVERSIZED', cls: 'bg-yellow-100 text-yellow-700' };
+    if (ratio > 1.15) return { text: 'UNDERSIZED', cls: 'bg-red-100 text-red-700' };
+    return { text: 'OPTIMAL', cls: 'bg-green-100 text-green-700' };
+  }
+
+  function buildCurvePts(cScale, vMax) {
+    var pts = [], v;
+    for (v = 0.8; v <= vMax; v += 0.2) {
+      pts.push({ x: +v.toFixed(2), y: pressureDrop(v) * cScale });
+    }
+    return pts;
+  }
+
+  function chartDatasets(vDuty, dpDuty) {
+    return [
+      {
+        label: '0.4 m²',
+        data: buildCurvePts(1.0, 5.2),
+        borderColor: '#8B5CF6',
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        pointRadius: 0,
+        showLine: true,
+        tension: 0.35
+      },
+      {
+        label: '0.6 m²',
+        data: buildCurvePts(0.92, 6.8),
+        borderColor: '#EC4899',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 0,
+        showLine: true,
+        tension: 0.35,
+        borderDash: []
+      },
+      {
+        label: 'Duty',
+        data: [{ x: vDuty, y: dpDuty }],
+        borderColor: '#EF4444',
+        backgroundColor: '#EF4444',
+        pointRadius: 8,
+        pointHoverRadius: 10,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointStyle: 'circle',
+        showLine: false
+      }
+    ];
+  }
+
+  function chartOptions() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            generateLabels: function (ch) {
+              var items = Chart.defaults.plugins.legend.labels.generateLabels(ch);
+              return items.map(function (it) {
+                if (it.text === 'Duty') it.text = 'dutyValue';
+                return it;
+              });
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function (c) {
+              return (c.dataset.label || '') + ': ' + round(c.parsed.x, 2) + ' m/s, ' + round(c.parsed.y, 1) + ' Pa';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: true, text: 'Face Velocity (m/s, effective)', color: '#808080' },
+          min: 0, max: 6.8,
+          grid: { color: '#E5E7EB' },
+          ticks: { color: '#6B7280', callback: function (v) { return Number(v).toFixed(1); } }
+        },
+        y: {
+          type: 'linear',
+          title: { display: true, text: 'Pressure Drop (Pa)', color: '#808080' },
+          min: 0, max: 133,
+          grid: { color: '#E5E7EB' },
+          ticks: { color: '#6B7280' }
+        }
+      }
+    };
+  }
+
+  function updateChart(vDuty, dpDuty) {
+    var ds = chartDatasets(vDuty, dpDuty);
+    if (chart) {
+      chart.data.datasets = ds;
+      chart.update();
+    } else {
+      chart = new Chart($('perfChart').getContext('2d'), {
+        type: 'scatter',
+        data: { datasets: ds },
+        options: chartOptions()
+      });
+    }
+    if (chartModal) {
+      chartModal.data.datasets = ds;
+      chartModal.update();
+    }
+  }
+
+  function calculate() {
+    var q = airflowM3s();
+    var fa = freeArea();
+    var w = Number($('width').value) || 0;
+    var h = Number($('height').value) || 0;
+    var target = Number($('targetVel').value) || 2.5;
+    if (!(q > 0)) return;
+
+    var rec = recommendSize(q, target, fa);
+    lastRec = rec;
+    if (!(w > 0 && h > 0)) {
+      w = rec.w; h = rec.h;
+      $('width').value = w;
+      $('height').value = h;
+    }
+
+    var gross = (w / 1000) * (h / 1000);
+    var aEff = gross * fa;
+    var vEff = q / aEff;
+    var vGross = q / gross;
+    var dp = pressureDrop(vEff);
+    var noise = noiseDba(vEff);
+    var st = statusFor(vEff, target);
+    lastDuty = { v: vEff, dp: dp, gross: gross };
+
+    $('recSize').textContent = rec.w + ' × ' + rec.h;
+    $('velEff').textContent = round(vEff, 2) + ' m/s';
+    $('velGross').textContent = round(vGross, 3) + ' m/s';
+    $('areaEff').textContent = round(aEff, 3) + ' m²';
+    $('areaGross').textContent = round(gross, 3) + ' m²';
+    $('dp').textContent = round(dp, 1) + ' Pa';
+    $('noise').textContent = round(noise, 0) + ' dBA';
+    $('statusBadge').textContent = st.text;
+    $('statusBadge').className = 'px-3 py-1 rounded-full text-xs font-semibold ' + st.cls;
+    $('dutyNote').innerHTML =
+      'Current duty point: <span class="font-semibold">' + round(vEff, 2) + ' m/s</span> (effective) · ' +
+      '<span class="font-semibold">' + round(airflowLs(), 0) + ' L/s</span> at ' +
+      '<span class="font-semibold">' + round(gross, 2) + ' m²</span> (gross) · ' +
+      '<span class="font-semibold">' + round(dp, 1) + ' Pa</span>';
+
+    vizState = { vel: vEff, w: w, h: h };
+    $('vizVel').textContent = 'Velocity: ' + round(vEff, 2) + ' m/s';
+    $('vizSize').textContent = 'Size: ' + w + 'mm × ' + h + 'mm';
+    $('vizFooter').textContent = 'Velocity: ' + round(vEff, 2) + ' m/s';
+    if (viz && viz.setSize) viz.setSize(w, h);
+    if (viz && viz.setVelocity) viz.setVelocity(vEff);
+
+    updateChart(vEff, dp);
+  }
+
+  /* —— Three.js: white powder-coat louvre + orbit + streamlines —— */
+  function initViz3D() {
+    if (typeof THREE === 'undefined') return;
+    var host = $('vizHost');
+    var W = host.clientWidth || 600;
+    var H = host.clientHeight || 360;
+
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+
+    var camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 100);
+    camera.position.set(4.2, 2.0, 4.8);
+
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(W, H);
+    renderer.shadowMap.enabled = true;
+    host.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    var key = new THREE.DirectionalLight(0xffffff, 0.95);
+    key.position.set(5, 8, 4);
+    key.castShadow = true;
+    scene.add(key);
+    var fill = new THREE.DirectionalLight(0xdbeafe, 0.45);
+    fill.position.set(-4, 2, -3);
+    scene.add(fill);
+    var rim = new THREE.DirectionalLight(0xffffff, 0.35);
+    rim.position.set(-2, 3, 6);
+    scene.add(rim);
+
+    var assembly = new THREE.Group();
+    scene.add(assembly);
+
+    var powder = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0.05,
+      roughness: 0.55
+    });
+    var wallMat = new THREE.MeshStandardMaterial({
+      color: 0xcbd5e1,
+      metalness: 0.05,
+      roughness: 0.85
+    });
+
+    /* Opening follows the entered width (Z) and height (Y). A thin border only, so the louvre fills the view. */
+    var live = { frameW: 2.2, frameH: 1.65, lanes: [0], bladeAngle: 0.48 };
+
+    function clearAssembly() {
+      var i;
+      for (i = assembly.children.length - 1; i >= 0; i--) {
+        var child = assembly.children[i];
+        assembly.remove(child);
+        if (child.geometry) child.geometry.dispose();
+      }
+    }
+
+    function buildLouvre(widthMm, heightMm) {
+      clearAssembly();
+      var mmW = Math.max(80, Number(widthMm) || 800);
+      var mmH = Math.max(80, Number(heightMm) || 600);
+      var aspect = mmW / mmH;
+      var maxSpan = 2.8;
+      var frameW = aspect >= 1 ? maxSpan : Math.max(0.5, maxSpan * aspect);
+      var frameH = aspect >= 1 ? Math.max(0.42, maxSpan / aspect) : maxSpan;
+      live.frameW = frameW;
+      live.frameH = frameH;
+
+      var margin = 0.18;
+      var wallT = 0.2;
+      var wallW = frameW + margin * 2;
+      var wallH = frameH + margin * 2;
+
+      function wallPanel(sizeY, sizeZ, y, z) {
+        var m = new THREE.Mesh(new THREE.BoxGeometry(wallT, sizeY, sizeZ), wallMat);
+        m.position.set(0, y, z);
+        m.receiveShadow = true;
+        assembly.add(m);
+      }
+      wallPanel(margin, wallW, frameH / 2 + margin / 2, 0);
+      wallPanel(margin, wallW, -(frameH / 2 + margin / 2), 0);
+      wallPanel(wallH, margin, 0, -(frameW / 2 + margin / 2));
+      wallPanel(wallH, margin, 0, frameW / 2 + margin / 2);
+
+      var ft = Math.max(0.04, Math.min(0.09, frameH * 0.07, frameW * 0.05));
+      var fd = 0.32;
+      [
+        [fd, ft, frameW + ft * 2, 0, frameH / 2 + ft / 2, 0],
+        [fd, ft, frameW + ft * 2, 0, -(frameH / 2 + ft / 2), 0],
+        [fd, frameH, ft, 0, 0, -(frameW / 2 + ft / 2)],
+        [fd, frameH, ft, 0, 0, frameW / 2 + ft / 2]
+      ].forEach(function (d) {
+        var m = new THREE.Mesh(new THREE.BoxGeometry(d[0], d[1], d[2]), powder);
+        m.position.set(d[3], d[4], d[5]);
+        m.castShadow = true;
+        assembly.add(m);
+      });
+
+      var bladeCount = Math.max(3, Math.min(14, Math.round(frameH / 0.16)));
+      var bladeAngle = 0.48;
+      live.bladeAngle = bladeAngle;
+      var bladeYs = [];
+      var innerH = Math.max(0.12, frameH - ft * 2);
+      var b;
+      for (b = 0; b < bladeCount; b++) {
+        var by = bladeCount === 1 ? 0 : (-innerH / 2 + b * (innerH / (bladeCount - 1)));
+        bladeYs.push(by);
+        var blade = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.045, Math.max(0.2, frameW - ft * 2)), powder);
+        blade.position.set(0.02, by, 0);
+        blade.rotation.z = bladeAngle;
+        blade.castShadow = true;
+        assembly.add(blade);
+      }
+      var lanes = [];
+      if (bladeYs.length < 2) lanes.push(0);
+      else {
+        for (b = 0; b < bladeYs.length - 1; b++) lanes.push((bladeYs[b] + bladeYs[b + 1]) / 2);
+      }
+      live.lanes = lanes;
+    }
+
+    // Streamlines: spawn inlet (−X), travel +X through blade lanes, exit (+X)
+    var COUNT = 90;
+    var trailLen = 0.55;
+    var positions = new Float32Array(COUNT * 3);
+    var speeds = new Float32Array(COUNT);
+    var laneIdx = new Int16Array(COUNT);
+    var zLane = new Float32Array(COUNT);
+
+    function resetParticle(i, scatter) {
+      var lanesNow = live.lanes;
+      laneIdx[i] = (Math.random() * lanesNow.length) | 0;
+      positions[i * 3] = scatter ? (-3.0 + Math.random() * 5.2) : -3.0 - Math.random() * 0.7;
+      positions[i * 3 + 1] = lanesNow[laneIdx[i]] + (Math.random() - 0.5) * 0.05;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * Math.max(0.2, live.frameW - 0.2);
+      zLane[i] = positions[i * 3 + 2];
+      speeds[i] = 0.022 + Math.random() * 0.028;
+    }
+    buildLouvre(vizState.w, vizState.h);
+    for (var p = 0; p < COUNT; p++) resetParticle(p, true);
+
+    var pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    var points = new THREE.Points(pGeo, new THREE.PointsMaterial({
+      color: 0x3b82f6, size: 0.085, transparent: true, opacity: 0.95,
+      sizeAttenuation: true, depthWrite: false
+    }));
+    scene.add(points);
+
+    var streakPos = new Float32Array(COUNT * 6);
+    var sGeo = new THREE.BufferGeometry();
+    sGeo.setAttribute('position', new THREE.BufferAttribute(streakPos, 3));
+    var streaks = new THREE.LineSegments(sGeo, new THREE.LineBasicMaterial({
+      color: 0x93c5fd, transparent: true, opacity: 0.55, depthWrite: false
+    }));
+    scene.add(streaks);
+
+    // Orbit — 360° drag rotate, scroll zoom
+    var isDown = false, lx = 0, ly = 0;
+    var rotY = 0.65, rotX = 0.22, dist = 6.4;
+    var canvas = renderer.domElement;
+    canvas.style.cursor = 'grab';
+    canvas.style.touchAction = 'none';
+    canvas.addEventListener('pointerdown', function (e) {
+      isDown = true; lx = e.clientX; ly = e.clientY;
+      canvas.style.cursor = 'grabbing';
+      canvas.setPointerCapture(e.pointerId);
+    });
+    function endDrag() { isDown = false; canvas.style.cursor = 'grab'; }
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('pointermove', function (e) {
+      if (!isDown) return;
+      rotY += (e.clientX - lx) * 0.01;
+      rotX += (e.clientY - ly) * 0.008;
+      rotX = Math.max(-1.2, Math.min(1.35, rotX));
+      lx = e.clientX; ly = e.clientY;
+    });
+    canvas.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      dist *= e.deltaY > 0 ? 1.07 : 0.93;
+      dist = Math.max(3.0, Math.min(12, dist));
+    }, { passive: false });
+
+    var velMul = 1;
+    function setVelocity(v) {
+      velMul = 0.55 + Math.min(Math.max(v, 0.2), 8) * 0.5;
+    }
+    function setSize(widthMm, heightMm) {
+      buildLouvre(widthMm, heightMm);
+      var i;
+      for (i = 0; i < COUNT; i++) resetParticle(i, true);
+      var span = Math.max(live.frameW, live.frameH);
+      dist = Math.max(3.6, span * 2.05);
+    }
+
+    function resize() {
+      var ww = host.clientWidth || 600, hh = host.clientHeight || 360;
+      camera.aspect = ww / hh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(ww, hh);
+    }
+    window.addEventListener('resize', resize);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      camera.position.x = Math.sin(rotY) * Math.cos(rotX) * dist;
+      camera.position.y = Math.sin(rotX) * dist + 0.4;
+      camera.position.z = Math.cos(rotY) * Math.cos(rotX) * dist;
+      camera.lookAt(0, 0, 0);
+
+      var attr = pGeo.attributes.position;
+      var sAttr = sGeo.attributes.position;
+      for (var i = 0; i < COUNT; i++) {
+        var ix = i * 3;
+        var x = attr.array[ix];
+        var step = speeds[i] * velMul;
+
+        // Inside blade pack: follow lane + slight Y drift from blade angle
+        if (x > -0.35 && x < 0.45) {
+          attr.array[ix + 1] += Math.sin(live.bladeAngle) * step * 0.4;
+          attr.array[ix + 2] = zLane[i];
+        } else {
+          var laneY = live.lanes[laneIdx[i]] != null ? live.lanes[laneIdx[i]] : 0;
+          attr.array[ix + 1] += (laneY - attr.array[ix + 1]) * 0.08;
+          attr.array[ix + 2] += (zLane[i] - attr.array[ix + 2]) * 0.06;
+        }
+
+        attr.array[ix] = x + step;
+        if (attr.array[ix] > 3.3) resetParticle(i, false);
+
+        var sx = i * 6;
+        var tx = attr.array[ix], ty = attr.array[ix + 1], tz = attr.array[ix + 2];
+        sAttr.array[sx] = tx - trailLen * (0.7 + 0.3 * velMul);
+        sAttr.array[sx + 1] = ty;
+        sAttr.array[sx + 2] = tz;
+        sAttr.array[sx + 3] = tx;
+        sAttr.array[sx + 4] = ty;
+        sAttr.array[sx + 5] = tz;
+      }
+      attr.needsUpdate = true;
+      sAttr.needsUpdate = true;
+      renderer.render(scene, camera);
+    }
+    animate();
+    viz = { setVelocity: setVelocity, setSize: setSize };
+  }
+
+  $('btnCalc').addEventListener('click', calculate);
+  $('btnClear').addEventListener('click', function () {
+    $('airflow').value = 1000;
+    $('unit').value = 'CMH';
+    $('targetVel').value = 2.5;
+    $('width').value = 800;
+    $('height').value = 600;
+    $('supplier').value = 'kyodo';
+    $('model').value = 'RG';
+    calculate();
+  });
+  $('btnApply').addEventListener('click', function () {
+    $('width').value = lastRec.w;
+    $('height').value = lastRec.h;
+    calculate();
+  });
+  ['airflow', 'unit', 'targetVel', 'width', 'height', 'model', 'supplier'].forEach(function (id) {
+    $(id).addEventListener('change', calculate);
+  });
+  ['width', 'height'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      var w = Number($('width').value);
+      var h = Number($('height').value);
+      if (!(w > 0 && h > 0) || !viz || !viz.setSize) return;
+      viz.setSize(w, h);
+      $('vizSize').textContent = 'Size: ' + w + 'mm × ' + h + 'mm';
+    });
+  });
+
+  $('btnExpandChart').addEventListener('click', function () {
+    $('chartModal').classList.add('open');
+    requestAnimationFrame(function () {
+      if (!chartModal) {
+        chartModal = new Chart($('perfChartModal').getContext('2d'), {
+          type: 'scatter',
+          data: { datasets: chartDatasets(lastDuty.v, lastDuty.dp) },
+          options: chartOptions()
+        });
+      } else {
+        chartModal.resize();
+        chartModal.update();
+      }
+    });
+  });
+  $('btnCloseModal').addEventListener('click', function () {
+    $('chartModal').classList.remove('open');
+  });
+  $('chartModal').addEventListener('click', function (e) {
+    if (e.target === $('chartModal')) $('chartModal').classList.remove('open');
+  });
+
+  $('backLink').addEventListener('click', function (ev) {
+    ev.preventDefault();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'wepl-nav', id: 'dashboard' }, '*');
+      }
+    } catch (e) {}
+    if (document.referrer) history.back();
+  });
+
+  initViz3D();
+  calculate();
+})();
+  </script>
+</body>
+</html>
