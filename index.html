@@ -1935,6 +1935,122 @@
       #workspace {
         overflow-x: hidden;
       }
+
+      #topbar {
+        height: auto;
+        flex-wrap: wrap;
+        align-items: center;
+        row-gap: 0.35rem;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+      }
+
+      #topbar > .flex.items-center.space-x-3 {
+        min-width: 0;
+      }
+
+      #topbar img {
+        height: 1.65rem;
+      }
+
+      #topbar .text-xl {
+        display: block;
+        font-size: 0.95rem;
+        line-height: 1.05;
+      }
+
+      #topbar p.text-xs {
+        margin: 0;
+        line-height: 1.15;
+      }
+
+      #topbar > .flex-1 {
+        order: 8;
+        flex: 1 1 100%;
+        max-width: none;
+        margin-left: 0;
+      }
+
+      #workspace h1.text-2xl {
+        font-size: 1.15rem;
+      }
+
+      #tncStageScroll .tnc-check-wrap {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+
+      .tnc-check-wrap thead {
+        display: none;
+      }
+
+      .tnc-check-wrap table,
+      .tnc-check-wrap tbody,
+      .tnc-check-wrap tr,
+      .tnc-check-wrap td {
+        display: block;
+        width: 100%;
+      }
+
+      .tnc-check-wrap tr {
+        padding: 0.7rem 0.75rem 0.8rem;
+      }
+
+      .tnc-check-wrap td {
+        border: none;
+        padding: 0.12rem 0;
+        text-align: left;
+      }
+
+      .tnc-check-wrap td.tnc-check-sn {
+        font-size: 0.72rem;
+        color: #64748b;
+      }
+
+      .tnc-check-wrap td.tnc-check-item {
+        font-weight: 700;
+        white-space: normal;
+        line-height: 1.35;
+        margin-bottom: 0.35rem;
+      }
+
+      .tnc-check-wrap td.tnc-check-opt {
+        display: inline-flex;
+        width: 32%;
+        align-items: center;
+        gap: 0.35rem;
+        min-height: 1.8rem;
+      }
+
+      .tnc-check-wrap td.tnc-check-opt::before {
+        content: attr(data-label);
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #334155;
+      }
+
+      .tnc-check-wrap td.tnc-check-opt:not(:has(input)),
+      .tnc-check-wrap td.tnc-check-remark:not(:has(input)) {
+        display: none;
+      }
+
+      .tnc-check-wrap td.tnc-check-opt input {
+        width: 1.15rem;
+        height: 1.15rem;
+      }
+
+      .tnc-check-wrap td.tnc-check-remark {
+        margin-top: 0.45rem;
+      }
+
+      .tnc-check-wrap td.tnc-check-remark::before {
+        content: "Remarks";
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: #64748b;
+        margin-bottom: 0.2rem;
+      }
     }
 
     .tnc-stage {
@@ -6364,7 +6480,7 @@
       });
     }
   </script>
-  <script src="app.js?v=project-tnc357"></script>
+  <script src="app.js?v=project-tnc358"></script>
 </body>
 
 </html>

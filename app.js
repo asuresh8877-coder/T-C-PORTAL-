@@ -188,6 +188,9 @@
   let drawPdfDdOutsideBound = false;
   let tncFormDdOutsideBound = false;
   let tncOdAutoSaveTimer = null;
+  let sharedPullDone = false;
+  let sharedPromise = null;
+  let sharedPostTimer = null;
   let state = loadState();
   function parkStoredPreconPdfs() {
     (state.projects || []).forEach(function (p) {
@@ -671,28 +674,29 @@
     };
   }
 
+  function hydrateState(s) {
+    s.uploads = s.uploads || [];
+    s.libView = s.libView || {};
+    s.libEdits = s.libEdits || {};
+    s.calFolders = s.calFolders || [];
+    s.calLibrary = s.calLibrary || {};
+    ensureLists(s);
+    (s.projects || []).forEach(function (p) {
+      p.sheets = consolidateSheets(p.sheets || []);
+      rehomeEquipment(p);
+      p.sheets = consolidateSheets(p.sheets || []);
+      ensureProjectTnc(p);
+    });
+    ensureMenhAssigned(s);
+    (s.louverTables || []).forEach(ensureLouverTable);
+    return s;
+  }
   function loadState() {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const s = JSON.parse(raw);
-        if (s && Array.isArray(s.projects)) {
-          s.uploads = s.uploads || [];
-          s.libView = s.libView || {};
-          s.libEdits = s.libEdits || {};
-          s.calFolders = s.calFolders || [];
-          s.calLibrary = s.calLibrary || {};
-          ensureLists(s);
-          (s.projects || []).forEach(function (p) {
-            p.sheets = consolidateSheets(p.sheets || []);
-            rehomeEquipment(p);
-            p.sheets = consolidateSheets(p.sheets || []);
-            ensureProjectTnc(p);
-          });
-          ensureMenhAssigned(s);
-          (s.louverTables || []).forEach(ensureLouverTable);
-          return s;
-        }
+        if (s && Array.isArray(s.projects)) return hydrateState(s);
       }
     } catch (e) { /* ignore */ }
     return defaultState();
@@ -776,10 +780,79 @@
         });
       });
     });
+    if (sharedPullDone) state.savedAt = nowIso();
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
     } catch (e) { /* quota or private mode */ }
     saveUiState();
+    scheduleSharedPost();
+  }
+  function sharedProjectCount(s) {
+    return (s && s.projects && s.projects.length) || 0;
+  }
+  function localShouldLead(server) {
+    const localN = sharedProjectCount(state);
+    const serverN = sharedProjectCount(server);
+    if (!serverN) return localN > 0;
+    if (!localN) return false;
+    const lt = state.savedAt || '';
+    const st = (server && server.savedAt) || '';
+    if (!lt && localN > serverN) return true;
+    if (lt && (!st || lt > st)) return true;
+    return false;
+  }
+  function adoptSharedState(s) {
+    if (!s || !Array.isArray(s.projects) || !s.projects.length) return;
+    state = hydrateState(s);
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+    if (!(state.projects || []).some(function (p) { return p.id === selectedProjectId; })) {
+      selectedProjectId = state.projects[0] ? state.projects[0].id : null;
+    }
+  }
+  function fetchSharedState() {
+    return fetch('/api/state', { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('state');
+      return r.json();
+    });
+  }
+  function postSharedState() {
+    if (!sharedPullDone) return Promise.resolve();
+    if (!state.savedAt) state.savedAt = nowIso();
+    return fetch('/api/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    }).then(function (r) {
+      if (r.status !== 409) return;
+      return fetchSharedState().then(function (server) {
+        adoptSharedState(server);
+        const app = document.getElementById('app');
+        if (app && !app.classList.contains('hidden')) {
+          try { renderView(); } catch (e) { /* ignore */ }
+        }
+      });
+    }).catch(function () { /* phone keeps working if this computer is offline */ });
+  }
+  function scheduleSharedPost() {
+    if (!sharedPullDone) return;
+    clearTimeout(sharedPostTimer);
+    sharedPostTimer = setTimeout(function () { postSharedState(); }, 700);
+  }
+  function pullSharedState() {
+    if (sharedPromise) return sharedPromise;
+    sharedPromise = fetchSharedState().then(function (server) {
+      if (localShouldLead(server)) {
+        if (!state.savedAt) state.savedAt = nowIso();
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+        sharedPullDone = true;
+        return postSharedState();
+      }
+      adoptSharedState(server);
+      sharedPullDone = true;
+    }).catch(function () {
+      sharedPullDone = true;
+    });
+    return sharedPromise;
   }
   function logActivity(module, text) {
     state.activity.unshift({ id: uid(), module: module, text: text, at: nowIso() });
@@ -15365,7 +15438,7 @@
     if (items.length) {
       const hasSection = items.some(function (it) { return it.section; });
       const preconTable = tpl.kind === 'precon';
-      html += '<div class="bg-white rounded-xl border overflow-auto max-h-[360px]"><table class="w-full text-[11px]">';
+      html += '<div class="tnc-check-wrap bg-white rounded-xl border overflow-auto max-h-[360px]"><table class="tnc-check-table w-full text-[11px]">';
       if (preconTable) html += '<colgroup><col style="width:6%"><col style="width:57%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:19%"></colgroup>';
       html += '<thead class="bg-slate-100 sticky top-0">';
       if (preconTable) {
@@ -15386,13 +15459,14 @@
         const v = (doc.itemStatus || {})[it.no] || '';
         const isHead = !/\./.test(it.no) && items.some(function (x) { return x.no.indexOf(it.no + '.') === 0; });
         html += '<tr class="border-t ' + (isHead ? 'bg-slate-50 font-extrabold' : '') + '">';
-        html += '<td class="px-2 py-1.5 font-mono">' + esc(it.no) + '</td>';
-        if (hasSection) html += '<td class="px-2 py-1.5">' + esc(it.section || '') + '</td>';
-        html += '<td class="px-2 py-1.5">' + esc(it.text) + '</td>';
+        html += '<td class="px-2 py-1.5 font-mono tnc-check-sn" data-label="S/N">' + esc(it.no) + '</td>';
+        if (hasSection) html += '<td class="px-2 py-1.5 tnc-check-sec" data-label="Section">' + esc(it.section || '') + '</td>';
+        html += '<td class="px-2 py-1.5 tnc-check-item" data-label="Item">' + esc(it.text) + '</td>';
         ['yes', 'no', 'na'].forEach(function (opt) {
-          html += '<td class="px-2 py-1.5 text-center">' + (isHead ? '' : '<input type="radio" class="' + ((hasSection || tpl.kind === 'precon') ? 'tnc-tick' : '') + '" name="it-' + doc.id + '-' + esc(it.no) + '" data-tnc-item="' + doc.id + '" data-ino="' + esc(it.no) + '" value="' + opt + '"' + (v === opt ? ' checked' : '') + '/>') + '</td>';
+          const lab = opt === 'na' ? 'N/A' : (opt === 'yes' ? 'Yes' : 'No');
+          html += '<td class="px-2 py-1.5 text-center tnc-check-opt" data-label="' + lab + '">' + (isHead ? '' : '<input type="radio" class="' + ((hasSection || tpl.kind === 'precon') ? 'tnc-tick' : '') + '" name="it-' + doc.id + '-' + esc(it.no) + '" data-tnc-item="' + doc.id + '" data-ino="' + esc(it.no) + '" value="' + opt + '"' + (v === opt ? ' checked' : '') + '/>') + '</td>';
         });
-        html += '<td class="px-2 py-1.5">' + (isHead ? '' : '<input data-tnc-ival="' + doc.id + '" data-ino="' + esc(it.no) + '" class="w-full border rounded px-1.5 py-1" value="' + esc((doc.itemValues || {})[it.no] || '') + '"/>') + '</td></tr>';
+        html += '<td class="px-2 py-1.5 tnc-check-remark" data-label="Remarks">' + (isHead ? '' : '<input data-tnc-ival="' + doc.id + '" data-ino="' + esc(it.no) + '" class="w-full border rounded px-1.5 py-1" value="' + esc((doc.itemValues || {})[it.no] || '') + '"/>') + '</td></tr>';
       });
       html += '</tbody></table></div>';
     } else if (tpl.kind === 'precon') {
@@ -25068,17 +25142,19 @@
   }
 
   function enterApp() {
-    document.getElementById('loginGate').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-    restoreUiState();
-    paintChrome();
-    renderNav();
-    const u = currentUser();
-    const can = authApi().canNav;
-    if (!view || (can && !can(u, view))) {
-      view = (u && u.portalRole === 'admin') ? 'admin' : 'dashboard';
-    }
-    navigate(view);
+    pullSharedState().then(function () {
+      document.getElementById('loginGate').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      restoreUiState();
+      paintChrome();
+      renderNav();
+      const u = currentUser();
+      const can = authApi().canNav;
+      if (!view || (can && !can(u, view))) {
+        view = (u && u.portalRole === 'admin') ? 'admin' : 'dashboard';
+      }
+      navigate(view);
+    });
   }
   window.WEPL_ENTER_APP = function (r) {
     if (r && r.mustChange) { showChangePw(true); return; }
@@ -25228,6 +25304,7 @@
     try {
       if (localStorage.getItem('wepl-sidebar-collapsed') === '1') setSidebarCollapsed(true);
     } catch (e) { }
+    pullSharedState();
     window.addEventListener('pagehide', saveUiState);
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') saveUiState();

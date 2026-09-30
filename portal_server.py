@@ -14,8 +14,10 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 AUTH_FILE = DATA / "auth.json"
+STATE_FILE = DATA / "portal.json"
 PORT = int(os.environ.get("PORT", "8080"))
 MAX_AUTH_BODY = 2_000_000
+MAX_STATE_BODY = 48_000_000
 
 
 def read_auth():
@@ -37,6 +39,25 @@ def write_auth(data):
     tmp = AUTH_FILE.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(AUTH_FILE)
+
+
+def read_state():
+    if not STATE_FILE.is_file():
+        return {"projects": []}
+    try:
+        data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {"projects": []}
+    if not isinstance(data, dict) or not isinstance(data.get("projects"), list):
+        return {"projects": []}
+    return data
+
+
+def write_state(data):
+    DATA.mkdir(parents=True, exist_ok=True)
+    tmp = STATE_FILE.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(STATE_FILE)
 
 
 class PortalHandler(SimpleHTTPRequestHandler):
@@ -80,8 +101,12 @@ class PortalHandler(SimpleHTTPRequestHandler):
         self._send_bytes(code, json.dumps(obj, ensure_ascii=False), "application/json; charset=utf-8")
 
     def do_GET(self):
-        if self._api_path() == "/api/auth":
+        path = self._api_path()
+        if path == "/api/auth":
             self._send_json(200, read_auth())
+            return
+        if path == "/api/state":
+            self._send_json(200, read_state())
             return
         super().do_GET()
 
@@ -96,35 +121,67 @@ class PortalHandler(SimpleHTTPRequestHandler):
             return
         super().do_HEAD()
 
-    def do_POST(self):
-        if self._api_path() != "/api/auth":
-            self.send_error(501, "Unsupported method")
-            return
+    def _read_body(self, limit):
         length = 0
         try:
             length = int(self.headers.get("Content-Length", "0") or "0")
         except ValueError:
             length = 0
-        if length < 0 or length > MAX_AUTH_BODY:
-            self._send_json(400, {"ok": False, "error": "Invalid request."})
+        if length < 0 or length > limit:
+            return None
+        return self.rfile.read(length) if length else b""
+
+    def do_POST(self):
+        path = self._api_path()
+        if path == "/api/auth":
+            raw = self._read_body(MAX_AUTH_BODY)
+            if raw is None:
+                self._send_json(400, {"ok": False, "error": "Invalid request."})
+                return
+            try:
+                data = json.loads(raw.decode("utf-8") or "{}")
+            except Exception:
+                self._send_json(400, {"ok": False, "error": "Invalid JSON."})
+                return
+            if not isinstance(data, dict) or not isinstance(data.get("users"), list):
+                self._send_json(400, {"ok": False, "error": "Invalid auth store."})
+                return
+            if not isinstance(data.get("notifications"), list):
+                data["notifications"] = []
+            try:
+                write_auth(data)
+            except Exception:
+                self._send_json(500, {"ok": False, "error": "Could not save login data."})
+                return
+            self._send_json(200, {"ok": True})
             return
-        raw = self.rfile.read(length) if length else b""
-        try:
-            data = json.loads(raw.decode("utf-8") or "{}")
-        except Exception:
-            self._send_json(400, {"ok": False, "error": "Invalid JSON."})
+        if path == "/api/state":
+            raw = self._read_body(MAX_STATE_BODY)
+            if raw is None:
+                self._send_json(400, {"ok": False, "error": "Invalid request."})
+                return
+            try:
+                data = json.loads(raw.decode("utf-8") or "{}")
+            except Exception:
+                self._send_json(400, {"ok": False, "error": "Invalid JSON."})
+                return
+            if not isinstance(data, dict) or not isinstance(data.get("projects"), list):
+                self._send_json(400, {"ok": False, "error": "Invalid portal data."})
+                return
+            current = read_state()
+            incoming_at = data.get("savedAt") or ""
+            current_at = current.get("savedAt") or ""
+            if current_at and (not incoming_at or incoming_at < current_at):
+                self._send_json(409, {"ok": False, "error": "stale", "savedAt": current_at})
+                return
+            try:
+                write_state(data)
+            except Exception:
+                self._send_json(500, {"ok": False, "error": "Could not save portal data."})
+                return
+            self._send_json(200, {"ok": True})
             return
-        if not isinstance(data, dict) or not isinstance(data.get("users"), list):
-            self._send_json(400, {"ok": False, "error": "Invalid auth store."})
-            return
-        if not isinstance(data.get("notifications"), list):
-            data["notifications"] = []
-        try:
-            write_auth(data)
-        except Exception:
-            self._send_json(500, {"ok": False, "error": "Could not save login data."})
-            return
-        self._send_json(200, {"ok": True})
+        self.send_error(501, "Unsupported method")
 
 
 def trial_links():
