@@ -1782,6 +1782,161 @@
       background: #f3f4f6;
     }
 
+    .tnc-phone,
+    .tnc-rail-head,
+    .tnc-sheet-head,
+    .tnc-sheet-backdrop {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .tnc-phone {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .tnc-phone-proj,
+      .tnc-phone-menu {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        text-align: left;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.9rem;
+        padding: 0.7rem 0.85rem;
+        color: #0f172a;
+        box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+      }
+
+      .tnc-phone-chev {
+        color: #64748b;
+        font-size: 1.4rem;
+        line-height: 1;
+      }
+
+      .tnc-phone-tracks {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+      }
+
+      .tnc-phone-track {
+        min-height: 2.75rem;
+        border-radius: 0.8rem;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #334155;
+        font-size: 0.78rem;
+        font-weight: 800;
+        line-height: 1.2;
+        padding: 0.45rem 0.5rem;
+        white-space: normal;
+      }
+
+      .tnc-phone-track.is-on {
+        background: #1e40af;
+        border-color: #1e40af;
+        color: #fff;
+      }
+
+      .tnc-phone-menu-now {
+        color: #1e40af;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-align: right;
+      }
+
+      body:has(.tnc-phone) #tncProjSheet:not(.is-open) {
+        display: none;
+      }
+
+      .tnc-split {
+        min-width: 0;
+        width: 100%;
+      }
+
+      #tncStageScroll {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .tnc-rail {
+        display: none;
+      }
+
+      .tnc-sheet-backdrop.is-on {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgb(15 23 42 / 0.45);
+        z-index: 70;
+      }
+
+      .tnc-proj-sheet.is-open,
+      .tnc-rail.is-open {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 0.6rem;
+        right: 0.6rem;
+        bottom: 0.6rem;
+        top: auto;
+        max-height: min(78vh, 640px);
+        width: auto;
+        z-index: 80;
+        background: #fff;
+        border-radius: 1rem;
+        padding: 0.85rem;
+        overflow: auto;
+        box-shadow: 0 18px 40px rgb(15 23 42 / 0.28);
+      }
+
+      .tnc-proj-sheet.is-open .tnc-sheet-head,
+      .tnc-rail.is-open .tnc-rail-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+
+      .tnc-sheet-x {
+        width: 2rem;
+        height: 2rem;
+        border: none;
+        border-radius: 0.5rem;
+        background: transparent;
+        color: #dc2626;
+        font-size: 1.4rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .tnc-proj-sheet.is-open .tnc-proj-row {
+        flex-direction: column;
+        overflow: visible;
+      }
+
+      .tnc-proj-sheet.is-open .tnc-proj-row > button {
+        width: 100%;
+      }
+
+      .tnc-rail.is-open .tnc-rail-tracks {
+        display: none;
+      }
+
+      #workspace {
+        overflow-x: hidden;
+      }
+    }
+
     .tnc-stage {
       display: flex;
       align-items: flex-start;
@@ -6209,7 +6364,7 @@
       });
     }
   </script>
-  <script src="app.js?v=project-tnc356"></script>
+  <script src="app.js?v=project-tnc357"></script>
 </body>
 
 </html>

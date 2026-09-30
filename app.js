@@ -7554,11 +7554,13 @@
     html += '<h1 class="text-2xl font-extrabold flex items-center gap-2">' + svgIcon('workflow', 'w-7 h-7 text-blue-800') + ' Project T&amp;C</h1>';
     html += '<p class="text-sm text-slate-500">Assign and complete pre-construction checklists, T&amp;C pre-checklists, operational-data reports and calibration certificates.</p>';
     html += '</div></div>';
-    html += '<div class="flex gap-2 overflow-x-auto pb-1">';
+    html += '<div id="tncProjSheet" class="tnc-proj-sheet">';
+    html += '<div class="tnc-sheet-head"><strong>Choose Project</strong><button type="button" class="tnc-sheet-x" data-tnc-sheet-close="1" aria-label="Close">×</button></div>';
+    html += '<div class="tnc-proj-row flex gap-2 overflow-x-auto pb-1">';
     (state.projects || []).filter(function (pr) { return !authApi().canProject || authApi().canProject(currentUser(), pr.id); }).forEach(function (pr) {
       html += '<button type="button" data-tnc-proj="' + pr.id + '" class="btn-shadow shrink-0 px-3 py-2 rounded-xl border text-left text-sm ' + (p && p.id === pr.id ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-200') + '"><p class="font-bold">' + esc(pr.name) + '</p><p class="text-[11px] text-slate-500">' + esc(pr.code || '') + (pr.location ? ' · ' + esc(pr.location) : '') + '</p></button>';
     });
-    html += '</div></div>';
+    html += '</div></div></div>';
 
     if (!p) return html + '<p class="text-slate-500 p-4">Create a project to generate the T&amp;C workflow.</p></div>';
 
@@ -7573,9 +7575,31 @@
       html += '</div>';
     }
 
-    html += '<div class="flex-1 min-h-0 flex gap-3 pt-3">';
-    html += '<aside class="tnc-rail shrink-0 w-[280px] max-w-full overflow-y-auto pr-1">';
-    html += '<div class="grid grid-cols-2 gap-1 mb-3 bg-white rounded-xl p-1 border border-slate-200">';
+    let phoneMenu = stage ? (stage.title || 'Workflow') : 'Workflow';
+    if (track && tncUsesEquipLoop(track) && stage) {
+      const phoneGroup = tncLoopGroupForStage(track, stage);
+      if (phoneGroup && phoneGroup.title) phoneMenu = phoneGroup.title;
+    }
+    html += '<div class="tnc-phone">';
+    html += '<button type="button" class="tnc-phone-proj" data-tnc-sheet="proj">';
+    html += '<span class="min-w-0"><strong class="block truncate">' + esc(p.name) + '</strong>';
+    html += '<span class="block text-[11px] font-semibold text-slate-500 truncate">' + esc(p.code || '') + (p.location ? ' · ' + esc(p.location) : '') + '</span></span>';
+    html += '<span class="tnc-phone-chev" aria-hidden="true">›</span></button>';
+    html += '<div class="tnc-phone-tracks">';
+    (T.tracks || []).forEach(function (tr) {
+      html += '<button type="button" data-tnc-track="' + tr.id + '" class="tnc-phone-track ' + (track && track.id === tr.id ? 'is-on' : '') + '">' + esc(tr.short || tr.name) + '</button>';
+    });
+    html += '</div>';
+    html += '<button type="button" class="tnc-phone-menu" data-tnc-sheet="menu">';
+    html += '<span class="inline-flex items-center gap-2 font-extrabold">' + svgIcon('workflow', 'w-4 h-4') + ' Workflow / Menu</span>';
+    html += '<span class="tnc-phone-menu-now">' + esc(phoneMenu) + ' <span aria-hidden="true">▾</span></span></button>';
+    html += '</div>';
+    html += '<div id="tncSheetBackdrop" class="tnc-sheet-backdrop" data-tnc-sheet-close="1"></div>';
+
+    html += '<div class="tnc-split flex-1 min-h-0 flex gap-3 pt-3">';
+    html += '<aside id="tncRail" class="tnc-rail shrink-0 w-[280px] max-w-full overflow-y-auto pr-1">';
+    html += '<div class="tnc-rail-head"><strong>Workflow</strong><button type="button" class="tnc-sheet-x" data-tnc-sheet-close="1" aria-label="Close">×</button></div>';
+    html += '<div class="tnc-rail-tracks grid grid-cols-2 gap-1 mb-3 bg-white rounded-xl p-1 border border-slate-200">';
     (T.tracks || []).forEach(function (tr) {
       html += '<button type="button" data-tnc-track="' + tr.id + '" class="rounded-lg px-2 py-2 text-[11px] font-extrabold ' + (track && track.id === tr.id ? 'btn-navy' : 'text-slate-600 hover:bg-slate-50') + '">' + esc(tr.short || tr.name) + '</button>';
     });
@@ -17172,6 +17196,33 @@
         setTimeout(function () { downloadDoc(f.path, false, f.file); }, i * 250);
       });
     };
+    function closeTncSheets() {
+      const sheet = document.getElementById('tncProjSheet');
+      const rail = document.getElementById('tncRail');
+      const backdrop = document.getElementById('tncSheetBackdrop');
+      if (sheet) sheet.classList.remove('is-open');
+      if (rail) rail.classList.remove('is-open');
+      if (backdrop) backdrop.classList.remove('is-on');
+    }
+    document.querySelectorAll('[data-tnc-sheet]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        closeTncSheets();
+        const which = b.getAttribute('data-tnc-sheet');
+        const backdrop = document.getElementById('tncSheetBackdrop');
+        if (which === 'proj') {
+          const sheet = document.getElementById('tncProjSheet');
+          if (sheet) sheet.classList.add('is-open');
+        }
+        if (which === 'menu') {
+          const rail = document.getElementById('tncRail');
+          if (rail) rail.classList.add('is-open');
+        }
+        if (backdrop) backdrop.classList.add('is-on');
+      });
+    });
+    document.querySelectorAll('[data-tnc-sheet-close]').forEach(function (b) {
+      b.addEventListener('click', function () { closeTncSheets(); });
+    });
     document.querySelectorAll('[data-tnc-proj]').forEach(function (b) {
       b.addEventListener('click', function () { selectedProjectId = b.getAttribute('data-tnc-proj'); tncOpenDocId = null; renderView(); });
     });
