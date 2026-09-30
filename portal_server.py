@@ -51,6 +51,8 @@ class PortalHandler(SimpleHTTPRequestHandler):
 
     def _blocked_static(self, rel):
         rel = rel.replace("\\", "/").lstrip("/").lower()
+        if rel == "api/directory.json":
+            return True
         return rel == "data" or rel.startswith("data/")
 
     def translate_path(self, path):

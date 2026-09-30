@@ -25143,7 +25143,10 @@
         });
       });
       on('btnForgot', function () {
-        alert('Need help? Contact your T&C Administrator to reset your password.');
+        const err = document.getElementById('loginError');
+        if (!err) return;
+        err.textContent = 'Contact your T&C Administrator to reset your password.';
+        err.classList.remove('hidden');
       });
       document.addEventListener('click', function (e) {
         if (!e.target.closest('#globalSearch') && !e.target.closest('#searchResults')) closeSearch();
@@ -25182,12 +25185,8 @@
     ready.then(function () {
       const hint = document.getElementById('loginHint');
       const admin = authApi().findUser && authApi().findUser('Admin');
-      if (hint) {
-        if (admin && admin.mustChangePassword) {
-          hint.innerHTML = 'Default Admin — Staff ID <strong>Admin</strong> / password <strong>Admin</strong> (must be changed on first login). The same ID and password work in Chrome, Edge, and any other browser on this PC.';
-        } else {
-          hint.textContent = 'Use the same Staff ID and password that already work in Chrome. That login also opens Edge and any other browser on this PC. Clear a saved password if the browser filled one for you.';
-        }
+      if (hint && !(admin && admin.mustChangePassword)) {
+        hint.textContent = 'Use the same Staff ID and password that already work in Chrome. That login also opens Edge and any other browser on this PC.';
       }
       const u = currentUser();
       if (!u) return;
