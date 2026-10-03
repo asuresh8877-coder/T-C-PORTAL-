@@ -1086,7 +1086,8 @@
     html += '<div class="flex items-center gap-3 min-w-0">';
     html += '<div class="dash-welcome-badge" aria-hidden="true">' + svgIcon('sparkles', 'w-6 h-6') + '</div>';
     html += '<div class="min-w-0"><h1 class="text-2xl font-extrabold text-slate-900 truncate">Welcome back, ' + esc(greetName) + '!</h1>';
-    html += '<p class="text-sm text-slate-500">Your overview for today.</p></div></div>';
+    html += '<p class="text-sm text-slate-500">Your overview for today.</p>';
+    html += '<p id="phoneShareLink" class="text-sm font-bold text-blue-800 mt-1"></p></div></div>';
     html += '<label class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Project view';
     html += '<select id="dashProjectFilter" class="mt-1 block min-w-[220px] border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-800">';
     html += '<option value="">All projects (Overall)</option>';
@@ -1140,7 +1141,22 @@
     return html;
   }
 
+  function showPhoneLink() {
+    fetch('/api/link', { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('link');
+      return r.json();
+    }).then(function (data) {
+      const link = data && data.links && data.links[0];
+      if (!link) return;
+      const text = 'Phone on this Wi-Fi: ' + link;
+      const login = document.getElementById('loginPhoneLink');
+      if (login) login.textContent = text;
+      const dash = document.getElementById('phoneShareLink');
+      if (dash) dash.textContent = text;
+    }).catch(function () { /* hosted page has no shared computer link */ });
+  }
   function bindDashboard() {
+    showPhoneLink();
     const allProjects = visibleProjects();
     const filterId = dashProjectFilter;
     const filterOk = filterId && allProjects.some(function (p) { return p.id === filterId; });
@@ -2935,7 +2951,8 @@
         return;
       }
       if (isPdfFile(name) || !name) {
-        renderPdfPreview(src, title || name);
+        if (uploaded || /^data:/i.test(src)) renderPdfPreview(src, title || name);
+        else openCatalogPdf(pathOrId, title || name);
         return;
       }
       document.getElementById('workBody').innerHTML =
@@ -2950,11 +2967,120 @@
     else apply(encodePath(pathOrId));
   }
 
+  const packedZipPromise = {};
+  function packedZip(url) {
+    if (!packedZipPromise[url]) {
+      packedZipPromise[url] = fetch(encodePath(url)).then(function (r) {
+        if (!r.ok) throw new Error('zip missing');
+        return r.arrayBuffer();
+      }).then(function (buf) {
+        if (typeof JSZip === 'undefined') throw new Error('zip');
+        return JSZip.loadAsync(buf);
+      }).then(function (zip) {
+        const names = [];
+        zip.forEach(function (name, file) { if (!file.dir) names.push(name); });
+        if (names.length === 1 && /\.zip$/i.test(names[0])) {
+          return zip.file(names[0]).async('uint8array').then(function (bytes) {
+            return JSZip.loadAsync(bytes);
+          });
+        }
+        return zip;
+      });
+    }
+    return packedZipPromise[url];
+  }
+  function zipPdfBytes(path) {
+    const packs = [];
+    if (path.indexOf('T&C Test Report PDF Forms/') === 0) packs.push('T&C Test Report PDF Forms.zip');
+    if (path.indexOf('T&C Method of Statement/') === 0) packs.push('T&C Method of Statement.zip');
+    if (path.indexOf('T&C Pre-Checklist/') === 0) {
+      packs.push('T&C Pre-Checklist (2).zip');
+      packs.push('T&C Pre-Checklist.zip');
+    }
+    if (!packs.length) return Promise.reject(new Error('no pack'));
+    const base = path.split('/').pop();
+    function fromZip(zip) {
+      let exact = null;
+      let loose = null;
+      zip.forEach(function (name, file) {
+        if (file.dir) return;
+        const n = name.replace(/\\/g, '/');
+        if (n === path || n.endsWith('/' + path)) exact = file;
+        else if (n === base || n.endsWith('/' + base)) loose = file;
+      });
+      const found = exact || loose;
+      if (!found) throw new Error('not in zip');
+      return found.async('uint8array');
+    }
+    let chain = Promise.reject(new Error('start'));
+    packs.forEach(function (pack) {
+      chain = chain.catch(function () { return packedZip(pack).then(fromZip); });
+    });
+    return chain;
+  }
+  function fetchPdfBytes(path) {
+    return fetch(encodePath(path)).then(function (r) {
+      if (!r.ok) throw new Error('missing');
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      const bytes = new Uint8Array(buf);
+      if (String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) !== '%PDF') throw new Error('not pdf');
+      return bytes;
+    });
+  }
+  function openCatalogPdf(path, title) {
+    const base = String(path || '').split('/').pop();
+    const choices = [];
+    [path, base, 'T&C Pre-Checklist/' + base].forEach(function (p) {
+      if (p && choices.indexOf(p) < 0) choices.push(p);
+    });
+    let chain = Promise.reject(new Error('start'));
+    choices.forEach(function (p) {
+      chain = chain.catch(function () { return fetchPdfBytes(p); });
+    });
+    chain = chain.catch(function () {
+      const box = document.getElementById('workBody');
+      if (box) box.innerHTML = '<div class="h-full flex items-center justify-center text-slate-500">Opening the PDF from the uploaded file…</div>';
+      return zipPdfBytes(base.indexOf('Pre-Testing') >= 0 || base.indexOf('Pre-Checklist') >= 0 ? ('T&C Pre-Checklist/' + base) : path);
+    });
+    chain.then(function (bytes) {
+      renderPdfPreview(bytes, title || path);
+    }).catch(function () {
+      const box = document.getElementById('workBody');
+      if (box) showMissingPdf(box);
+    });
+  }
+  function showMissingPdf(body) {
+    body.innerHTML = '<div class="h-full flex items-center justify-center p-6"><div class="max-w-md bg-white rounded-2xl border border-slate-200 p-6 text-center">' +
+      '<p class="text-sm font-extrabold text-slate-900 mb-2">This PDF is on the T&amp;C computer</p>' +
+      '<p id="pdfMissingMsg" class="text-sm text-slate-600">The public website does not have this file. On the phone, open the blue phone link shown in Chrome on this computer, then open the file again.</p></div></div>';
+    fetch('/api/link', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+      const link = data && data.links && data.links[0];
+      const el = document.getElementById('pdfMissingMsg');
+      if (el && link) el.textContent = 'On the phone, open ' + link + ' and sign in. This file opens there.';
+    }).catch(function () { /* public site has no computer link */ });
+  }
   function renderPdfPreview(src, title) {
     const body = document.getElementById('workBody');
+    const bytes = src instanceof Uint8Array ? src : null;
+    const fileUrl = bytes ? URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })) : src;
     if (typeof pdfjsLib === 'undefined') {
-      body.innerHTML = '<iframe title="Document preview" src="' + src + '#toolbar=1" class="w-full h-full bg-white"></iframe>';
-      document.getElementById('btnWorkPrint').onclick = function () { printSrc(src); };
+      if (bytes) {
+        body.innerHTML = '<iframe title="Document preview" src="' + fileUrl + '#toolbar=1" class="w-full h-full bg-white"></iframe>';
+        const printBtn = document.getElementById('btnWorkPrint');
+        if (printBtn) printBtn.onclick = function () { printSrc(fileUrl); };
+        return;
+      }
+      fetch(src).then(function (r) {
+        const type = (r.headers.get('content-type') || '').toLowerCase();
+        if (r.ok && type.indexOf('pdf') >= 0) {
+          body.innerHTML = '<iframe title="Document preview" src="' + src + '#toolbar=1" class="w-full h-full bg-white"></iframe>';
+          const printBtn = document.getElementById('btnWorkPrint');
+          if (printBtn) printBtn.onclick = function () { printSrc(src); };
+          return;
+        }
+        showMissingPdf(body);
+      }).catch(function () { showMissingPdf(body); });
       return;
     }
     body.innerHTML =
@@ -2979,9 +3105,9 @@
     function printPdfView() {
       const pages = document.getElementById('pdfPages');
       const canvases = pages ? pages.querySelectorAll('canvas') : [];
-      if (!canvases.length) { printSrc(src); return; }
+      if (!canvases.length) { printSrc(fileUrl); return; }
       const w = window.open('', '_blank');
-      if (!w) { printSrc(src); return; }
+      if (!w) { printSrc(fileUrl); return; }
       w.document.write('<html><head><title>Print</title><style>@page{margin:12mm}body{margin:0}img{width:100%;display:block;page-break-after:always}</style></head><body>');
       canvases.forEach(function (c) {
         w.document.write('<img src="' + c.toDataURL('image/png') + '"/>');
@@ -3167,7 +3293,7 @@
       });
     }
 
-    pdfjsLib.getDocument(src).promise.then(function (pdf) {
+    pdfjsLib.getDocument(bytes ? { data: bytes.slice(0) } : src).promise.then(function (pdf) {
       pdfDoc = pdf;
       numPages = pdf.numPages;
       curPage = 1;
@@ -3220,8 +3346,23 @@
         scrollEl._pdfPageT = window.setTimeout(pageFromScroll, 80);
       });
     }).catch(function (err) {
-      body.innerHTML = '<iframe title="Document preview" src="' + src + '#toolbar=1" class="w-full h-full bg-white"></iframe>';
-      document.getElementById('btnWorkPrint').onclick = function () { printSrc(src); };
+      if (bytes) {
+        body.innerHTML = '<iframe title="Document preview" src="' + fileUrl + '#toolbar=1" class="w-full h-full bg-white"></iframe>';
+        const printBtn = document.getElementById('btnWorkPrint');
+        if (printBtn) printBtn.onclick = function () { printSrc(fileUrl); };
+        console.warn(err);
+        return;
+      }
+      fetch(src).then(function (r) {
+        const type = (r.headers.get('content-type') || '').toLowerCase();
+        if (r.ok && type.indexOf('pdf') >= 0) {
+          body.innerHTML = '<iframe title="Document preview" src="' + src + '#toolbar=1" class="w-full h-full bg-white"></iframe>';
+          const printBtn = document.getElementById('btnWorkPrint');
+          if (printBtn) printBtn.onclick = function () { printSrc(src); };
+          return;
+        }
+        showMissingPdf(body);
+      }).catch(function () { showMissingPdf(body); });
       console.warn(err);
     });
   }
@@ -25316,6 +25457,7 @@
       if (hint && !(admin && admin.mustChangePassword)) {
         hint.textContent = 'Use the same Staff ID and password that already work in Chrome. That login also opens Edge and any other browser on this PC.';
       }
+      showPhoneLink();
       const u = currentUser();
       if (!u) return;
       if (u.mustChangePassword) { showChangePw(true); return; }

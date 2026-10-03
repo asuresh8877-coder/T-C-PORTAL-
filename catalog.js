@@ -227,81 +227,81 @@ window.WEPL_CATALOG = {
   ],
   "preChecklist": [
     {
-      "id": "T&C Pre-Checklist/1. Pre-Testing Checklist - Water Cooled Chilled.pdf",
-      "file": "1. Pre-Testing Checklist - Water Cooled Chilled.pdf",
-      "path": "T&C Pre-Checklist/1. Pre-Testing Checklist - Water Cooled Chilled.pdf",
+      "id": "1. Pre-Testing Commissioning Checklist.R1- WATER COOLED CHILLED.pdf",
+      "file": "1. Pre-Testing Commissioning Checklist.R1- WATER COOLED CHILLED.pdf",
+      "path": "1. Pre-Testing Commissioning Checklist.R1- WATER COOLED CHILLED.pdf",
       "title": "1. Pre-Testing Checklist - Water Cooled Chilled"
     },
     {
-      "id": "T&C Pre-Checklist/2. Pre-Testing Checklist - Cooling Tower.pdf",
-      "file": "2. Pre-Testing Checklist - Cooling Tower.pdf",
-      "path": "T&C Pre-Checklist/2. Pre-Testing Checklist - Cooling Tower.pdf",
+      "id": "2. Pre-Testing Commissioning Checklist.R1 - COOLING TOWER.pdf",
+      "file": "2. Pre-Testing Commissioning Checklist.R1 - COOLING TOWER.pdf",
+      "path": "2. Pre-Testing Commissioning Checklist.R1 - COOLING TOWER.pdf",
       "title": "2. Pre-Testing Checklist - Cooling Tower"
     },
     {
-      "id": "T&C Pre-Checklist/3. Pre-Testing Checklist - Pump.pdf",
-      "file": "3. Pre-Testing Checklist - Pump.pdf",
-      "path": "T&C Pre-Checklist/3. Pre-Testing Checklist - Pump.pdf",
+      "id": "3. Pre-Testing Commissioning Checklist.R1- CHWP PUMP.pdf",
+      "file": "3. Pre-Testing Commissioning Checklist.R1- CHWP PUMP.pdf",
+      "path": "3. Pre-Testing Commissioning Checklist.R1- CHWP PUMP.pdf",
       "title": "3. Pre-Testing Checklist - Pump"
     },
     {
-      "id": "T&C Pre-Checklist/4. Pre-Testing Checklist - Chilled AHU & PHU.pdf",
-      "file": "4. Pre-Testing Checklist - Chilled AHU & PHU.pdf",
-      "path": "T&C Pre-Checklist/4. Pre-Testing Checklist - Chilled AHU & PHU.pdf",
+      "id": "4. Pre-Testing Commissioning Checklist.R1 - AHU & PAHU.pdf",
+      "file": "4. Pre-Testing Commissioning Checklist.R1 - AHU & PAHU.pdf",
+      "path": "4. Pre-Testing Commissioning Checklist.R1 - AHU & PAHU.pdf",
       "title": "4. Pre-Testing Checklist - Chilled AHU & PHU"
     },
     {
-      "id": "T&C Pre-Checklist/5. Pre-Testing Checklist - Chilled FCU.pdf",
-      "file": "5. Pre-Testing Checklist - Chilled FCU.pdf",
-      "path": "T&C Pre-Checklist/5. Pre-Testing Checklist - Chilled FCU.pdf",
+      "id": "5. Pre-Testing Commissioning Checklist.R1 - CHWP FCU.pdf",
+      "file": "5. Pre-Testing Commissioning Checklist.R1 - CHWP FCU.pdf",
+      "path": "5. Pre-Testing Commissioning Checklist.R1 - CHWP FCU.pdf",
       "title": "5. Pre-Testing Checklist - Chilled FCU"
     },
     {
-      "id": "T&C Pre-Checklist/6. Pre-Testing Checklist - MV Fan.pdf",
-      "file": "6. Pre-Testing Checklist - MV Fan.pdf",
-      "path": "T&C Pre-Checklist/6. Pre-Testing Checklist - MV Fan.pdf",
+      "id": "6. Pre-Testing Commissioning Checklist.R1 - MV FAN.pdf",
+      "file": "6. Pre-Testing Commissioning Checklist.R1 - MV FAN.pdf",
+      "path": "6. Pre-Testing Commissioning Checklist.R1 - MV FAN.pdf",
       "title": "6. Pre-Testing Checklist - MV Fan"
     },
     {
-      "id": "T&C Pre-Checklist/7. Pre-Testing Checklist - AHU VRF.pdf",
-      "file": "7. Pre-Testing Checklist - AHU VRF.pdf",
-      "path": "T&C Pre-Checklist/7. Pre-Testing Checklist - AHU VRF.pdf",
+      "id": "7. Pre-Testing Commissioning Checklist.R1 - AHU & FCU VRV.pdf",
+      "file": "7. Pre-Testing Commissioning Checklist.R1 - AHU & FCU VRV.pdf",
+      "path": "7. Pre-Testing Commissioning Checklist.R1 - AHU & FCU VRV.pdf",
       "title": "7. Pre-Testing Checklist - AHU VRF"
     },
     {
-      "id": "T&C Pre-Checklist/8. Pre-Testing Checklist - FCU VRF.pdf",
-      "file": "8. Pre-Testing Checklist - FCU VRF.pdf",
-      "path": "T&C Pre-Checklist/8. Pre-Testing Checklist - FCU VRF.pdf",
+      "id": "8. Pre-Testing Commissioning Checklist.R1 - SPLIT FCU.pdf",
+      "file": "8. Pre-Testing Commissioning Checklist.R1 - SPLIT FCU.pdf",
+      "path": "8. Pre-Testing Commissioning Checklist.R1 - SPLIT FCU.pdf",
       "title": "8. Pre-Testing Checklist - FCU VRF"
     },
     {
-      "id": "T&C Pre-Checklist/9. Pre-Testing Checklist - VSD.pdf",
-      "file": "9. Pre-Testing Checklist - VSD.pdf",
-      "path": "T&C Pre-Checklist/9. Pre-Testing Checklist - VSD.pdf",
+      "id": "9. Pre-Testing Commissioning Checklist.R1 - VSD.pdf",
+      "file": "9. Pre-Testing Commissioning Checklist.R1 - VSD.pdf",
+      "path": "9. Pre-Testing Commissioning Checklist.R1 - VSD.pdf",
       "title": "9. Pre-Testing Checklist - VSD"
     },
     {
-      "id": "T&C Pre-Checklist/10. Pre-Testing Checklist - Pipe Flushing.pdf",
-      "file": "10. Pre-Testing Checklist - Pipe Flushing.pdf",
-      "path": "T&C Pre-Checklist/10. Pre-Testing Checklist - Pipe Flushing.pdf",
+      "id": "10. Pre-Testing Commissioning Checklist.R1 - PIPE FLUSHING.pdf",
+      "file": "10. Pre-Testing Commissioning Checklist.R1 - PIPE FLUSHING.pdf",
+      "path": "10. Pre-Testing Commissioning Checklist.R1 - PIPE FLUSHING.pdf",
       "title": "10. Pre-Testing Checklist - Pipe Flushing"
     },
     {
-      "id": "T&C Pre-Checklist/11. Pre-Testing Checklist - Duct Leak.pdf",
-      "file": "11. Pre-Testing Checklist - Duct Leak.pdf",
-      "path": "T&C Pre-Checklist/11. Pre-Testing Checklist - Duct Leak.pdf",
+      "id": "11. Pre-Testing Commissioning Checklist.R1 - DUCT LEAK.pdf",
+      "file": "11. Pre-Testing Commissioning Checklist.R1 - DUCT LEAK.pdf",
+      "path": "11. Pre-Testing Commissioning Checklist.R1 - DUCT LEAK.pdf",
       "title": "11. Pre-Testing Checklist - Duct Leak"
     },
     {
-      "id": "T&C Pre-Checklist/12. Pre-Testing Checklist - BMS (MV).pdf",
+      "id": "12. Pre-Testing Checklist - BMS (MV).pdf",
       "file": "12. Pre-Testing Checklist - BMS (MV).pdf",
-      "path": "T&C Pre-Checklist/12. Pre-Testing Checklist - BMS (MV).pdf",
+      "path": "12. Pre-Testing Checklist - BMS (MV).pdf",
       "title": "12. Pre-Testing Checklist - BMS (MV)"
     },
     {
-      "id": "T&C Pre-Checklist/13. Pre-Testing Checklist - BMS (AC).pdf",
+      "id": "13. Pre-Testing Checklist - BMS (AC).pdf",
       "file": "13. Pre-Testing Checklist - BMS (AC).pdf",
-      "path": "T&C Pre-Checklist/13. Pre-Testing Checklist - BMS (AC).pdf",
+      "path": "13. Pre-Testing Checklist - BMS (AC).pdf",
       "title": "13. Pre-Testing Checklist - BMS (AC)"
     }
   ],

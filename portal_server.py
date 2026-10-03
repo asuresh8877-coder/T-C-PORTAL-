@@ -34,11 +34,28 @@ def read_auth():
     return data
 
 
+def public_auth(data):
+    users = []
+    for user in data.get("users") or []:
+        if not isinstance(user, dict):
+            continue
+        copy = dict(user)
+        copy.pop("passwordHint", None)
+        users.append(copy)
+    notes = data.get("notifications") if isinstance(data.get("notifications"), list) else []
+    return {"users": users, "notifications": notes}
+
+
 def write_auth(data):
     DATA.mkdir(parents=True, exist_ok=True)
     tmp = AUTH_FILE.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(AUTH_FILE)
+    directory = ROOT / "api" / "directory.json"
+    directory.parent.mkdir(parents=True, exist_ok=True)
+    pub = directory.with_suffix(".json.tmp")
+    pub.write_text(json.dumps(public_auth(data), ensure_ascii=False), encoding="utf-8")
+    pub.replace(directory)
 
 
 def read_state():
@@ -107,6 +124,9 @@ class PortalHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/state":
             self._send_json(200, read_state())
+            return
+        if path == "/api/link":
+            self._send_json(200, {"links": trial_links()})
             return
         super().do_GET()
 
