@@ -1,685 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ROOM SURFACE AREA & AIR FLOW REPORT | WEPL T&C Portal</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Three.js UMD & OrbitControls (100% Reliable Offline & Local File:// Support) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  
-  <!-- jsPDF & AutoTable for Professional Engineering PDF Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
-          },
-          colors: {
-            brand: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              500: '#1d4ed8',
-              600: '#1e40af',
-              700: '#1e3a8a',
-              800: '#172554',
-              900: '#0f172a',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* Clean Light Theme Scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f8fafc; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    
-    .input-focus {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .input-focus:focus {
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
-    }
-
-    /* Strict Touch Scrolling Prevention for CAD Canvas */
-    #cadCanvas2D, #canvasContainer2D, #container3D {
-      touch-action: none !important;
-      -webkit-touch-callout: none !important;
-      -webkit-user-select: none !important;
-      user-select: none !important;
-    }
-
-    @media print {
-      body { background: white !important; color: black !important; }
-      .no-print { display: none !important; }
-      .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
-    }
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-
-  <!-- TOP HEADER & BRANDING NAV WITH CAPITALIZED NAME & BEAUTIFUL AIRFLOW ICON -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
-    <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      <!-- Brand Logo + Capitalized Title + Airflow Icon -->
-      <div class="flex items-center space-x-3 sm:space-x-4">
-        
-        <!-- Logo or Fallback -->
-        <a href="index.html" class="flex items-center" title="Back to WEPL T&C Portal">
-          <img src="wepl_logo.png" alt="WEPL Logo" class="h-9 w-auto max-w-[130px] object-contain" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
-          <div id="logoFallback" class="hidden items-center justify-center w-10 h-10 rounded-xl bg-blue-700 text-white font-black text-xl shadow-md shadow-blue-500/20">
-            W
-          </div>
-        </a>
-
-        <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
-
-        <!-- Header Title & Airflow Badge -->
-        <div class="flex flex-col">
-          <div class="flex items-center space-x-2">
-            
-            <!-- Beautiful Airflow & Surface Area Icon -->
-            <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center shadow-sm shadow-blue-500/30 flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <!-- Wind / Airflow Waves passing through Room Dimension Enclosure -->
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3M4 8a4 4 0 014-4h8M4 16a4 4 0 004 4h8" />
-              </svg>
-            </div>
-
-            <!-- Capitalized Header Title -->
-            <h1 class="font-black text-slate-900 text-sm sm:text-base lg:text-lg tracking-tight uppercase">
-              ROOM SURFACE AREA & AIR FLOW REPORT
-            </h1>
-
-          </div>
-          <p class="text-[11px] text-slate-500 hidden sm:block font-medium">Cleanroom HVAC Enclosure Calculations & Commissioning Specification</p>
-        </div>
-
-      </div>
-
-      <!-- Quick Preset & Global Controls -->
-      <div class="flex items-center space-x-2 sm:space-x-3 no-print">
-        
-        <div class="relative" id="roomPresetWrap">
-          <button type="button" id="btnRoomPreset" class="inline-flex items-center gap-2 max-w-[15rem] bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer" title="Choose a room shape">
-            <span id="roomPresetLabel" class="truncate">L-Enclosure (6)</span>
-            <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-          </button>
-          <div id="roomPresetMenu" class="hidden absolute right-0 top-full mt-1 w-60 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1">
-            <button type="button" data-preset="lshape_wepl" class="room-preset-opt w-full text-left px-3 py-2 text-xs font-bold text-slate-800 hover:bg-blue-50">L-Enclosure <span class="block text-[10px] font-semibold text-slate-500">6 wall segments</span></button>
-            <button type="button" data-preset="ushape" class="room-preset-opt w-full text-left px-3 py-2 text-xs font-bold text-slate-800 hover:bg-blue-50">U-Shaped Cleanroom <span class="block text-[10px] font-semibold text-slate-500">8 wall segments</span></button>
-            <button type="button" data-preset="rectangle" class="room-preset-opt w-full text-left px-3 py-2 text-xs font-bold text-slate-800 hover:bg-blue-50">Rectangular Cleanroom <span class="block text-[10px] font-semibold text-slate-500">4 wall segments</span></button>
-            <button type="button" data-preset="tshape" class="room-preset-opt w-full text-left px-3 py-2 text-xs font-bold text-slate-800 hover:bg-blue-50">T-Shaped Room <span class="block text-[10px] font-semibold text-slate-500">8 wall segments</span></button>
-            <button type="button" data-preset="octagon" class="room-preset-opt w-full text-left px-3 py-2 text-xs font-bold text-slate-800 hover:bg-blue-50">Octagonal Airlock <span class="block text-[10px] font-semibold text-slate-500">8 wall segments</span></button>
-            <button type="button" data-preset="custom" class="room-preset-opt w-full text-left px-3 py-2 text-xs font-bold text-slate-800 hover:bg-blue-50">Custom Drawn Room <span class="block text-[10px] font-semibold text-slate-500">Drawn on the plan</span></button>
-          </div>
-          <select id="selectRoomPreset" class="hidden" aria-hidden="true" tabindex="-1">
-            <option value="lshape_wepl">Standard WEPL L-Enclosure (6 Segments)</option>
-            <option value="ushape">U-Shaped Cleanroom (8 Segments)</option>
-            <option value="rectangle">Rectangular Cleanroom (4 Segments)</option>
-            <option value="tshape">T-Shaped Room (8 Segments)</option>
-            <option value="octagon">Octagonal Airlock (8 Segments)</option>
-            <option value="custom">Custom Drawn Room</option>
-          </select>
-        </div>
-
-        <label class="sr-only" for="selectUnit">Unit</label>
-        <select id="selectUnit" class="bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 hover:bg-slate-50 cursor-pointer shadow-2xs" title="Measurement unit">
-          <option value="m" selected>Meter (m)</option>
-          <option value="mm">Millimeter (mm)</option>
-        </select>
-
-        <!-- Reset Button -->
-        <button id="btnReset" type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition shadow-2xs cursor-pointer" title="Reset to standard default dimensions">
-          <svg class="w-3.5 h-3.5 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-          <span class="hidden md:inline">Reset</span>
-        </button>
-
-        <button id="btnCloseRoom" type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-slate-800 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg transition shadow-2xs cursor-pointer" title="Close this page">
-          Close
-        </button>
-
-        <!-- Professional PDF Export Button -->
-        <button id="btnExportPDF" type="button" class="inline-flex items-center px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm shadow-blue-500/20 transition-colors cursor-pointer">
-          <svg class="w-4 h-4 mr-1.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          <span>Export Engineering PDF</span>
-        </button>
-
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN WORKSPACE -->
-  <main class="flex-1 max-w-[1750px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 space-y-4">
-    
-    <!-- PROJECT & ROOM METADATA BAR + COMMISSIONING PARAMETERS -->
-    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-center">
-      
-      <!-- Project Name Input -->
-      <div>
-        <label for="inputProjectName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-          🏢 Project Name
-        </label>
-        <input
-          type="text"
-          id="inputProjectName"
-          value="WEPL Cleanroom Facility Alpha"
-          class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-blue-600 focus:bg-white"
-          placeholder="e.g. WEPL Cleanroom Facility Alpha"
-        />
-      </div>
-
-      <!-- Room Name Input (Dynamically renders on 2D Blueprint Canvas) -->
-      <div>
-        <label for="inputRoomName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-          🏷️ Room / Suite Name (Live on 2D Plan)
-        </label>
-        <input
-          type="text"
-          id="inputRoomName"
-          value="ISO Class 7 Production Suite"
-          class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-blue-600 focus:bg-white"
-          placeholder="e.g. ISO Class 7 Production Suite"
-        />
-      </div>
-
-      <!-- Enclosure Clear Height (H) -->
-      <div>
-        <label for="inputHeight" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-          📏 Enclosure Clear Height (H)
-        </label>
-        <div class="relative">
-          <input
-            type="number"
-            step="any"
-            id="inputHeight"
-            value="2.7"
-            class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-3 pr-10 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-blue-600 focus:bg-white"
-          />
-          <span class="unit-label absolute right-3 top-1.5 text-xs font-semibold text-slate-400">m</span>
-        </div>
-      </div>
-
-      <!-- Spec Factor & Flow Mode -->
-      <div class="flex items-center space-x-2">
-        <div class="w-1/2">
-          <label for="specMultiplier" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-            ⚡ Spec Factor
-          </label>
-          <div class="relative">
-            <input
-              type="number"
-              step="any"
-              id="specMultiplier"
-              value="10"
-              class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-3 pr-7 py-1.5 text-xs font-bold text-slate-900 input-focus outline-none focus:border-emerald-600 focus:bg-white"
-            />
-            <span class="absolute right-2.5 top-1.5 text-xs font-semibold text-emerald-600">×</span>
-          </div>
-        </div>
-        <div class="w-1/2">
-          <label for="specMode" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-            🎯 Flow Base
-          </label>
-          <select id="specMode" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white">
-            <option value="surface">Surface m²</option>
-            <option value="ach">Room ACH</option>
-          </select>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SPLIT STUDIO GRID: 2D & 3D VIEWPORTS (LEFT 8 COLS) + RESULTS DASHBOARD (RIGHT 4 COLS) -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-      
-      <!-- LEFT WORKSPACE: 2D FLOOR PLAN EDITOR + 3D VIEWPORT (8 Cols) -->
-      <div class="xl:col-span-8 space-y-5">
-        
-        <!-- TOP ROW: SIDE-BY-SIDE 2D CAD CANVAS & 3D ISOMETRIC VIEWPORT -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          
-          <!-- 1. INTERACTIVE 2D FLOOR PLAN CAD EDITOR (LIGHT THEME) -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col h-[530px]">
-            
-            <!-- 2D Canvas Header & Toolbar -->
-            <div class="px-4 py-2.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center space-x-2">
-                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">2D</span>
-                <span class="font-bold text-slate-900 text-xs sm:text-sm">2D Interactive Blueprint Plan</span>
-              </div>
-
-              <!-- 2D Action Tools -->
-              <div class="flex items-center space-x-1.5 text-xs">
-                <button type="button" id="toolSelect" class="px-3 py-1.5 rounded-lg font-bold bg-blue-600 text-white shadow-xs transition cursor-pointer" title="Select and Drag Vertices">
-                  🖐️ Edit Layout
-                </button>
-                <button type="button" id="toolDraw" class="px-3 py-1.5 rounded-lg font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Click to draw room vertices sequentially">
-                  ✏️ Draw Walls
-                </button>
-                <button type="button" id="btnToggleSnap" class="px-2.5 py-1.5 rounded-lg font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Toggle Grid Snapping">
-                  🧲 Snap: <span id="snapStatusText" class="font-bold text-blue-600">0.1m</span>
-                </button>
-                <button type="button" id="btnFit2D" class="p-1.5 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Fit to screen">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Drawing Mode Helper Banner -->
-            <div id="drawModeBanner" class="hidden px-4 py-2 bg-emerald-600 text-white text-xs font-semibold flex items-center justify-between shadow-xs">
-              <span class="flex items-center space-x-1.5">
-                <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
-                <span id="drawBannerText">✏️ Draw Walls Active: Tap anywhere to place blue corners.</span>
-              </span>
-              <div class="space-x-1.5">
-                <button type="button" id="btnFinishDraw" class="hidden bg-white text-emerald-900 px-2.5 py-1 rounded text-xs font-bold hover:bg-emerald-50 transition shadow-2xs cursor-pointer">🎯 Close Room</button>
-                <button type="button" id="btnCancelDraw" class="bg-emerald-800 text-white px-2.5 py-1 rounded text-xs hover:bg-emerald-900 transition cursor-pointer">Cancel</button>
-              </div>
-            </div>
-
-            <!-- 2D Canvas Container -->
-            <div class="relative flex-1 bg-slate-100/70 overflow-hidden select-none border-b border-slate-100" id="canvasContainer2D">
-              <canvas id="cadCanvas2D" class="w-full h-full block touch-none select-none"></canvas>
-              
-              <!-- Floating Coordinates & Zoom Readout -->
-              <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 flex items-center space-x-3 shadow-2xs pointer-events-none">
-                <span id="canvasCoordReadout">X: 0.00m, Y: 0.00m</span>
-                <span class="text-slate-300">|</span>
-                <span id="canvasZoomReadout">Zoom: 100%</span>
-              </div>
-
-              <!-- Quick Instruction Toast -->
-              <div id="canvasToast" class="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-blue-700 shadow-sm pointer-events-none transition-all">
-                💡 Click dimension badges to edit wall lengths
-              </div>
-            </div>
-
-            <!-- 2D Status / Footer -->
-            <div class="px-4 py-2 bg-white text-xs text-slate-500 flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <span class="font-bold text-slate-700" id="statPointCount">6 Vertices</span>
-                <span>•</span>
-                <span class="font-mono text-blue-700 font-bold" id="statPerimeter2D">Perimeter: 23.220 m</span>
-              </div>
-              <span class="text-[11px] text-slate-400">Drag Vertices • Click Badges • Draw Walls</span>
-            </div>
-
-          </div>
-
-          <!-- 2. SYNCHRONIZED THREE.JS 3D VIEWPORT -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col h-[530px]">
-            
-            <!-- 3D Viewport Header & Enhanced Camera Controls Toolbar -->
-            <div class="px-3 py-2 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-1.5">
-              <div class="flex items-center space-x-2">
-                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">3D</span>
-                <span class="font-bold text-slate-900 text-xs sm:text-sm">3D Extruded Model</span>
-              </div>
-
-              <!-- 3D Interactive Controls Toolbar -->
-              <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-                
-                <!-- Wall Material Dropdown List -->
-                <div class="flex items-center space-x-1 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 shadow-2xs">
-                  <label for="selectWallMaterial" class="font-bold text-slate-500">Wall:</label>
-                  <select id="selectWallMaterial" class="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer">
-                    <option value="brick">Brick Wall (Masonry)</option>
-                    <option value="cleanroom">Cleanroom Panel (White)</option>
-                    <option value="blueprint" selected>Blueprint Blue (Default)</option>
-                    <option value="glass">Structural Glass</option>
-                    <option value="steel">Stainless Steel Panel</option>
-                    <option value="concrete">Concrete Plaster</option>
-                  </select>
-                </div>
-
-                <!-- Auto-Spin 360 Toggle -->
-                <button type="button" id="btnToggleSpin" class="px-2 py-1 rounded-md font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer" title="Toggle 360 Automatic Spin">
-                  🔄 Spin: <span id="spinStateText">ON</span>
-                </button>
-
-                <!-- Camera Angle Presets -->
-                <button type="button" id="btnViewIso" class="px-1.5 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Isometric Perspective View">
-                  Iso
-                </button>
-                <button type="button" id="btnViewTop" class="px-1.5 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Top-Down Plan View">
-                  Top
-                </button>
-                <button type="button" id="btnViewFront" class="px-1.5 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Front Elevation View">
-                  Front
-                </button>
-
-                <!-- Ceiling Toggle -->
-                <button type="button" id="btnToggleCeiling" class="px-2 py-1 rounded-md font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition shadow-2xs cursor-pointer" title="Toggle Ceiling Visibility">
-                  Ceiling: <span id="ceilingStateText" class="font-bold text-blue-600">ON</span>
-                </button>
-
-              </div>
-            </div>
-
-            <!-- 3D WebGL Canvas Container -->
-            <div class="relative flex-1 bg-slate-100/60 overflow-hidden select-none border-b border-slate-100 cursor-grab" id="container3D">
-              <!-- Overlay HUD Badges -->
-              <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 shadow-2xs pointer-events-none">
-                <span id="hudWallMaterialLabel">Wall: Blueprint Blue</span>
-              </div>
-
-              <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-mono font-bold text-emerald-700 shadow-2xs pointer-events-none" id="hud3DVolume">
-                V = 66.343 m³
-              </div>
-            </div>
-
-            <!-- 3D Status Footer -->
-            <div class="px-4 py-2 bg-white text-xs text-slate-500 flex items-center justify-between">
-              <span class="font-bold text-slate-700">WebGL 3D Engine • Architectural Light Studio</span>
-              <span class="font-mono text-indigo-700 font-bold" id="statWallArea3D">Wall Surface: 62.694 m²</span>
-            </div>
-
-          </div>
-
-        </div>
-
-        <!-- BOTTOM ROW OF WORKSPACE: DETAILED WALL SEGMENTS SCHEDULE TABLE -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
-            <div>
-              <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center">
-                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Wall Segments & Boundary Envelope Schedule
-              </h3>
-              <p class="text-xs text-slate-500">Every boundary wall segment computed with real-time length, area, and direct dimension editing.</p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full font-mono" id="tableSummaryPerimeter">
-                Perimeter: 23.220 m
-              </span>
-            </div>
-          </div>
-
-          <!-- Table Container -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-700 border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-slate-500 font-extrabold uppercase tracking-wider border-b border-slate-200">
-                  <th class="py-2.5 px-3">Wall ID</th>
-                  <th class="py-2.5 px-3">Start (X, Y)</th>
-                  <th class="py-2.5 px-3">End (X, Y)</th>
-                  <th class="py-2.5 px-3">Length</th>
-                  <th class="py-2.5 px-3">Height</th>
-                  <th class="py-2.5 px-3">Wall Area (m²)</th>
-                  <th class="py-2.5 px-3 text-right">Quick Edit</th>
-                </tr>
-              </thead>
-              <tbody id="wallTableBody" class="divide-y divide-slate-100 font-mono">
-                <!-- Populated dynamically by JavaScript -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- RIGHT SIDEBAR: RESULTS DASHBOARD PANEL (4 Cols) -->
-      <div class="xl:col-span-4 space-y-5 lg:sticky lg:top-20">
-        
-        <!-- MAIN RESULTS CARD WITH CAPITALIZED HEADER & AIRFLOW ICON -->
-        <div class="bg-white rounded-3xl border-2 border-blue-500/20 p-6 shadow-xl shadow-blue-500/5 relative overflow-hidden print-shadow-none">
-          
-          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
-            <div class="flex items-center space-x-2.5">
-              <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/30">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3M4 8a4 4 0 014-4h8M4 16a4 4 0 004 4h8" />
-                </svg>
-              </div>
-              <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
-                  T&C Calculation Engine
-                </span>
-                <h2 class="text-sm sm:text-base font-black text-slate-900 mt-0.5 uppercase tracking-tight">
-                  ROOM SURFACE AREA & AIR FLOW REPORT
-                </h2>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="text-xs text-emerald-600 font-mono font-bold">● Real-Time</span>
-            </div>
-          </div>
-
-          <!-- PRIMARY HERO STAT: COMBINED TOTAL SURFACE AREA -->
-          <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 text-white rounded-2xl p-5 shadow-lg shadow-blue-700/20 mb-4 relative overflow-hidden">
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-            <div class="relative z-10">
-              <div class="flex items-center justify-between text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">
-                <span>Combined Total Surface Area (A_total)</span>
-                <span class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">Floor + Ceiling + Walls</span>
-              </div>
-              <div class="flex items-baseline space-x-2 my-2">
-                <span id="resTotalSurfaceArea" class="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-white">
-                  111.837
-                </span>
-                <span class="text-lg font-bold text-blue-200">m²</span>
-              </div>
-              <p class="text-xs text-blue-100/80 font-mono">
-                A_total = A_floor/ceiling + A_walls
-              </p>
-            </div>
-          </div>
-
-          <!-- SECONDARY HERO STAT: SPEC AIRFLOW / VOLUME FLOW RATE -->
-          <div class="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white rounded-2xl p-5 shadow-lg shadow-emerald-700/20 mb-5 relative overflow-hidden">
-            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-            <div class="relative z-10">
-              <div class="flex items-center justify-between text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-1">
-                <span>Total Specification Volume / Airflow</span>
-                <span class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-mono" id="badgeMultiplier">× 10.0</span>
-              </div>
-              <div class="flex items-baseline space-x-2 my-2">
-                <span id="resSpecFlowRate" class="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-white">
-                  1118.370
-                </span>
-                <span class="text-base sm:text-lg font-bold text-emerald-100">CMH</span>
-              </div>
-              <div class="flex items-center justify-between pt-2 border-t border-emerald-500/40 text-xs text-emerald-100 font-mono">
-                <span class="uppercase tracking-wide">Available Leak Rate (10%)</span>
-                <span><strong id="resLeakRate" class="text-white text-sm">111.837</strong> CMH</span>
-              </div>
-              <div class="pt-1 text-xs text-emerald-100 font-mono text-right">
-                L/s: <strong id="resFlowLs" class="text-white">310.658 L/s</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- STRUCTURED BREAKDOWN CARDS -->
-          <div class="space-y-3">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">Geometric Enclosure Metrics</h3>
-
-            <!-- Item 1: Floor & Ceiling Area -->
-            <div class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
-                  FC
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-slate-800">Floor & Ceiling Dual Area</div>
-                  <div class="text-[11px] text-slate-500 font-mono">2 × Shoelace Polygon Area</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div id="resFloorCeilingArea" class="text-base font-extrabold font-mono text-slate-900">49.143 m²</div>
-                <div id="resSingleFloorArea" class="text-[10px] font-semibold text-indigo-600 font-mono">Floor: 24.571 m²</div>
-              </div>
-            </div>
-
-            <!-- Item 2: Vertical Wall Area -->
-            <div class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
-                  WA
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-slate-800">Total Vertical Wall Area</div>
-                  <div class="text-[11px] text-slate-500 font-mono">Perimeter (P) × Height (H)</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div id="resWallArea" class="text-base font-extrabold font-mono text-slate-900">62.694 m²</div>
-                <div id="resPerimeterStat" class="text-[10px] font-semibold text-blue-600 font-mono">P: 23.220 m</div>
-              </div>
-            </div>
-
-            <!-- Item 3: Room Internal Volume -->
-            <div class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
-                  V
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-slate-800">Enclosed Cleanroom Volume</div>
-                  <div class="text-[11px] text-slate-500 font-mono">Floor Area × Height (H)</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div id="resRoomVolume" class="text-base font-extrabold font-mono text-slate-900">66.343 m³</div>
-                <div id="resRoomVolumeCuFt" class="text-[10px] font-semibold text-amber-600 font-mono">2,342.9 ft³</div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- STEP-BY-STEP CALCULATION AUDIT ACCORDION -->
-          <div class="mt-5 pt-4 border-t border-slate-200">
-            <details class="group">
-              <summary class="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-slate-700 hover:text-blue-600 transition">
-                <span class="flex items-center">
-                  <svg class="w-4 h-4 mr-1.5 text-slate-400 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                  View Step-by-Step Mathematical Proof
-                </span>
-                <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Shoelace Audit</span>
-              </summary>
-              <div class="mt-3 p-4 bg-slate-900 text-slate-200 rounded-xl font-mono text-xs space-y-3">
-                <div>
-                  <p class="text-slate-400 text-[11px]">// 1. Shoelace Polygon Formula (Floor & Ceiling):</p>
-                  <p class="text-blue-300 font-medium" id="mathStep1">A_floor = 24.571 m² → A_floor/ceiling = 2 × 24.571 = 49.143 m²</p>
-                </div>
-                <div>
-                  <p class="text-slate-400 text-[11px]">// 2. Total Perimeter & Wall Surface Area:</p>
-                  <p class="text-blue-300 font-medium" id="mathStep2">P = ∑(wall lengths) = 23.220 m</p>
-                  <p class="text-blue-300 font-medium" id="mathStep3">A_walls = 23.220 m × 2.700 m = 62.694 m²</p>
-                </div>
-                <div>
-                  <p class="text-slate-400 text-[11px]">// 3. Combined Total Surface Area:</p>
-                  <p class="text-emerald-400 font-bold" id="mathStep4">A_total = 49.143 + 62.694 = 111.837 m²</p>
-                </div>
-                <div>
-                  <p class="text-slate-400 text-[11px]">// 4. Airflow Specification (CMH) and 10% Available Leak Rate:</p>
-                  <p class="text-emerald-400 font-bold" id="mathStep5">Spec Flow Rate = 111.837 × 10 = 1118.370 CMH · Leak Rate = 111.837 CMH</p>
-                </div>
-              </div>
-            </details>
-          </div>
-
-          <!-- Quick Action Buttons -->
-          <div class="mt-5 space-y-2 no-print">
-            <button id="btnCopyReport" type="button" class="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs tracking-wide transition shadow-sm cursor-pointer">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-              </svg>
-              <span id="copyBtnText">Copy Engineering Specification Report</span>
-            </button>
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  </main>
-
-  <!-- DIRECT DIMENSION EDITING MODAL -->
-  <div id="dimModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-5 transform transition-all">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div class="flex items-center space-x-2">
-          <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" id="modalWallIdBadge">W</span>
-          <h3 class="font-bold text-slate-900 text-sm" id="modalWallTitle">Edit Wall Dimension</h3>
-        </div>
-        <button type="button" id="btnDimModalClose" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-      </div>
-
-      <div class="my-4 space-y-3">
-        <div>
-          <label class="text-xs font-bold text-slate-700 block mb-1">New Target Length:</label>
-          <div class="relative">
-            <input
-              type="number"
-              step="any"
-              id="modalDimInput"
-              class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-3 pr-10 py-2 text-sm font-bold text-slate-900 input-focus outline-none focus:border-blue-600"
-              placeholder="e.g. 4.847"
-            />
-            <span class="unit-label absolute right-3 top-2.5 text-xs font-semibold text-slate-400">m</span>
-          </div>
-        </div>
-
-        <div class="p-2.5 bg-blue-50 rounded-xl text-[11px] text-blue-900">
-          <p class="font-medium">Adjusting this dimension moves the connected vertex along the wall vector while maintaining geometric alignment.</p>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
-        <button type="button" id="btnDimModalCancel" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
-          Cancel
-        </button>
-        <button type="button" id="btnDimModalApply" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer">
-          Apply Dimension
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-slate-200 mt-8 py-5 no-print">
-    <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-      <div class="flex items-center space-x-2">
-        <div class="w-4 h-4 rounded bg-blue-600 text-white flex items-center justify-center text-[10px]">W</div>
-        <p>© 2026 WEPL T&C Portal. ROOM SURFACE AREA & AIR FLOW REPORT.</p>
-      </div>
-      <p class="font-mono text-slate-400">Precision: 3-Decimal Places (m² / CMH) • Shoelace Engine</p>
-    </div>
-  </footer>
-
-  <!-- ROBUST JAVASCRIPT CAD & CALCULATION ENGINE -->
-  <script>
     (function () {
       'use strict';
 
@@ -755,7 +74,8 @@
       const inputProjectName = document.getElementById('inputProjectName');
       const inputRoomName = document.getElementById('inputRoomName');
 
-      const selectUnit = document.getElementById('selectUnit');
+      const unitBtnM = document.getElementById('unitM');
+      const unitBtnMM = document.getElementById('unitMM');
       const unitLabels = document.querySelectorAll('.unit-label');
       const selectRoomPreset = document.getElementById('selectRoomPreset');
 
@@ -1701,7 +1021,6 @@
         if (drawPoints.length >= 3) {
           vertices = JSON.parse(JSON.stringify(drawPoints));
           selectRoomPreset.value = 'custom';
-          if (typeof syncRoomPresetLabel === 'function') syncRoomPresetLabel();
           exitDrawMode();
           updateCalculations();
           fit2DView();
@@ -2159,48 +1478,7 @@
           updateCalculations();
           fit2DView();
         }
-        syncRoomPresetLabel();
       });
-
-      const btnRoomPreset = document.getElementById('btnRoomPreset');
-      const roomPresetMenu = document.getElementById('roomPresetMenu');
-      const roomPresetLabel = document.getElementById('roomPresetLabel');
-      const roomPresetShort = {
-        lshape_wepl: 'L-Enclosure (6)',
-        ushape: 'U-Shaped (8)',
-        rectangle: 'Rectangle (4)',
-        tshape: 'T-Shaped (8)',
-        octagon: 'Octagonal Airlock',
-        custom: 'Custom Drawn Room'
-      };
-      function syncRoomPresetLabel() {
-        if (!roomPresetLabel) return;
-        const key = selectRoomPreset.value;
-        roomPresetLabel.textContent = roomPresetShort[key] || selectRoomPreset.options[selectRoomPreset.selectedIndex].text;
-        document.querySelectorAll('.room-preset-opt').forEach(function (opt) {
-          const on = opt.getAttribute('data-preset') === key;
-          opt.classList.toggle('bg-blue-50', on);
-          opt.classList.toggle('text-blue-800', on);
-        });
-      }
-      if (btnRoomPreset && roomPresetMenu) {
-        btnRoomPreset.addEventListener('click', function (e) {
-          e.stopPropagation();
-          roomPresetMenu.classList.toggle('hidden');
-        });
-        roomPresetMenu.addEventListener('click', function (e) { e.stopPropagation(); });
-        roomPresetMenu.querySelectorAll('[data-preset]').forEach(function (opt) {
-          opt.addEventListener('click', function () {
-            selectRoomPreset.value = opt.getAttribute('data-preset');
-            selectRoomPreset.dispatchEvent(new Event('change'));
-            roomPresetMenu.classList.add('hidden');
-          });
-        });
-        document.addEventListener('click', function () {
-          roomPresetMenu.classList.add('hidden');
-        });
-        syncRoomPresetLabel();
-      }
 
       function switchUnit(newUnit) {
         if (currentUnit === newUnit) return;
@@ -2212,14 +1490,21 @@
         }
 
         currentUnit = newUnit;
-        if (selectUnit) selectUnit.value = currentUnit;
         unitLabels.forEach(lbl => lbl.textContent = currentUnit);
+
+        if (currentUnit === 'm') {
+          unitBtnM.className = 'px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer';
+          unitBtnMM.className = 'px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+        } else {
+          unitBtnMM.className = 'px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer';
+          unitBtnM.className = 'px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+        }
+
         updateCalculations();
       }
 
-      if (selectUnit) {
-        selectUnit.addEventListener('change', () => switchUnit(selectUnit.value));
-      }
+      unitBtnM.addEventListener('click', () => switchUnit('m'));
+      unitBtnMM.addEventListener('click', () => switchUnit('mm'));
 
       inputHeight.addEventListener('input', updateCalculations);
       inputSpecMultiplier.addEventListener('input', updateCalculations);
@@ -2227,7 +1512,6 @@
 
       btnReset.addEventListener('click', () => {
         selectRoomPreset.value = 'lshape_wepl';
-        if (typeof syncRoomPresetLabel === 'function') syncRoomPresetLabel();
         vertices = JSON.parse(JSON.stringify(PRESETS.lshape_wepl));
         selectWallMaterial.value = 'blueprint';
         selectedWallMaterialType = 'blueprint';
@@ -2238,7 +1522,8 @@
         inputSpecMultiplier.value = '10';
         selectSpecMode.value = 'surface';
         currentUnit = 'm';
-        if (selectUnit) selectUnit.value = 'm';
+        unitBtnM.className = 'px-3 py-1 rounded text-xs font-bold transition-all shadow-xs bg-white text-blue-700 cursor-pointer';
+        unitBtnMM.className = 'px-3 py-1 rounded text-xs font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
         unitLabels.forEach(lbl => lbl.textContent = 'm');
         updateCalculations();
         fit2DView();
@@ -2682,34 +1967,26 @@ Generated via WEPL Testing & Commissioning Engineering Portal`;
             margin: { left: 12, right: 12 }
           });
 
-          y = doc.lastAutoTable.finalY + 4;
-          const boxH = 28;
+          y = doc.lastAutoTable.finalY + 5;
+          const boxH = 18;
+          const pageH = doc.internal.pageSize.getHeight();
+          y = Math.max(y, pageH - boxH - 12);
+          if (y + boxH > pageH - 8) y = pageH - boxH - 8;
+
           doc.setDrawColor(203, 213, 225);
-          doc.setFillColor(255, 255, 255);
-          doc.roundedRect(12, y, pageWidth - 24, boxH, 1.5, 1.5, 'S');
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(12, y, pageWidth - 24, boxH, 1.5, 1.5, 'FD');
 
           doc.setFontSize(8);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(30, 58, 138);
           doc.text('Commissioning Verification & Quality Assurance Sign-Off', 16, y + 4.5);
 
-          function signLine(top, label) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(8);
-            doc.setTextColor(30, 41, 59);
-            doc.text(label, 16, top);
-            doc.setDrawColor(30, 41, 59);
-            doc.setLineWidth(0.35);
-            doc.line(52, top, 132, top);
-            doc.line(148, top, 196, top);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(6.5);
-            doc.setTextColor(100, 116, 139);
-            doc.text('(Name & Signature)', 92, top + 3.2, { align: 'center' });
-            doc.text('(Date)', 172, top + 3.2, { align: 'center' });
-          }
-          signLine(y + 12, 'Tested by');
-          signLine(y + 23, 'Witness by');
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(30, 41, 59);
+          doc.text('Tested by: ________________________     Signature: ________________________     Date: ______________', 16, y + 9.5);
+          doc.text('Witness by: ______________________     Signature: ________________________     Date: ______________', 16, y + 14.5);
 
           const safeFilename = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${roomName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`;
           doc.save(safeFilename);
@@ -2745,6 +2022,4 @@ Generated via WEPL Testing & Commissioning Engineering Portal`;
       }
 
     })();
-  </script>
-</body>
-</html>
+  

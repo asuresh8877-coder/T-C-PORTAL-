@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pre-construction report sample</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    body { margin: 0; background: #475569; font-family: Arial, sans-serif; }
+    header { color: #fff; padding: 12px 16px; font-size: 14px; }
+    .pages { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px; }
+    canvas { background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.35); max-width: 920px; height: auto; }
+  </style>
+</head>
+<body>
+  <header>Approved pre-construction report — cover and table of contents sample</header>
+  <div class="pages" id="pages"></div>
+  <script>
+    function loadPortalImage(src) {
+      return new Promise(function (resolve) {
+        var img = new Image();
+        img.onload = function () {
+          var c = document.createElement('canvas');
+          c.width = img.naturalWidth;
+          c.height = img.naturalHeight;
+          c.getContext('2d').drawImage(img, 0, 0);
+          resolve({ data: c.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
+        };
+        img.onerror = function () { resolve(null); };
+        img.src = src;
+      });
+    }
+    function drawPreconLetterhead(doc, logo) {
+      var data = logo && logo.data;
+      var textX = 14;
+      if (data) {
+        var logoW = Math.min(36, 16 * ((logo.w || 1) / (logo.h || 1)));
+        var logoH = logoW * ((logo.h || 1) / (logo.w || 1));
+        try { doc.addImage(data, 'PNG', 14, 10, logoW, logoH); } catch (e) {}
+        textX = 14 + logoW + 4;
+      }
+      doc.setTextColor(120, 120, 120);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text('WINNER ENGINEERING PTE LTD', textX, 16.5);
+      doc.setFontSize(8);
+      doc.text('18 Woodlands Industrial Park E1, Singapore 757738', textX, 21.5);
+    }
+    function drawCover(doc, logo, collage) {
+      drawPreconLetterhead(doc, logo);
+      if (collage && collage.data) {
+        var maxW = 128, maxH = 102, iw = maxW;
+        var ih = iw * ((collage.h || 1) / (collage.w || 1));
+        if (ih > maxH) { ih = maxH; iw = ih * ((collage.w || 1) / (collage.h || 1)); }
+        try { doc.addImage(collage.data, 'PNG', (210 - iw) / 2, 36, iw, ih); } catch (e) {}
+      }
+      var y = 150;
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Project Title:', 14, y);
+      y += 8;
+      doc.setFontSize(13);
+      var title = doc.splitTextToSize('RENOVATION FOR CLINICAL SERVICE OFFICE AT MAIN BUILDING, LEVEL -3', 182);
+      doc.text(title, 14, y);
+      y += title.length * 6.2 + 12;
+      doc.setFontSize(12);
+      doc.text('Main Contractor:', 14, y);
+      y += 8;
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(11);
+      doc.text('BUILD-MAX CONSTRUCTION PTE LTD', 14, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(71, 85, 105);
+      doc.text('180 Paya Lebar Rd, #11-03 Yi Guang Factory Building,', 14, y);
+      y += 5;
+      doc.text('Singapore 409032', 14, y);
+    }
+    function drawToc(doc, logo) {
+      drawPreconLetterhead(doc, logo);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('TABLE OF CONTENTS', 105, 44, { align: 'center' });
+      doc.setDrawColor(30, 64, 175);
+      doc.setLineWidth(0.7);
+      doc.line(22, 48, 188, 48);
+      doc.setFontSize(11);
+      doc.text('Section', 22, 58);
+      doc.text('Page No.', 188, 58, { align: 'right' });
+      var rows = [
+        { head: 'A.   PRECON SURVEY DETAILS' },
+        { item: 'i.    Precon survey checklist', pages: '3 - 4' },
+        { head: 'B.   DETAILED TEST REPORT' },
+        { item: 'i.    Airflow balancing test report', pages: '6 - 13' },
+        { item: 'ii.    Precon survey photos', pages: '15 - 24' },
+        { item: 'iii.    BMS graphics photos', pages: '26' },
+        { item: 'iv.    Existing AS BUILD drawing', pages: '28' },
+        { head: 'C.   APPENDIX' },
+        { item: 'i.    Instrument calibration certificates', pages: '30 - 34' }
+      ];
+      var y = 70;
+      rows.forEach(function (r) {
+        if (r.head) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.text(r.head, 22, y);
+        } else {
+          doc.setFont('helvetica', 'normal');
+          doc.text(r.item, 30, y);
+          doc.text(r.pages, 188, y, { align: 'right' });
+        }
+        y += r.head ? 8 : 7;
+      });
+    }
+    function stamp(doc) {
+      var total = doc.internal.getNumberOfPages();
+      var w = doc.internal.pageSize.getWidth();
+      var h = doc.internal.pageSize.getHeight();
+      for (var i = 1; i <= total; i++) {
+        doc.setPage(i);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, h - 12, w, 12, 'F');
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text('Prepared By Winner Engineering Pte Ltd', 14, h - 5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(30, 41, 59);
+        doc.text(String(i), w - 14, h - 5, { align: 'right' });
+      }
+    }
+    Promise.all([
+      loadPortalImage('wepl_logo.png'),
+      loadPortalImage('precon_cover_collage.png')
+    ]).then(function (loaded) {
+      var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+      drawCover(doc, loaded[0], loaded[1]);
+      doc.addPage();
+      drawToc(doc, loaded[0]);
+      doc.addPage();
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text('Merged report pages continue here.', 14, 40);
+      doc.text('Each page of the saved file is numbered.', 14, 48);
+      stamp(doc);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      return pdfjsLib.getDocument({ data: doc.output('arraybuffer') }).promise.then(function (pdf) {
+        var box = document.getElementById('pages');
+        var chain = Promise.resolve();
+        for (var n = 1; n <= 2; n++) {
+          (function (pageNo) {
+            chain = chain.then(function () {
+              return pdf.getPage(pageNo).then(function (page) {
+                var viewport = page.getViewport({ scale: 1.4 });
+                var canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                box.appendChild(canvas);
+                return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+              });
+            });
+          })(n);
+        }
+        return chain;
+      });
+    });
+  </script>
+</body>
+</html>

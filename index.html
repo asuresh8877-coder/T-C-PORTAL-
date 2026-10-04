@@ -2053,6 +2053,39 @@
       }
     }
 
+    @media (min-width: 901px) {
+      .tnc-check-wrap thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f1f5f9;
+        vertical-align: middle;
+        box-shadow: inset 0 -1px 0 #cbd5e1;
+      }
+
+      .tnc-check-wrap thead tr:nth-child(2) th {
+        top: var(--tnc-head1, 44px);
+        z-index: 4;
+      }
+
+      .tnc-check-wrap th.tnc-opt,
+      .tnc-check-wrap td.tnc-check-opt {
+        width: 64px;
+        min-width: 64px;
+        max-width: 72px;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+
+      .tnc-check-wrap td.tnc-check-opt input.tnc-tick {
+        position: relative;
+        display: inline-block;
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+    }
+
     .tnc-stage {
       display: flex;
       align-items: flex-start;
@@ -6436,9 +6469,9 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="catalog.js?v=precheck-root"></script>
-  <script src="tnc-workflow.js?v=tnc38"></script>
-  <script src="tnc-forms.js?v=tnc48"></script>
+  <script src="catalog.js?v=public-docs"></script>
+  <script src="tnc-workflow.js?v=tnc39"></script>
+  <script src="tnc-forms.js?v=tnc49"></script>
   <script src="tnc-calibration.js?v=cal1"></script>
   <script src="auth.js?v=auth6"></script>
   <script>
@@ -6482,7 +6515,7 @@
       });
     }
   </script>
-  <script src="app.js?v=project-tnc362"></script>
+  <script src="app.js?v=project-tnc380"></script>
 </body>
 
 </html>

@@ -3624,7 +3624,7 @@
   /* ---------- Room (unchanged calculator in iframe) ---------- */
   function renderRoom() {
     return '<div class="flex items-center justify-between mb-3"><div><h1 class="text-2xl font-extrabold">Room Surface Area Calculator</h1><p class="text-sm text-slate-500">Original calculator is unchanged and opened in the workspace below.</p></div><a href="room-airflow.html" target="_blank" class="text-xs font-bold text-blue-700">Open in new tab →</a></div>' +
-      '<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="room-airflow.html" title="Room Surface Area Calculator" class="w-full h-full border-0"></iframe></div>';
+      '<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="room-airflow.html?v=room7" title="Room Surface Area Calculator" class="w-full h-full border-0"></iframe></div>';
   }
 
   /* ---------- Psychrometric (air properties calculator in iframe) ---------- */
@@ -3703,6 +3703,10 @@
     return { area: area, maxF: maxF, leak: leak, maxLeak: maxLeak, pass: meas <= maxF, lines: lines, k: k };
   }
 
+  function ductToM3h(ls) {
+    return (Number(ls) || 0) * 3.6;
+  }
+
   function isElbowType(type) {
     return type === 'elbow' || type === 'sqelbow';
   }
@@ -3775,7 +3779,13 @@
     if (!t.testPa) t.testPa = CLASS_PA[t.pressureClass] || 1000;
     const c = ductCalc(t);
     let html = weplDocHeaderHtml('DUCT LEAKAGE TEST REPORT', 'Section D · DW/144 — Class A 500 Pa · B 1000 Pa · C 2000 Pa · D 2500 Pa');
-    html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4"><button id="btnDuctPdf" class="px-3 py-2 text-xs font-bold rounded-xl bg-slate-900 text-white">Download test form</button><button id="btnNewDuct" class="px-3 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white">+ New section</button><button id="btnDelDuct" class="px-3 py-2 text-xs font-bold rounded-xl border text-red-600">Delete</button></div>';
+    html += '<style>.duct-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.duct-fit-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-fit-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}</style>';
+    const ductTool = 'duct-tool-btn px-3 py-2 text-xs font-bold rounded-xl';
+    html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4">';
+    html += '<button id="btnDuctPdf" type="button" class="' + ductTool + ' text-white" style="background:#1E40AF;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Download test form</button>';
+    html += '<button id="btnNewDuct" type="button" class="' + ductTool + ' bg-blue-600 text-white" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">+ New section</button>';
+    html += '<button id="btnDelDuct" type="button" class="' + ductTool + ' border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Delete</button>';
+    html += '<button id="btnCloseDuct" type="button" class="' + ductTool + ' border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Close</button></div>';
     html += '<div class="flex gap-2 overflow-x-auto mb-4">';
     state.ductTests.forEach(function (d) {
       html += '<button data-duct="' + d.id + '" class="shrink-0 px-3 py-2 rounded-xl border text-sm font-bold ' + (d.id === t.id ? 'bg-rose-50 border-rose-400' : 'bg-white') + '">' + esc(d.name) + '</button>';
@@ -3795,35 +3805,36 @@
     html += '<label class="col-span-2">Remarks<textarea data-duct-field="remarks" class="mt-1 w-full border rounded-lg px-2 py-1.5 h-16">' + esc(t.remarks) + '</textarea></label>';
     html += '</div>';
 
-    html += '<div class="bg-white rounded-2xl border p-4"><div class="flex justify-between items-center mb-2"><h3 class="font-extrabold text-sm">Duct fittings (mm)</h3></div>';
-    html += '<div class="flex flex-wrap gap-2 mb-3">';
+    html += '<div class="bg-white rounded-2xl border p-4"><div class="flex flex-wrap items-center justify-between gap-2 mb-3"><h3 class="font-extrabold text-sm">Duct fittings (mm)</h3>';
+    html += '<div class="flex items-center gap-2"><select id="ductFitType" class="border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-800 bg-white">';
     [['rect', 'Rectangular'], ['square', 'Square'], ['round', 'Round'], ['oval', 'Oval'], ['elbow', 'Elbow'], ['sqelbow', 'Square elbow'], ['reducer', 'Reducer']].forEach(function (x) {
-      html += '<button type="button" data-add-fit="' + x[0] + '" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-900 text-white">+ ' + x[1] + '</button>';
+      html += '<option value="' + x[0] + '">' + x[1] + '</option>';
     });
-    html += '</div><div class="overflow-auto"><table class="w-full text-[11px]"><thead><tr class="text-left text-slate-500"><th class="py-1">Type</th><th>W / Ø</th><th>H</th><th>W2</th><th>H2</th><th>L</th><th>R</th><th>°</th><th>m²</th><th></th></tr></thead><tbody>';
+    html += '</select><button type="button" id="btnAddFit" class="px-3 py-1.5 text-xs font-bold rounded-lg text-white" style="background:#1E40AF">Add fitting</button></div></div>';
+    html += '<div class="overflow-auto"><table class="w-full text-[11px]"><thead><tr class="text-left text-slate-500"><th class="py-1">Type</th><th>W / Ø</th><th>H</th><th>W2</th><th>H2</th><th>L</th><th>R</th><th>°</th><th>m²</th><th></th></tr></thead><tbody>';
     t.fittings.forEach(function (f, i) {
       html += '<tr class="border-t">' +
         '<td class="py-1 font-bold">' + fittingLabel(f.type) + '</td>' +
         ductNum(i, 'w', f.w) + ductNum(i, 'h', f.h) + ductNum(i, 'w2', f.w2) + ductNum(i, 'h2', f.h2) +
         ductNum(i, 'length', f.length) + ductNum(i, 'radius', f.radius) + ductNum(i, 'angle', f.angle) +
         '<td>' + fittingArea(f).toFixed(3) + '</td>' +
-        '<td><button data-del-fit="' + i + '" class="text-red-500">✕</button></td></tr>';
+        '<td class="py-1 pl-1"><button type="button" data-del-fit="' + i + '" title="Delete fitting" class="duct-fit-del px-2 py-0.5 text-[10px] font-bold rounded-md border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.24)">Delete</button></td></tr>';
     });
     html += '</tbody></table></div></div>';
 
     html += '<div class="rounded-2xl border p-4 ' + (c.pass ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200') + '">';
     html += '<p class="text-xs font-bold uppercase mb-2">Calculation (A = P × L)</p>';
     html += '<div class="grid grid-cols-2 gap-2 text-sm font-semibold"><div>Surface area <span class="font-mono">' + c.area.toFixed(3) + ' m²</span></div>';
-    html += '<div>Permitted factor <span class="font-mono">' + c.maxF.toFixed(3) + ' L/s/m²</span></div>';
-    html += '<div>Calculated leak <span class="font-mono">' + c.leak.toFixed(2) + ' L/s</span></div>';
-    html += '<div>Max permitted <span class="font-mono">' + c.maxLeak.toFixed(2) + ' L/s</span></div></div>';
+    html += '<div>Permitted factor <span class="font-mono">' + ductToM3h(c.maxF).toFixed(3) + ' m³/h/m²</span></div>';
+    html += '<div>Calculated leak <span class="font-mono">' + ductToM3h(c.leak).toFixed(2) + ' m³/h</span></div>';
+    html += '<div>Max permitted <span class="font-mono">' + ductToM3h(c.maxLeak).toFixed(2) + ' m³/h</span></div></div>';
     html += '<p class="mt-3 text-lg font-black">' + (c.pass ? 'PASS — leakage requirement satisfied' : 'FAIL — exceeds permitted leakage') + '</p>';
     html += '<p class="text-[11px] mt-1 text-slate-600">Class ' + t.pressureClass + ' @ ' + t.testPa + ' Pa · k=' + c.k + ' · Limit = A × k × p^0.65</p></div></div>';
 
-    html += '<div class="xl:col-span-7 space-y-4">';
-    html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold flex justify-between items-center"><span>2D duct drawing with size — drag to hand-draw a straight run</span><span class="text-slate-400">Fittings connected in order</span></div><canvas id="duct2d" class="w-full bg-[#f8fafc] cursor-crosshair" height="300"></canvas></div>';
+    html += '<div class="xl:col-span-7"><div class="space-y-4" style="width:92%">';
+    html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold flex justify-between items-center"><span>2D duct drawing with size — drag to hand-draw a straight run</span><span class="text-slate-400">Fittings connected in order</span></div><canvas id="duct2d" class="block w-full bg-[#f8fafc] cursor-crosshair" style="height:440px" height="440"></canvas></div>';
     html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold">3D isometric view — orbit / zoom · connected run</div><div id="duct3d" class="h-[380px] bg-slate-900"></div></div>';
-    html += '</div></div>';
+    html += '</div></div></div>';
     return html;
   }
   function ductNum(i, field, val) {
@@ -3848,18 +3859,19 @@
       selectedDuctId = state.ductTests[0].id; saveState(); renderView();
     };
     document.getElementById('btnDuctPdf').onclick = function () { downloadDuctForm(t); };
+    document.getElementById('btnCloseDuct').onclick = function () { navigate('dashboard'); };
+    const btnAddFit = document.getElementById('btnAddFit');
+    if (btnAddFit) btnAddFit.onclick = function () {
+      const sel = document.getElementById('ductFitType');
+      const prev = t.fittings[t.fittings.length - 1];
+      t.fittings.push(defaultFitting(sel ? sel.value : 'rect', prev));
+      saveState(); renderView();
+    };
     document.querySelectorAll('[data-duct-field]').forEach(function (inp) {
       inp.addEventListener('change', function () {
         const f = inp.getAttribute('data-duct-field');
         t[f] = inp.type === 'number' ? Number(inp.value) : inp.value;
         if (f === 'pressureClass') t.testPa = CLASS_PA[t.pressureClass] || t.testPa;
-        saveState(); renderView();
-      });
-    });
-    document.querySelectorAll('[data-add-fit]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        const prev = t.fittings[t.fittings.length - 1];
-        t.fittings.push(defaultFitting(b.getAttribute('data-add-fit'), prev));
         saveState(); renderView();
       });
     });
@@ -3913,19 +3925,21 @@
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
+    const H = canvas.clientHeight || 440;
     canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = 300 * dpr;
+    canvas.height = Math.floor(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const W = rect.width, H = 300;
+    const W = rect.width;
     ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, W, H);
     ctx.strokeStyle = '#e2e8f0';
     for (let gx = 0; gx < W; gx += 20) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
     for (let gy = 0; gy < H; gy += 20) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
 
     const layout = layoutDuctRun(t.fittings);
-    const tf = ductFitTransform(layout, W, H, 36);
+    const tf = ductFitTransform(layout, W, H, 64);
     const X = function (v) { return tf.ox + v * tf.sc; };
     const Y = function (v) { return tf.oy + v * tf.sc; };
+    const sizeLabels = [];
 
     layout.segs.forEach(function (s) {
       const fill = s.type === 'elbow' || s.type === 'sqelbow' ? '#fb7185' : s.type === 'reducer' ? '#818cf8' : s.type === 'round' ? '#22c55e' : s.type === 'oval' ? '#14b8a6' : '#38bdf8';
@@ -3944,26 +3958,67 @@
         ctx.lineWidth = 1;
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#0f172a';
-        ctx.font = '10px JetBrains Mono';
-        ctx.fillText('Elbow R' + Math.round(s.R), X((s.x + s.ex) / 2) + 4, Y((s.y + s.ey) / 2) - hw - 4);
+        const midA = startA + s.ang / 2;
+        sizeLabels.push({
+          text: 'Elbow R' + Math.round(s.R),
+          x: X(s.cx) + Math.cos(midA) * (rOut + 16),
+          y: Y(s.cy) + Math.sin(midA) * (rOut + 16)
+        });
       } else if (s.kind === 'sqelbow') {
         const hw = (s.w * tf.sc) / 2;
         drawDuctBody(ctx, X(s.x), Y(s.y), X(s.mx), Y(s.my), hw, hw, fill);
         drawDuctBody(ctx, X(s.mx), Y(s.my), X(s.ex), Y(s.ey), hw, hw, fill);
-        ctx.fillStyle = '#0f172a';
-        ctx.font = '10px JetBrains Mono';
-        ctx.fillText('Square elbow', X(s.mx) + 4, Y(s.my) - hw - 4);
+        const ang = Math.atan2(Y(s.ey) - Y(s.y), X(s.ex) - X(s.x));
+        sizeLabels.push({
+          text: 'Square elbow',
+          x: X(s.mx) + Math.cos(ang + Math.PI / 2) * (hw + 16),
+          y: Y(s.my) + Math.sin(ang + Math.PI / 2) * (hw + 16)
+        });
       } else {
         const hw = (s.w * tf.sc) / 2;
         const hw2 = ((s.type === 'reducer' ? s.w2 : s.w) * tf.sc) / 2;
         drawDuctBody(ctx, X(s.x), Y(s.y), X(s.ex), Y(s.ey), hw, hw2, fill);
-        ctx.fillStyle = '#0f172a';
-        ctx.font = '10px JetBrains Mono';
         const label = s.type === 'round' ? ('Ø' + s.f.w + ' L' + s.f.length) : (s.f.w + '×' + (s.f.h || s.f.w) + ' L' + s.f.length);
-        ctx.fillText(label, (X(s.x) + X(s.ex)) / 2 - 24, (Y(s.y) + Y(s.ey)) / 2 - hw - 4);
+        const ang = Math.atan2(Y(s.ey) - Y(s.y), X(s.ex) - X(s.x));
+        const side = sizeLabels.length % 2 === 0 ? -1 : 1;
+        const gap = Math.max(hw, hw2) + 16;
+        sizeLabels.push({
+          text: label,
+          x: (X(s.x) + X(s.ex)) / 2 + Math.cos(ang + Math.PI / 2) * gap * side,
+          y: (Y(s.y) + Y(s.ey)) / 2 + Math.sin(ang + Math.PI / 2) * gap * side
+        });
       }
     });
+
+    ctx.font = '10px JetBrains Mono, ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const placed = [];
+    sizeLabels.forEach(function (lb) {
+      const tw = Math.ceil(ctx.measureText(lb.text).width);
+      const th = 14;
+      let x = lb.x;
+      let y = lb.y;
+      for (let n = 0; n < 8; n++) {
+        const box = { x: x - tw / 2 - 3, y: y - th / 2, w: tw + 6, h: th };
+        const hit = placed.some(function (p) {
+          return box.x < p.x + p.w && box.x + box.w > p.x && box.y < p.y + p.h && box.y + box.h > p.y;
+        });
+        if (!hit) { placed.push(box); break; }
+        y += (n % 2 === 0 ? 16 : -16);
+      }
+      ctx.fillStyle = 'rgba(248,250,252,0.96)';
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.rect(x - tw / 2 - 3, y - th / 2, tw + 6, th);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText(lb.text, x, y);
+    });
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
 
     let drag = null;
     canvas.onmousedown = function (e) {
@@ -4228,15 +4283,21 @@
         doc.autoTable({
           startY: y,
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 1.6 },
-          headStyles: { fillColor: [30, 64, 175] },
+          styles: { fontSize: 8, cellPadding: 1.6, textColor: [15, 23, 42] },
           body: [
             ['Project', t.project || '', 'System', t.system || ''],
             ['Floor / storey', t.floor || '', 'Room / riser', t.room || ''],
             ['Equipment ID', t.equipment || '', 'Section tested', t.section || ''],
             ['Pressure class', String(t.pressureClass || ''), 'Test static pressure', (t.testPa || '') + ' Pa'],
             ['Drawing number', t.drawing || '', 'Report date', new Date().toLocaleDateString('en-SG')]
-          ]
+          ],
+          didParseCell: function (data) {
+            if (data.section === 'body' && (data.column.index === 0 || data.column.index === 2)) {
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.fillColor = [239, 246, 255];
+              data.cell.styles.textColor = [15, 23, 42];
+            }
+          }
         });
         y = doc.lastAutoTable.finalY + 8;
         doc.setFont('helvetica', 'bold');
@@ -4248,8 +4309,8 @@
         doc.autoTable({
           startY: y + 3,
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 1.4 },
-          headStyles: { fillColor: [15, 23, 42] },
+          styles: { fontSize: 8, cellPadding: 1.4, textColor: [15, 23, 42] },
+          headStyles: { fillColor: [239, 246, 255], textColor: [15, 23, 42], fontStyle: 'bold' },
           head: [['No', 'Fitting', 'W / Ø mm', 'H mm', 'L mm', 'R mm', 'Angle', 'Area m²']],
           body: fitBody.length ? fitBody : [['—', 'None', '', '', '', '', '', '0.000']]
         });
@@ -4257,6 +4318,10 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.text('3. Surface Area & Leakage Calculation', 14, y);
+        const measM3 = ductToM3h(t.measuredFactor);
+        const maxFM3 = ductToM3h(c.maxF);
+        const leakM3 = ductToM3h(c.leak);
+        const maxLeakM3 = ductToM3h(c.maxLeak);
         doc.autoTable({
           startY: y + 3,
           theme: 'grid',
@@ -4265,11 +4330,11 @@
           body: [
             ['Formula', 'A = P × L  (and Σ fittings)', ''],
             ['Surface area used for test', c.area.toFixed(3) + ' m²', ''],
-            ['Recorded leakage factor', (Number(t.measuredFactor) || 0).toFixed(3) + ' L/s/m²', ''],
-            ['Maximum permitted leakage factor', 'k × p^0.65 = ' + c.maxF.toFixed(3) + ' L/s/m²', 'Class ' + t.pressureClass + ' k=' + c.k],
-            ['Calculated leakage rate', c.area.toFixed(3) + ' × ' + (Number(t.measuredFactor) || 0).toFixed(3) + ' = ' + c.leak.toFixed(2) + ' L/s', ''],
-            ['Maximum permitted leakage rate', c.area.toFixed(3) + ' × ' + c.maxF.toFixed(3) + ' = ' + c.maxLeak.toFixed(2) + ' L/s', ''],
-            ['Margin below permitted limit', (c.maxLeak - c.leak).toFixed(2) + ' L/s', '']
+            ['Recorded leakage factor', measM3.toFixed(3) + ' m³/h/m²', ''],
+            ['Maximum permitted leakage factor', 'k × p^0.65 = ' + maxFM3.toFixed(3) + ' m³/h/m²', 'Class ' + t.pressureClass + ' k=' + c.k],
+            ['Calculated leakage rate', c.area.toFixed(3) + ' × ' + measM3.toFixed(3) + ' = ' + leakM3.toFixed(2) + ' m³/h', ''],
+            ['Maximum permitted leakage rate', c.area.toFixed(3) + ' × ' + maxFM3.toFixed(3) + ' = ' + maxLeakM3.toFixed(2) + ' m³/h', ''],
+            ['Margin below permitted limit', (maxLeakM3 - leakM3).toFixed(2) + ' m³/h', '']
           ]
         });
         y = doc.lastAutoTable.finalY + 8;
@@ -4282,9 +4347,9 @@
           styles: { fontSize: 8, cellPadding: 1.6 },
           headStyles: { fillColor: c.pass ? [5, 150, 105] : [220, 38, 38] },
           body: [
-            ['Recorded leakage factor', (Number(t.measuredFactor) || 0).toFixed(3) + ' L/s/m²'],
-            ['Permitted leakage factor', c.maxF.toFixed(3) + ' L/s/m²'],
-            ['Comparison', (Number(t.measuredFactor) || 0).toFixed(3) + (c.pass ? '  <  ' : '  >  ') + c.maxF.toFixed(3)],
+            ['Recorded leakage factor', ductToM3h(t.measuredFactor).toFixed(3) + ' m³/h/m²'],
+            ['Permitted leakage factor', ductToM3h(c.maxF).toFixed(3) + ' m³/h/m²'],
+            ['Comparison', ductToM3h(t.measuredFactor).toFixed(3) + (c.pass ? '  <  ' : '  >  ') + ductToM3h(c.maxF).toFixed(3)],
             ['Compliance status', c.pass ? 'PASS — Duct leakage requirement satisfied' : 'FAIL — Exceeds permitted leakage']
           ]
         });
@@ -4296,18 +4361,37 @@
         const remarks = doc.splitTextToSize(t.remarks || '—', pageW - 28);
         doc.text(remarks, 14, y + 6);
         y = y + 6 + remarks.length * 5 + 8;
-        if (y > 250) { doc.addPage(); y = 20; }
+        const signNeed = 90;
+        if (y + signNeed > doc.internal.pageSize.getHeight() - 12) { doc.addPage(); y = 18; }
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.text('6. Approval and Sign-Off', 14, y);
         doc.autoTable({
           startY: y + 3,
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 3, minCellHeight: 12 },
-          headStyles: { fillColor: [15, 23, 42] },
-          head: [['', 'Main Contractor', 'RTO', 'Site Team']],
-          body: [['Name', '', '', ''], ['Designation', '', '', ''], ['Signature', '', '', ''], ['Date', '', '', '']]
+          pageBreak: 'avoid',
+          rowPageBreak: 'avoid',
+          styles: { fontSize: 8, cellPadding: 2, minCellHeight: 8, textColor: [15, 23, 42], lineColor: [15, 23, 42], lineWidth: 0.2 },
+          headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', halign: 'center' },
+          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 32 } },
+          head: [['', 'Tested By', 'Witnessed By', 'Verified By']],
+          body: [
+            [{ content: 'Signature', styles: { minCellHeight: 14 } }, '', '', ''],
+            ['Name', '', '', ''],
+            ['Designation', '', '', ''],
+            ['Company', '', '', ''],
+            ['Date', '', '', '']
+          ]
         });
+      }
+      const pageCount = doc.internal.getNumberOfPages();
+      const pageH = doc.internal.pageSize.getHeight();
+      for (let p = 1; p <= pageCount; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(71, 85, 105);
+        doc.text('Page ' + p + ' of ' + pageCount, pageW / 2, pageH - 6, { align: 'center' });
       }
       const file = 'DUCT_LEAKAGE_TEST_REPORT_FORM_' + (t.section || t.name || 'section').replace(/\s+/g, '_') + '.pdf';
       doc.save(file);
@@ -4393,7 +4477,14 @@
     const fa = t.freeArea || '0.70';
     const total = t.rows.reduce(function (a, r) { rowCmh(r, fa); return a + (Number(r.cmh) || 0); }, 0);
     let html = weplDocHeaderHtml('MECHANICAL LOUVER AIRFLOW TEST', 'Air flow measurement report');
-    html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4"><button id="btnLouverPdf" class="px-3 py-2 text-xs font-bold rounded-xl bg-slate-900 text-white">Download test form</button><button id="btnNewLouver" class="px-3 py-2 text-xs font-bold rounded-xl bg-teal-600 text-white">+ New table</button><button id="btnDelLouver" class="px-3 py-2 text-xs font-bold rounded-xl border text-red-600">Delete table</button></div>';
+    html += '<style>.lv-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.lv-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.lv-row-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.lv-row-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}</style>';
+    const lvTool = 'lv-tool-btn px-3 py-2 text-xs font-bold rounded-xl';
+    const lvShadow = 'cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)';
+    html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4">';
+    html += '<button id="btnLouverPdf" type="button" class="' + lvTool + ' text-white" style="background:#1E40AF;' + lvShadow + '">Download test form</button>';
+    html += '<button id="btnNewLouver" type="button" class="' + lvTool + ' bg-teal-600 text-white" style="' + lvShadow + '">+ New table</button>';
+    html += '<button id="btnDelLouver" type="button" class="' + lvTool + ' border border-red-200 bg-white text-red-600" style="' + lvShadow + '">Delete table</button>';
+    html += '<button id="btnCloseLouver" type="button" class="' + lvTool + ' border border-red-200 bg-white text-red-600" style="' + lvShadow + '">Close</button></div>';
     html += '<div class="flex gap-2 overflow-x-auto mb-4">';
     state.louverTables.forEach(function (tb) {
       html += '<button data-louver="' + tb.id + '" class="shrink-0 px-3 py-2 rounded-xl border text-sm font-bold ' + (tb.id === t.id ? 'bg-teal-50 border-teal-400' : 'bg-white') + '">' + esc(tb.title) + '</button>';
@@ -4422,14 +4513,14 @@
         lvInp(i, 'p1', r.p1, 'w-14', 'number') + lvInp(i, 'p2', r.p2, 'w-14', 'number') + lvInp(i, 'p3', r.p3, 'w-14', 'number') + lvInp(i, 'p4', r.p4, 'w-14', 'number') + lvInp(i, 'p5', r.p5, 'w-14', 'number') + lvInp(i, 'p6', r.p6, 'w-14', 'number') +
         '<td class="px-2 font-mono font-bold">' + r.avg.toFixed(2) + '</td>' +
         '<td class="px-2 font-mono font-black text-teal-700">' + Math.round(r.cmh) + '</td>' +
-        '<td><button data-del-lvrow="' + i + '" class="text-red-500 px-2">✕</button></td></tr>';
+        '<td class="px-2 py-1"><button type="button" data-del-lvrow="' + i + '" title="Delete row" class="lv-row-del px-2 py-0.5 text-[10px] font-bold rounded-md border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.24)">Delete</button></td></tr>';
     });
     html += '<tr class="bg-white text-slate-900 font-bold border-t-2 border-slate-900"><td colspan="11" class="px-3 py-2.5 text-right">Total value</td><td></td><td class="px-2 font-mono">' + Math.round(total) + ' CMH</td><td></td></tr>';
     html += '</tbody></table></div>';
     const help = louverIsGrossArea(fa)
       ? 'Gross opening area A = Length (m) × Width (m). ' + LOUVER_GROSS_FORMULA_HTML + '. Max 10 rows on one page.'
       : 'A<sub>f</sub> = Length (m) × Width (m) × free area factor (' + esc(fa) + '). ' + LOUVER_FORMULA_HTML + '. Max 10 rows on one page.';
-    html += '<div class="p-3 flex justify-between items-center border-b"><button id="btnAddLvRow" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-900 text-white' + (t.rows.length >= LOUVER_MAX_ROWS ? ' opacity-40' : '') + '">+ Row</button><p class="text-[11px] text-slate-500">' + help + '</p></div>';
+    html += '<div class="p-3 flex justify-between items-center border-b"><button id="btnAddLvRow" type="button" class="lv-tool-btn px-3 py-1.5 text-xs font-bold rounded-lg text-white' + (t.rows.length >= LOUVER_MAX_ROWS ? ' opacity-40' : '') + '" style="background:#1E40AF;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">+ Row</button><p class="text-[11px] text-slate-500">' + help + '</p></div>';
     html += renderLouverSignOff(t);
     html += '</div>';
     return html;
@@ -4493,6 +4584,7 @@
       b.addEventListener('click', function () { selectedLouverId = b.getAttribute('data-louver'); renderView(); });
     });
     document.getElementById('btnLouverPdf').onclick = function () { flushLouverForm(); downloadLouverForm(t); };
+    document.getElementById('btnCloseLouver').onclick = function () { navigate('dashboard'); };
     document.getElementById('btnNewLouver').onclick = function () {
       const n = sampleLouver();
       n.title = 'Air Flow Measurement Report ' + (state.louverTables.length + 1);
@@ -8000,7 +8092,10 @@
     if ((state.preconSurveyOverride || {})[tpl.id]) return Promise.resolve(have);
     const path = PRECON_SURVEY_CSV[tpl.id];
     if (!path) return Promise.resolve(have);
-    return fetch(encodeURI(path) + '?v=fanword5').then(function (res) { return res.text(); }).then(function (text) {
+    return fetch(encodeURI(path) + '?v=fanword6').then(function (res) {
+      if (!res.ok) throw new Error('missing');
+      return res.text();
+    }).then(function (text) {
       preconSurveyCache[tpl.id] = parsePreconSurveyCsv(text);
       return preconSurveyRows(tpl);
     }).catch(function () { return []; });
@@ -8013,48 +8108,182 @@
     else mergeAppendFilledForm(jsDoc, p, doc, tpl, logo, { firstPage: true });
     return true;
   }
+  function loadPortalImage(src) {
+    return new Promise(function (resolve) {
+      const img = new Image();
+      img.onload = function () {
+        const natW = img.naturalWidth || 1;
+        const natH = img.naturalHeight || 1;
+        try {
+          const c = document.createElement('canvas');
+          c.width = natW;
+          c.height = natH;
+          c.getContext('2d').drawImage(img, 0, 0);
+          resolve({ data: c.toDataURL('image/png'), w: natW, h: natH });
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = function () { resolve(null); };
+      img.src = src;
+    });
+  }
+  function drawPreconLetterhead(doc, logo) {
+    const data = logo && logo.data;
+    let textX = 14;
+    if (data) {
+      const logoW = Math.min(36, 16 * ((logo.w || 1) / (logo.h || 1)));
+      const logoH = logoW * ((logo.h || 1) / (logo.w || 1));
+      try { doc.addImage(data, 'PNG', 14, 10, logoW, logoH); } catch (e) { }
+      textX = 14 + logoW + 4;
+    }
+    doc.setTextColor(120, 120, 120);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('WINNER ENGINEERING PTE LTD', textX, 16.5);
+    doc.setFontSize(8);
+    doc.text('18 Woodlands Industrial Park E1, Singapore 757738', textX, 21.5);
+  }
+  function drawPreconCoverPage(doc, p, logo, collage) {
+    drawPreconLetterhead(doc, logo);
+    if (collage && collage.data) {
+      const maxW = 128;
+      const maxH = 102;
+      let iw = maxW;
+      let ih = iw * ((collage.h || 1) / (collage.w || 1));
+      if (ih > maxH) {
+        ih = maxH;
+        iw = ih * ((collage.w || 1) / (collage.h || 1));
+      }
+      try { doc.addImage(collage.data, 'PNG', (210 - iw) / 2, 36, iw, ih); } catch (e) { }
+    }
+    let y = 150;
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Project Title:', 14, y);
+    y += 8;
+    doc.setFontSize(13);
+    const titleLines = doc.splitTextToSize(String(p.name || 'Project').toUpperCase(), 182);
+    doc.text(titleLines, 14, y);
+    y += titleLines.length * 6.2 + 12;
+    const contractor = String(p.client || '').trim();
+    if (!contractor) return;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Main Contractor:', 14, y);
+    y += 8;
+    contractor.split(/\r?\n/).forEach(function (line, i) {
+      const clean = String(line || '').trim();
+      if (!clean) return;
+      if (i === 0) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(11);
+        doc.setTextColor(15, 23, 42);
+      } else {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+      }
+      const lines = doc.splitTextToSize(i === 0 ? clean.toUpperCase() : clean, 182);
+      doc.text(lines, 14, y);
+      y += lines.length * 5.2 + 1.5;
+    });
+  }
+  function preconTocRoman(n) {
+    const map = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'];
+    return map[n] || String(n + 1);
+  }
+  function drawPreconTocPage(doc, ranges, logo) {
+    const heads = {
+      client: 'A.   PRECON SURVEY DETAILS',
+      check: 'A.   PRECON SURVEY DETAILS',
+      od: 'B.   DETAILED TEST REPORT',
+      air: 'B.   DETAILED TEST REPORT',
+      draw: 'B.   DETAILED TEST REPORT',
+      photos: 'B.   DETAILED TEST REPORT',
+      bms: 'B.   DETAILED TEST REPORT',
+      cal: 'C.   APPENDIX'
+    };
+    const names = {
+      client: 'Client inspection forms',
+      check: 'Precon survey checklist',
+      od: 'Operation data test report',
+      air: 'Airflow balancing test report',
+      photos: 'Precon survey photos',
+      bms: 'BMS graphics photos',
+      draw: 'Existing AS BUILD drawing',
+      cal: 'Instrument calibration certificates'
+    };
+    drawPreconLetterhead(doc, logo);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('TABLE OF CONTENTS', 105, 44, { align: 'center' });
+    doc.setDrawColor(30, 64, 175);
+    doc.setLineWidth(0.7);
+    doc.line(22, 48, 188, 48);
+    doc.setFontSize(11);
+    doc.text('Section', 22, 58);
+    doc.text('Page No.', 188, 58, { align: 'right' });
+    let y = 70;
+    let section = '';
+    let itemNo = 0;
+    ranges.forEach(function (r) {
+      const head = heads[r.key] || '';
+      if (head !== section) {
+        section = head;
+        itemNo = 0;
+        if (head) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.text(head, 22, y);
+          y += 8;
+        }
+      }
+      const pages = r.start === r.end ? String(r.start) : (r.start + ' - ' + r.end);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text(preconTocRoman(itemNo) + '.    ' + (names[r.key] || r.label), 30, y);
+      doc.text(pages, 188, y, { align: 'right' });
+      itemNo++;
+      y += 7;
+    });
+  }
+  function stampPreconPageNumbers(doc) {
+    const total = doc.internal.getNumberOfPages();
+    const w = doc.internal.pageSize.getWidth();
+    const h = doc.internal.pageSize.getHeight();
+    for (let i = 1; i <= total; i++) {
+      doc.setPage(i);
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, h - 12, w, 12, 'F');
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      if (i <= 2) doc.text('Prepared By Winner Engineering Pte Ltd', 14, h - 5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 41, 59);
+      doc.text(String(i), w - 14, h - 5, { align: 'right' });
+    }
+  }
   function buildPreconMergedPackage(p, tag) {
     const planned = preconMergeGroups(p, tag);
     if (planned.error) return Promise.resolve(planned);
     const jsPDF = window.jspdf && window.jspdf.jsPDF;
     if (!jsPDF) return Promise.resolve({ error: 'Merge failed: PDF library is not loaded.' });
-    return loadWeplLogoWhite().then(function (logo) {
+    return Promise.all([
+      loadWeplLogoWhite(),
+      loadPortalImage('wepl_logo.png'),
+      loadPortalImage('precon_cover_collage.png')
+    ]).then(function (loaded) {
+      const logo = loaded[0];
+      const colorLogo = loaded[1];
+      const collage = loaded[2];
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-      doc.setFillColor(30, 64, 175);
-      doc.rect(0, 0, 210, 28, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('WEPL TESTING & COMMISSIONING', 14, 17);
-      doc.setTextColor(15, 23, 42);
-      doc.setFontSize(22);
-      doc.text('PRE-CONSTRUCTION', 14, 48);
-      doc.text('SURVEY & TEST REPORT', 14, 58);
-      doc.setTextColor(30, 64, 175);
-      doc.setFontSize(12);
-      doc.text('ACMV SYSTEM', 14, 70);
-      doc.setTextColor(15, 23, 42);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      const cyc = (p.tnc.preconCycles || {})[tag] || {};
-      const coverRows = [
-        ['Project', p.name || ''],
-        ['Project code', p.code || ''],
-        ['Location', p.location || ''],
-        ['Equipment', tag],
-        ['Revision', 'R' + ((Number(cyc.revision) || 0) + 1)]
-      ];
-      let coverY = 86;
-      coverRows.forEach(function (r) {
-        doc.setFont('helvetica', 'bold');
-        doc.text(r[0], 14, coverY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(String(r[1] || '—'), 52, coverY);
-        coverY += 8;
-      });
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139);
-      doc.text('Prepared by Winner Engineering Pte Ltd', 14, 284);
+      drawPreconCoverPage(doc, p, colorLogo, collage);
       doc.addPage();
       let drewFirst = false;
       const ranges = [];
@@ -8115,7 +8344,7 @@
             const end = count();
             const start = group._before + 1;
             if (end < start) return Promise.reject(new Error('Merge failed: ' + group.label + ' PDF could not be loaded.'));
-            ranges.push({ label: group.toc, start: start, end: end });
+            ranges.push({ key: group.key, label: group.toc, start: start, end: end });
           }
           return nextFile();
         });
@@ -8123,20 +8352,8 @@
       return nextFile().then(function () {
         if (doc.internal.getNumberOfPages() < 3) return { error: 'Merge failed: the package has no source documents.' };
         doc.setPage(2);
-        doc.setTextColor(30, 64, 175);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.text('TABLE OF CONTENTS', 14, 22);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
-        let y = 36;
-        ranges.forEach(function (r) {
-          const pages = r.start === r.end ? String(r.start) : (r.start + '–' + r.end);
-          doc.text(r.label, 14, y);
-          doc.text(pages, 168, y);
-          y += 8;
-        });
+        drawPreconTocPage(doc, ranges, colorLogo);
+        stampPreconPageNumbers(doc);
         return { dataUrl: doc.output('datauristring'), fingerprint: preconMergeFileKey(p, tag), mergeRasterRev: 2 };
       });
     }).catch(function (err) {
@@ -14906,6 +15123,14 @@
     panel.style.left = r.left + 'px';
     panel.style.width = Math.min(Math.max(r.width, 320), 560) + 'px';
   }
+  function freezeTncCheckHead() {
+    document.querySelectorAll('.tnc-check-wrap thead').forEach(function (head) {
+      const row1 = head.rows && head.rows[0];
+      if (!row1) return;
+      const h = Math.ceil(row1.getBoundingClientRect().height);
+      if (h > 0) head.style.setProperty('--tnc-head1', h + 'px');
+    });
+  }
   function bindTncFormPickDd() {
     const wrap = document.getElementById('tncFormDd');
     const sel = document.getElementById('tncFormPick');
@@ -15072,9 +15297,9 @@
     return JSON.stringify(hv) !== before;
   }
   const PRECON_SURVEY_CSV = {
-    'pcl-01': 'T&C Pre-con Survey Report/Chilled_AHU_FCU.csv',
-    'pcl-02': 'T&C Pre-con Survey Report/Mechanical_Fan.csv',
-    'pcl-03': 'T&C Pre-con Survey Report/Split_Unit_VRF.csv'
+    'pcl-01': 'T&C Pre-con Survey Report/CSV File/Chilled_AHU_FCU.csv',
+    'pcl-02': 'T&C Pre-con Survey Report/CSV File/Mechanical_Fan.csv',
+    'pcl-03': 'T&C Pre-con Survey Report/CSV File/Split_Unit_VRF.csv'
   };
   const preconSurveyCache = {};
   function parseCsvTable(text) {
@@ -15327,7 +15552,10 @@
     const path = PRECON_SURVEY_CSV[tpl.id];
     if (!path || preconSurveyCache[tpl.id + ':loading']) return;
     preconSurveyCache[tpl.id + ':loading'] = true;
-    fetch(encodeURI(path) + '?v=fanword5').then(function (res) { return res.text(); }).then(function (text) {
+    fetch(encodeURI(path) + '?v=fanword6').then(function (res) {
+      if (!res.ok) throw new Error('missing');
+      return res.text();
+    }).then(function (text) {
       preconSurveyCache[tpl.id] = parsePreconSurveyCsv(text);
       delete preconSurveyCache[tpl.id + ':loading'];
       renderView();
@@ -15633,18 +15861,19 @@
       const hasSection = items.some(function (it) { return it.section; });
       const preconTable = tpl.kind === 'precon';
       html += '<div class="tnc-check-wrap bg-white rounded-xl border overflow-auto max-h-[360px]"><table class="tnc-check-table w-full text-[11px]">';
-      if (preconTable) html += '<colgroup><col style="width:6%"><col style="width:57%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:19%"></colgroup>';
-      html += '<thead class="bg-slate-100 sticky top-0">';
+      if (preconTable) html += '<colgroup><col style="width:52px"><col><col style="width:64px"><col style="width:64px"><col style="width:64px"><col style="width:160px"></colgroup>';
+      else if (hasSection) html += '<colgroup><col style="width:42px"><col style="width:92px"><col><col style="width:64px"><col style="width:64px"><col style="width:64px"><col style="width:150px"></colgroup>';
+      html += '<thead class="bg-slate-100">';
       if (preconTable) {
         html += '<tr><th class="px-2 py-2 text-left align-middle" rowspan="2">S/N</th><th class="px-2 py-2 text-left align-middle" rowspan="2">Inspection / Test Item</th>';
         html += '<th class="px-1 py-1 text-center align-bottom" colspan="3">Checked Condition<div class="font-semibold normal-case text-[10px] text-slate-500">(Please tick inside checkbox)</div></th>';
         html += '<th class="px-2 py-2 text-left align-middle" rowspan="2">Remarks / Reading</th></tr>';
-        html += '<tr><th class="px-1 py-1 text-center whitespace-nowrap">Yes</th><th class="px-1 py-1 text-center whitespace-nowrap">No</th><th class="px-1 py-1 text-center whitespace-nowrap">N/A</th></tr>';
+        html += '<tr><th class="tnc-opt px-1 py-1 text-center whitespace-nowrap">Yes</th><th class="tnc-opt px-1 py-1 text-center whitespace-nowrap">No</th><th class="tnc-opt px-1 py-1 text-center whitespace-nowrap">N/A</th></tr>';
       } else if (hasSection) {
-        html += '<tr><th class="px-2 py-2 text-left" rowspan="2">S/N</th><th class="px-2 py-2 text-left" rowspan="2">Section</th><th class="px-2 py-2 text-left" rowspan="2">Inspection / Test item</th>';
-        html += '<th class="px-2 py-1 text-center" colspan="3">Checked condition<div class="font-semibold normal-case text-[10px] text-slate-500">(Please tick inside checkbox)</div></th>';
-        html += '<th class="px-2 py-2 text-left" rowspan="2">Remarks</th></tr>';
-        html += '<tr><th class="px-2 py-1">Yes</th><th class="px-2 py-1">No</th><th class="px-2 py-1">N/A</th></tr>';
+        html += '<tr><th class="px-2 py-2 text-left align-middle" rowspan="2">S/N</th><th class="px-2 py-2 text-left align-middle" rowspan="2">Section</th><th class="px-2 py-2 text-left align-middle" rowspan="2">Inspection / Test item</th>';
+        html += '<th class="px-2 py-1 text-center align-middle" colspan="3">Checked condition<div class="font-semibold normal-case text-[10px] text-slate-500">(Please tick inside checkbox)</div></th>';
+        html += '<th class="px-2 py-2 text-left align-middle" rowspan="2">Remarks</th></tr>';
+        html += '<tr><th class="tnc-opt px-1 py-1 text-center whitespace-nowrap">Yes</th><th class="tnc-opt px-1 py-1 text-center whitespace-nowrap">No</th><th class="tnc-opt px-1 py-1 text-center whitespace-nowrap">N/A</th></tr>';
       } else {
         html += '<tr><th class="px-2 py-2 text-left">S/N</th><th class="px-2 py-2 text-left">Item</th><th class="px-2 py-2">Yes</th><th class="px-2 py-2">No</th><th class="px-2 py-2">N/A</th><th class="px-2 py-2 text-left">Remarks / reading</th></tr>';
       }
@@ -19174,6 +19403,7 @@
       renderView();
     };
     bindTncFormPickDd();
+    requestAnimationFrame(freezeTncCheckHead);
     const startUp = document.getElementById('btnClientUploadStart');
     if (startUp) startUp.onclick = function () {
       tncClientUploadOpen = true;
@@ -25499,6 +25729,10 @@
       if (localStorage.getItem('wepl-sidebar-collapsed') === '1') setSidebarCollapsed(true);
     } catch (e) { }
     pullSharedState();
+    window.addEventListener('message', function (ev) {
+      if (!ev.data || ev.data.type !== 'wepl-close-room') return;
+      if (view === 'room') navigate('dashboard');
+    });
     window.addEventListener('pagehide', saveUiState);
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') saveUiState();

@@ -523,6 +523,96 @@ window.WEPL_TNC = {
       "libKey": "pre-checklist",
       "libIndex": 12,
       "kind": "checklist"
+    },
+    {
+      "id": "func-01",
+      "formNo": "FT/CHECKLIST ACMV-01",
+      "title": "WATER COOLED CHILLED FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-01",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-02",
+      "formNo": "FT/CHECKLIST ACMV-02",
+      "title": "COOLING TOWER FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-02",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-03",
+      "formNo": "FT/CHECKLIST ACMV-03",
+      "title": "CHILLED PUMP FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-03",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-04",
+      "formNo": "FT/CHECKLIST ACMV-04",
+      "title": "CHILLED AHU/PAHU FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-04",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-05",
+      "formNo": "FT/CHECKLIST ACMV-05",
+      "title": "CHILLED FCU FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-05",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-06",
+      "formNo": "FT/CHECKLIST ACMV-06",
+      "title": "MECHANICAL FAN FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-06",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-07",
+      "formNo": "FT/CHECKLIST ACMV-07",
+      "title": "AHU/FCU VRF FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-07",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-08",
+      "formNo": "FT/CHECKLIST ACMV-08",
+      "title": "FCU SPLIT FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-08",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-09",
+      "formNo": "FT/CHECKLIST ACMV-09",
+      "title": "BMS (MV) FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-09",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
+    },
+    {
+      "id": "func-10",
+      "formNo": "FT/CHECKLIST ACMV-10",
+      "title": "BMS (AC) FUNCTIONAL TEST CHECK LIST",
+      "itemKey": "func-10",
+      "libKey": "pre-checklist",
+      "libIndex": -1,
+      "kind": "checklist"
     }
   ],
   "preconChecklists": [
@@ -3319,6 +3409,1361 @@ window.WEPL_TNC = {
       {
         "no": "9",
         "text": "Maintenance Records"
+      }
+    ],
+    "func-01": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Verify supply voltage, phase sequence and running current on applicable phases.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Test local start/stop, Auto/Manual, Remote/BMS and run/trip indications where provided.",
+        "section": "Controls"
+      },
+      {
+        "no": "5",
+        "text": "Compare BMS commands, statuses and analog readings with actual field conditions.",
+        "section": "BMS"
+      },
+      {
+        "no": "6",
+        "text": "Complete manufacturer-supervised startup and record startup report.",
+        "section": "OEM startup"
+      },
+      {
+        "no": "7",
+        "text": "Verify CHW pump, CW pump, tower and isolation-valve startup sequence.",
+        "section": "Sequence"
+      },
+      {
+        "no": "8",
+        "text": "Measure evaporator water flow and entering/leaving water pressure.",
+        "section": "CHW flow"
+      },
+      {
+        "no": "9",
+        "text": "Measure condenser water flow and entering/leaving water pressure.",
+        "section": "CW flow"
+      },
+      {
+        "no": "10",
+        "text": "Test evaporator and condenser low/no-flow permissives using manufacturer-approved simulation.",
+        "section": "Flow interlocks"
+      },
+      {
+        "no": "11",
+        "text": "Record evaporator entering/leaving CHW temperatures and leaving-water setpoint.",
+        "section": "Temperature"
+      },
+      {
+        "no": "12",
+        "text": "Record condenser entering/leaving CW temperatures.",
+        "section": "Temperature"
+      },
+      {
+        "no": "13",
+        "text": "Record refrigerant pressures/temperatures, compressor load and oil readings where applicable.",
+        "section": "Compressor"
+      },
+      {
+        "no": "14",
+        "text": "Verify cooling capacity and input power at agreed test points.",
+        "section": "Cooling duty"
+      },
+      {
+        "no": "15",
+        "text": "Verify kW/RT or COP where specified for acceptance.",
+        "section": "Efficiency"
+      },
+      {
+        "no": "16",
+        "text": "Test load/unload response, capacity control and current limiting where provided.",
+        "section": "Loading"
+      },
+      {
+        "no": "17",
+        "text": "Test applicable pressure, temperature, freeze, oil and electrical protections by approved simulation.",
+        "section": "Safety controls"
+      },
+      {
+        "no": "18",
+        "text": "Test emergency stop and refrigerant alarm/ventilation interfaces where specified.",
+        "section": "Safety controls"
+      },
+      {
+        "no": "19",
+        "text": "Verify remote setpoint, demand limit and plant staging/duty-standby logic where provided.",
+        "section": "Plant control"
+      },
+      {
+        "no": "20",
+        "text": "Verify normal stop, pump run-on, anti-recycle delay and restart permissives.",
+        "section": "Shutdown"
+      },
+      {
+        "no": "21",
+        "text": "Verify power-loss/recovery response under approved test procedure.",
+        "section": "Power recovery"
+      },
+      {
+        "no": "22",
+        "text": "Run at agreed duties for specified duration; check noise, vibration, leaks and external condensation.",
+        "section": "Stability"
+      },
+      {
+        "no": "23",
+        "text": "Record final setpoints, control mode and operating settings; restore normal operation.",
+        "section": "Completion"
+      }
+    ],
+    "func-02": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Verify supply voltage, phase sequence and running current on applicable phases.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Test local start/stop, Auto/Manual, Remote/BMS and run/trip indications where provided.",
+        "section": "Controls"
+      },
+      {
+        "no": "5",
+        "text": "Compare BMS commands, statuses and analog readings with actual field conditions.",
+        "section": "BMS"
+      },
+      {
+        "no": "6",
+        "text": "Fill basin and circulate water; inspect basin and pipe connections.",
+        "section": "Fill & leakage"
+      },
+      {
+        "no": "7",
+        "text": "Test automatic makeup-water valve through the operating level range.",
+        "section": "Makeup"
+      },
+      {
+        "no": "8",
+        "text": "Test low/high-level alarms and associated pump/fan interlocks by approved simulation.",
+        "section": "Level alarms"
+      },
+      {
+        "no": "9",
+        "text": "Verify overflow and drain flow paths by approved water test.",
+        "section": "Drainage"
+      },
+      {
+        "no": "10",
+        "text": "Test conductivity controller, blowdown valve and dosing interlocks where installed.",
+        "section": "Treatment"
+      },
+      {
+        "no": "11",
+        "text": "Run water circulation and verify spray/distribution over fill.",
+        "section": "Distribution"
+      },
+      {
+        "no": "12",
+        "text": "Measure condenser-water flow to each operating tower cell and balance as required.",
+        "section": "Water flow"
+      },
+      {
+        "no": "13",
+        "text": "Verify fan rotation and airflow direction using manufacturer-approved start procedure.",
+        "section": "Fan"
+      },
+      {
+        "no": "14",
+        "text": "Test each fitted fan speed or VSD control range.",
+        "section": "Drive"
+      },
+      {
+        "no": "15",
+        "text": "Check noise, vibration, bearings and gearbox temperatures where applicable.",
+        "section": "Mechanical"
+      },
+      {
+        "no": "16",
+        "text": "Test vibration switch alarm/trip where fitted by approved method.",
+        "section": "Vibration trip"
+      },
+      {
+        "no": "17",
+        "text": "Verify fan staging/modulation against condenser-water temperature demand.",
+        "section": "Thermal control"
+      },
+      {
+        "no": "18",
+        "text": "Record entering/leaving water temperature, water flow and entering-air wet-bulb temperature.",
+        "section": "Thermal duty"
+      },
+      {
+        "no": "19",
+        "text": "Check tower range and approach from the recorded temperatures where specified.",
+        "section": "Thermal duty"
+      },
+      {
+        "no": "20",
+        "text": "Verify specified thermal performance at agreed test conditions.",
+        "section": "Performance"
+      },
+      {
+        "no": "21",
+        "text": "Inspect drift eliminators, louvers and surrounding area during operation.",
+        "section": "Carryover"
+      },
+      {
+        "no": "22",
+        "text": "Test cell staging, isolation valves, duty/standby and chiller/CW-pump coordination where provided.",
+        "section": "Plant sequence"
+      },
+      {
+        "no": "23",
+        "text": "Verify fan fault, shutdown and power-restoration responses as specified.",
+        "section": "Recovery"
+      },
+      {
+        "no": "24",
+        "text": "Complete specified running period and treatment-system checks.",
+        "section": "Stability"
+      },
+      {
+        "no": "25",
+        "text": "Record final setpoints, control mode and operating settings; restore normal operation.",
+        "section": "Completion"
+      }
+    ],
+    "func-03": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Verify supply voltage, phase sequence and running current on applicable phases.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Test local start/stop, Auto/Manual, Remote/BMS and run/trip indications where provided.",
+        "section": "Controls"
+      },
+      {
+        "no": "5",
+        "text": "Compare BMS commands, statuses and analog readings with actual field conditions.",
+        "section": "BMS"
+      },
+      {
+        "no": "6",
+        "text": "Verify motor/pump rotation by manufacturer-approved procedure after priming.",
+        "section": "Rotation"
+      },
+      {
+        "no": "7",
+        "text": "Start at approved valve positions and speed; confirm immediate liquid delivery.",
+        "section": "Starting"
+      },
+      {
+        "no": "8",
+        "text": "Check casing, flanges, seals/glands and seal flush during operation.",
+        "section": "Leakage"
+      },
+      {
+        "no": "9",
+        "text": "Check noise, vibration and bearing temperatures.",
+        "section": "Mechanical"
+      },
+      {
+        "no": "10",
+        "text": "Measure pump water flow at the specified operating duty.",
+        "section": "Flow"
+      },
+      {
+        "no": "11",
+        "text": "Record suction/discharge pressures and determine pump differential head.",
+        "section": "Head"
+      },
+      {
+        "no": "12",
+        "text": "Record operating speed/frequency, current and input power where required.",
+        "section": "Motor loading"
+      },
+      {
+        "no": "13",
+        "text": "Test speed variation and differential-pressure control where fitted.",
+        "section": "VSD"
+      },
+      {
+        "no": "14",
+        "text": "Verify minimum-flow/bypass response for pump and connected chiller where required.",
+        "section": "Minimum flow"
+      },
+      {
+        "no": "15",
+        "text": "Test motorized valve command, travel, feedback and pump interlocks where fitted.",
+        "section": "Valves"
+      },
+      {
+        "no": "16",
+        "text": "Verify check-valve operation on pump stop and standby operation.",
+        "section": "Non-return valve"
+      },
+      {
+        "no": "17",
+        "text": "Test lead/lag, duty/standby changeover and automatic standby start on failure where provided.",
+        "section": "Duty/standby"
+      },
+      {
+        "no": "18",
+        "text": "Test simultaneous/parallel operation and staging where specified.",
+        "section": "Parallel pumps"
+      },
+      {
+        "no": "19",
+        "text": "Verify pump proof-of-flow and chiller enable/shutdown coordination.",
+        "section": "Plant interlocks"
+      },
+      {
+        "no": "20",
+        "text": "Test applicable overload, drive fault and low-flow/low-pressure alarms using approved simulation.",
+        "section": "Faults"
+      },
+      {
+        "no": "21",
+        "text": "Verify power-loss/restoration and restart behavior where specified.",
+        "section": "Power recovery"
+      },
+      {
+        "no": "22",
+        "text": "Complete system balancing and verify final branch/plant flow requirements.",
+        "section": "Balancing"
+      },
+      {
+        "no": "23",
+        "text": "Verify normal stop and observe pressure transients.",
+        "section": "Stopping"
+      },
+      {
+        "no": "24",
+        "text": "Run for specified test duration at agreed duties.",
+        "section": "Stability"
+      },
+      {
+        "no": "25",
+        "text": "Record final setpoints, control mode and operating settings; restore normal operation.",
+        "section": "Completion"
+      }
+    ],
+    "func-04": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Check AHU casing and joints for visible air leakage.",
+        "section": "B. General installation"
+      },
+      {
+        "no": "4",
+        "text": "Check motorized control valve installation, actuator and valve stroke.",
+        "section": "C. Coil, filters & drainage"
+      },
+      {
+        "no": "5",
+        "text": "Check filter differential-pressure gauge/switch and tubing.",
+        "section": "C. Coil, filters & drainage"
+      },
+      {
+        "no": "6",
+        "text": "Check fan and motor bearings for abnormal noise, overheating or vibration.",
+        "section": "D. Fan & mechanical"
+      },
+      {
+        "no": "7",
+        "text": "Verify fan and motor rotation direction.",
+        "section": "D. Fan & mechanical"
+      },
+      {
+        "no": "8",
+        "text": "Check vibration isolators and flexible connections during operation.",
+        "section": "D. Fan & mechanical"
+      },
+      {
+        "no": "9",
+        "text": "Check fresh-air, return-air, exhaust-air and mixing dampers.",
+        "section": "E. Dampers & airside"
+      },
+      {
+        "no": "10",
+        "text": "Check motorized damper actuator, linkage, end switches and command response.",
+        "section": "E. Dampers & airside"
+      },
+      {
+        "no": "11",
+        "text": "Check non-return/backdraft damper operation where applicable.",
+        "section": "E. Dampers & airside"
+      },
+      {
+        "no": "12",
+        "text": "Check VAV boxes and terminal units are operational and accessible.",
+        "section": "E. Dampers & airside"
+      },
+      {
+        "no": "13",
+        "text": "Verify incoming and outgoing power supplies and isolators.",
+        "section": "F. Electrical & controls"
+      },
+      {
+        "no": "14",
+        "text": "Perform LCP lamp test and verify Start/Stop/Trip/Run indications.",
+        "section": "F. Electrical & controls"
+      },
+      {
+        "no": "15",
+        "text": "Verify Local/Off/Remote or Manual/Auto selector operation.",
+        "section": "F. Electrical & controls"
+      },
+      {
+        "no": "16",
+        "text": "Verify VSD operation, frequency command, output frequency and running current.",
+        "section": "F. Electrical & controls"
+      },
+      {
+        "no": "17",
+        "text": "Measure motor voltage and running current on all phases.",
+        "section": "F. Electrical & controls"
+      },
+      {
+        "no": "18",
+        "text": "Check phase sequence, phase imbalance and motor rotation.",
+        "section": "F. Electrical & controls"
+      },
+      {
+        "no": "19",
+        "text": "Verify BMS points against actual field readings and statuses.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "20",
+        "text": "Verify supply-air, return-air, room-air and off-coil temperature sensors.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "21",
+        "text": "Verify duct static-pressure sensor and control setpoint.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "22",
+        "text": "Verify differential-pressure switches for filter and fan status.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "23",
+        "text": "Test fan start/stop, proof-of-flow and fail-to-start/trip alarms.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "24",
+        "text": "Test fire alarm/smoke detector shutdown and damper interlocks where applicable.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "25",
+        "text": "Test freeze-stat/low-temperature protection where applicable.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "26",
+        "text": "Verify occupancy schedule, time clock and after-hours operation.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "27",
+        "text": "Verify temperature setpoint and control sequence, including valve modulation.",
+        "section": "G. Controls, BMS & safety"
+      },
+      {
+        "no": "28",
+        "text": "Record CHW supply and return temperatures during stable operation.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "29",
+        "text": "Record CHW supply and return pressures or pressure differential.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "30",
+        "text": "Measure main-duct airflow and compare with design airflow.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "31",
+        "text": "Measure terminal/grille/diffuser airflow and complete air balancing.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "32",
+        "text": "Record supply, return, fresh-air and off-coil temperatures and room RH where required.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "33",
+        "text": "Measure external static pressure and fan total/static pressure as required.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "34",
+        "text": "Check operating noise and vibration.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "35",
+        "text": "Run AHU continuously and confirm stable operation.",
+        "section": "H. Functional performance"
+      },
+      {
+        "no": "36",
+        "text": "Confirm all defects/punch-list items are closed or recorded with responsible party.",
+        "section": "I. Completion & handover"
+      }
+    ],
+    "func-05": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Measure incoming supply and verify outgoing motor supply on run command.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Verify fan start/stop and rotation direction.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "5",
+        "text": "Test low, medium and high fan speeds where provided.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "6",
+        "text": "Test EC motor or VSD speed control where fitted.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "7",
+        "text": "Record motor current on each applicable phase at design duty.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "8",
+        "text": "Check fan/motor bearings, noise, vibration and mounting during operation.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "9",
+        "text": "Check FCU casing, return box and duct joints for air leakage at high speed where available.",
+        "section": "Air leakage"
+      },
+      {
+        "no": "10",
+        "text": "Test thermostat display, setpoint adjustment and temperature response.",
+        "section": "Controls"
+      },
+      {
+        "no": "11",
+        "text": "Verify control valve full travel and response to cooling demand.",
+        "section": "Controls"
+      },
+      {
+        "no": "12",
+        "text": "Verify off-coil, room temperature and RH control functions where specified.",
+        "section": "Controls"
+      },
+      {
+        "no": "13",
+        "text": "Test Local/Manual and Remote/BMS operation where provided.",
+        "section": "Controls"
+      },
+      {
+        "no": "14",
+        "text": "Verify LCP/LMCP Start, Stop, Run, Trip and lamp-test functions where provided.",
+        "section": "Controls"
+      },
+      {
+        "no": "15",
+        "text": "Compare BMS temperature/RH readings with calibrated field measurements where monitored.",
+        "section": "BMS"
+      },
+      {
+        "no": "16",
+        "text": "Verify BMS start/stop, status, fault and valve/damper feedback where connected.",
+        "section": "BMS"
+      },
+      {
+        "no": "17",
+        "text": "Verify schedules and operating setpoints where controlled by BMS.",
+        "section": "BMS"
+      },
+      {
+        "no": "18",
+        "text": "Test motorized dampers and non-return dampers where fitted.",
+        "section": "Dampers"
+      },
+      {
+        "no": "19",
+        "text": "Verify associated VAV/terminal operation and final balancing positions where fitted.",
+        "section": "Dampers"
+      },
+      {
+        "no": "20",
+        "text": "Test applicable fire/smoke shutdown and associated damper interlocks.",
+        "section": "Interlocks"
+      },
+      {
+        "no": "21",
+        "text": "Test condensate pump and high-level switch/overflow response where fitted.",
+        "section": "Drainage"
+      },
+      {
+        "no": "22",
+        "text": "Check condensate drainage with the FCU operating.",
+        "section": "Drainage"
+      },
+      {
+        "no": "23",
+        "text": "Check coil, pipework and valve joints during water circulation.",
+        "section": "Water side"
+      },
+      {
+        "no": "24",
+        "text": "Record CHW supply/return temperatures and water flow or pressure readings as specified.",
+        "section": "Water side"
+      },
+      {
+        "no": "25",
+        "text": "Measure total FCU/main-duct airflow where a suitable measurement point is provided.",
+        "section": "Airflow"
+      },
+      {
+        "no": "26",
+        "text": "Measure and balance each supply diffuser/grille at the design fan speed.",
+        "section": "Airflow"
+      },
+      {
+        "no": "27",
+        "text": "Measure fresh-air supply to the FCU/served area where applicable.",
+        "section": "Airflow"
+      },
+      {
+        "no": "28",
+        "text": "Record return-air, off-coil/supply-air and room temperature; record room RH where required.",
+        "section": "Cooling"
+      },
+      {
+        "no": "29",
+        "text": "Check external sweating, cooling stability and noise during the specified test period.",
+        "section": "Cooling"
+      },
+      {
+        "no": "30",
+        "text": "Record final fan speed, valve/damper positions, setpoints and control modes.",
+        "section": "Completion"
+      }
+    ],
+    "func-06": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Verify incoming supply, phase sequence where applicable and outgoing supply on run command.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Test fan start/stop and verify rotation and airflow direction.",
+        "section": "Fan operation"
+      },
+      {
+        "no": "5",
+        "text": "Record voltage and running current on each applicable phase at design duty.",
+        "section": "Fan operation"
+      },
+      {
+        "no": "6",
+        "text": "Test each available fixed speed and record selected design speed.",
+        "section": "Fan operation"
+      },
+      {
+        "no": "7",
+        "text": "Test VSD start/stop, speed command and actual frequency/current where installed.",
+        "section": "VSD"
+      },
+      {
+        "no": "8",
+        "text": "Test installed VSD bypass mode and changeover interlocks using approved procedure.",
+        "section": "VSD"
+      },
+      {
+        "no": "9",
+        "text": "Check noise, vibration, bearings and isolators during operation.",
+        "section": "Mechanical"
+      },
+      {
+        "no": "10",
+        "text": "Check fan housing, flexible connections and duct joints at operating duty.",
+        "section": "Air leakage"
+      },
+      {
+        "no": "11",
+        "text": "Verify LCP/LMCP Start, Stop, Run, Trip and lamp-test functions where provided.",
+        "section": "Panel controls"
+      },
+      {
+        "no": "12",
+        "text": "Test Manual/Auto and Local/Remote control selection.",
+        "section": "Panel controls"
+      },
+      {
+        "no": "13",
+        "text": "Verify motor trip/fault indication, reset and restart behavior by approved test method.",
+        "section": "Protection"
+      },
+      {
+        "no": "14",
+        "text": "Verify BMS start/stop command, run status and trip/fault status.",
+        "section": "BMS"
+      },
+      {
+        "no": "15",
+        "text": "Compare BMS monitored speed, current, pressure and other analog points with field readings.",
+        "section": "BMS"
+      },
+      {
+        "no": "16",
+        "text": "Verify operating schedules and automatic start/stop where configured.",
+        "section": "BMS"
+      },
+      {
+        "no": "17",
+        "text": "Test motorized damper full travel, end switches and fan/damper interlocks.",
+        "section": "Dampers"
+      },
+      {
+        "no": "18",
+        "text": "Test non-return damper during fan operation and shutdown.",
+        "section": "Dampers"
+      },
+      {
+        "no": "19",
+        "text": "Test associated VAV/controlled terminal operation where applicable.",
+        "section": "Terminals"
+      },
+      {
+        "no": "20",
+        "text": "Measure main-duct/total fan airflow using the approved measurement method.",
+        "section": "Airflow"
+      },
+      {
+        "no": "21",
+        "text": "Measure and balance individual grille/diffuser air quantities.",
+        "section": "Airflow"
+      },
+      {
+        "no": "22",
+        "text": "Measure specified fan/duct static or total pressure at defined test points.",
+        "section": "Pressure"
+      },
+      {
+        "no": "23",
+        "text": "Verify coordinated supply/exhaust operation and duty/standby changeover where specified.",
+        "section": "Coordination"
+      },
+      {
+        "no": "24",
+        "text": "Test CO sensor response and indicated concentration using approved calibration/test method.",
+        "section": "Car-park controls"
+      },
+      {
+        "no": "25",
+        "text": "Test CO-driven fan staging/speed, alarms and reset where applicable.",
+        "section": "Car-park controls"
+      },
+      {
+        "no": "26",
+        "text": "Test CO sensor fault response where specified.",
+        "section": "Car-park controls"
+      },
+      {
+        "no": "27",
+        "text": "Test applicable fire/smoke signals, fan response, dampers and control priority.",
+        "section": "Fire mode"
+      },
+      {
+        "no": "28",
+        "text": "Test power-restoration and emergency-supply response where specified.",
+        "section": "Power recovery"
+      },
+      {
+        "no": "29",
+        "text": "Run fan for the specified test duration at required duties.",
+        "section": "Stability"
+      },
+      {
+        "no": "30",
+        "text": "Record final fan speed, VSD frequency, damper positions and control setpoints.",
+        "section": "Final settings"
+      }
+    ],
+    "func-07": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Record supply voltage and applicable phase sequence / balance.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Perform manufacturer commissioning/test-run procedure and record fault history.",
+        "section": "Startup"
+      },
+      {
+        "no": "5",
+        "text": "Verify indoor/outdoor fan operation, rotation and available speed settings.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "6",
+        "text": "Record unit/compressor/fan operating current as accessible under the approved test procedure.",
+        "section": "Electrical"
+      },
+      {
+        "no": "7",
+        "text": "Check noise, vibration, mountings and casing during operation.",
+        "section": "Mechanical"
+      },
+      {
+        "no": "8",
+        "text": "Test local/remote Start, Stop, Auto and provided controller functions.",
+        "section": "Controls"
+      },
+      {
+        "no": "9",
+        "text": "Test setpoint changes and sensor readings against calibrated instruments.",
+        "section": "Controls"
+      },
+      {
+        "no": "10",
+        "text": "Verify thermostat demand, compressor modulation/cycling and restart delay.",
+        "section": "Controls"
+      },
+      {
+        "no": "11",
+        "text": "Record outdoor ambient, room/return air and supply/off-coil temperatures at stable cooling duty.",
+        "section": "Cooling"
+      },
+      {
+        "no": "12",
+        "text": "Record available service-tool pressures, temperatures and operating data as required by the manufacturer.",
+        "section": "Refrigerant"
+      },
+      {
+        "no": "13",
+        "text": "Test heating, changeover and applicable defrost function if a heat-pump unit.",
+        "section": "Heating"
+      },
+      {
+        "no": "14",
+        "text": "Check drainage during operation at required fan speeds and cooling duty.",
+        "section": "Drainage"
+      },
+      {
+        "no": "15",
+        "text": "Test condensate pump and high-level alarm/shutdown where fitted.",
+        "section": "Drainage"
+      },
+      {
+        "no": "16",
+        "text": "Test applicable safety inputs and fault indications by approved simulation/service procedure.",
+        "section": "Safety"
+      },
+      {
+        "no": "17",
+        "text": "Test power-restoration behaviour and retained settings using an approved controlled test.",
+        "section": "Controls"
+      },
+      {
+        "no": "18",
+        "text": "Verify communication, indoor-unit count, addresses and zone/controller mapping.",
+        "section": "VRF system"
+      },
+      {
+        "no": "19",
+        "text": "Test each indoor unit individually and the system under concurrent demand.",
+        "section": "VRF system"
+      },
+      {
+        "no": "20",
+        "text": "Verify expansion-valve and branch-selector response using manufacturer diagnostic procedure.",
+        "section": "VRF system"
+      },
+      {
+        "no": "21",
+        "text": "Test mode priority, heat-recovery operation and simultaneous heating/cooling if supported.",
+        "section": "VRF system"
+      },
+      {
+        "no": "22",
+        "text": "Test fan enable, airflow proof and DX cooling/heating interlocks where an AHU is connected.",
+        "section": "DX AHU"
+      },
+      {
+        "no": "23",
+        "text": "Test specified coil-temperature protection and AHU interface response.",
+        "section": "DX AHU"
+      },
+      {
+        "no": "24",
+        "text": "Test motorized dampers, NRDs and VAV interfaces where fitted.",
+        "section": "Airside"
+      },
+      {
+        "no": "25",
+        "text": "Measure total airflow, outlet airflow and AHU/ducted-unit external static pressure.",
+        "section": "Airflow"
+      },
+      {
+        "no": "26",
+        "text": "Measure fresh-air quantity and filter pressure drop where specified.",
+        "section": "Airflow"
+      },
+      {
+        "no": "27",
+        "text": "Verify room temperature and RH performance where specified.",
+        "section": "Environment"
+      },
+      {
+        "no": "28",
+        "text": "Verify central/room controller and BMS commands, status, alarms, schedules and sensor values.",
+        "section": "BMS"
+      },
+      {
+        "no": "29",
+        "text": "Test fire/smoke shutdown and associated dampers where required.",
+        "section": "Interlocks"
+      },
+      {
+        "no": "30",
+        "text": "Test installed refrigerant detection, alarms and mitigation controls where required.",
+        "section": "Refrigerant safety"
+      },
+      {
+        "no": "31",
+        "text": "Record final setpoints, operating mode, schedules and controller settings.",
+        "section": "Completion"
+      }
+    ],
+    "func-08": [
+      {
+        "no": "1",
+        "text": "Check that the equipment is clean, free of debris, and undamaged before commencing operations.",
+        "section": "General"
+      },
+      {
+        "no": "2",
+        "text": "Verify chiller tag, make, model, serial number, refrigerant and rated capacity.",
+        "section": "Documents"
+      },
+      {
+        "no": "3",
+        "text": "Record supply voltage and applicable phase sequence / balance.",
+        "section": "Electrical"
+      },
+      {
+        "no": "4",
+        "text": "Perform manufacturer commissioning/test-run procedure and record fault history.",
+        "section": "Startup"
+      },
+      {
+        "no": "5",
+        "text": "Verify indoor/outdoor fan operation, rotation and available speed settings.",
+        "section": "Fan & motor"
+      },
+      {
+        "no": "6",
+        "text": "Record unit/compressor/fan operating current as accessible under the approved test procedure.",
+        "section": "Electrical"
+      },
+      {
+        "no": "7",
+        "text": "Check noise, vibration, mountings and casing during operation.",
+        "section": "Mechanical"
+      },
+      {
+        "no": "8",
+        "text": "Test local/remote Start, Stop, Auto and provided controller functions.",
+        "section": "Controls"
+      },
+      {
+        "no": "9",
+        "text": "Test setpoint changes and sensor readings against calibrated instruments.",
+        "section": "Controls"
+      },
+      {
+        "no": "10",
+        "text": "Verify thermostat demand, compressor modulation/cycling and restart delay.",
+        "section": "Controls"
+      },
+      {
+        "no": "11",
+        "text": "Record outdoor ambient, room/return air and supply/off-coil temperatures at stable cooling duty.",
+        "section": "Cooling"
+      },
+      {
+        "no": "12",
+        "text": "Record available service-tool pressures, temperatures and operating data as required by the manufacturer.",
+        "section": "Refrigerant"
+      },
+      {
+        "no": "13",
+        "text": "Test heating, changeover and applicable defrost function if a heat-pump unit.",
+        "section": "Heating"
+      },
+      {
+        "no": "14",
+        "text": "Check drainage during operation at required fan speeds and cooling duty.",
+        "section": "Drainage"
+      },
+      {
+        "no": "15",
+        "text": "Test condensate pump and high-level alarm/shutdown where fitted.",
+        "section": "Drainage"
+      },
+      {
+        "no": "16",
+        "text": "Test applicable safety inputs and fault indications by approved simulation/service procedure.",
+        "section": "Safety"
+      },
+      {
+        "no": "17",
+        "text": "Test power-restoration behaviour and retained settings using an approved controlled test.",
+        "section": "Controls"
+      },
+      {
+        "no": "18",
+        "text": "Check air distribution and accessible casing/duct joints during operation.",
+        "section": "Airside"
+      },
+      {
+        "no": "19",
+        "text": "Measure total/outlet airflow and external static pressure for ducted split units where specified.",
+        "section": "Airflow"
+      },
+      {
+        "no": "20",
+        "text": "Verify room temperature, specified RH and any provided fresh-air quantity.",
+        "section": "Environment"
+      },
+      {
+        "no": "21",
+        "text": "Test central/BMS interface, schedules and operating priority where fitted.",
+        "section": "Controls"
+      },
+      {
+        "no": "22",
+        "text": "Test applicable fire shutdown, condensate and refrigerant-detection interfaces.",
+        "section": "Interlocks"
+      },
+      {
+        "no": "23",
+        "text": "Record final setpoints, operating mode, schedules and controller settings.",
+        "section": "Completion"
+      }
+    ],
+    "func-09": [
+      {
+        "no": "1",
+        "text": "Start/Stop Command"
+      },
+      {
+        "no": "2",
+        "text": "Run Status"
+      },
+      {
+        "no": "3",
+        "text": "Trip Status"
+      },
+      {
+        "no": "4",
+        "text": "Auto/Manual Switch Mode Satus"
+      },
+      {
+        "no": "5",
+        "text": "Mismatch Alarm Test"
+      },
+      {
+        "no": "6",
+        "text": "Panel Power failure Status Test"
+      },
+      {
+        "no": "7",
+        "text": "Mixed Air Temperature"
+      },
+      {
+        "no": "8",
+        "text": "Low Speed Control and Feedback Test ( If any )"
+      },
+      {
+        "no": "9",
+        "text": "Medium Speed Control and Feedback Test ( If any )"
+      },
+      {
+        "no": "10",
+        "text": "High Speed Control and Feedback Test ( If any )"
+      },
+      {
+        "no": "11",
+        "text": "Suction Duct Air Static Pressure"
+      },
+      {
+        "no": "12",
+        "text": "Discharge Duct Air Static Pressure"
+      },
+      {
+        "no": "13",
+        "text": "VAV Dampers Position feeback"
+      },
+      {
+        "no": "14",
+        "text": "VAV Damper Command (Open/Close/Modulate)"
+      },
+      {
+        "no": "15",
+        "text": "M. Dampers Position feeback"
+      },
+      {
+        "no": "16",
+        "text": "M. Damper Command (Open/Close/Modulate)"
+      },
+      {
+        "no": "17",
+        "text": "Hardwired safety interlocks ensure the dampers (e.g., fire/smoke dampers open/ close)"
+      },
+      {
+        "no": "18",
+        "text": "Interlock Status"
+      },
+      {
+        "no": "19",
+        "text": "Smoke Detection"
+      },
+      {
+        "no": "20",
+        "text": "Filter Status Alarms"
+      },
+      {
+        "no": "21",
+        "text": "MV fan Air CO Level"
+      },
+      {
+        "no": "22",
+        "text": "Schedule Control Test"
+      }
+    ],
+    "func-10": [
+      {
+        "no": "1",
+        "text": "Start/Stop Command"
+      },
+      {
+        "no": "2",
+        "text": "Run Status"
+      },
+      {
+        "no": "3",
+        "text": "Trip Status"
+      },
+      {
+        "no": "4",
+        "text": "Auto/Manual Switch Mode Satus"
+      },
+      {
+        "no": "5",
+        "text": "Mismatch Alarm Test"
+      },
+      {
+        "no": "6",
+        "text": "Panel Power failure Status Test"
+      },
+      {
+        "no": "7",
+        "text": "Mixed Air Temperature"
+      },
+      {
+        "no": "8",
+        "text": "Outside Air Temperature and Humidity"
+      },
+      {
+        "no": "9",
+        "text": "Supply Air Temperature and Humidity"
+      },
+      {
+        "no": "10",
+        "text": "Room Temperature Reading (°C)"
+      },
+      {
+        "no": "11",
+        "text": "Room Humidity Reading (%RH)"
+      },
+      {
+        "no": "12",
+        "text": "PIBCV or Modulating Valve Stimulation Test (SP High)"
+      },
+      {
+        "no": "13",
+        "text": "PIBCV or ModulatingValve Stimulation Test (SP Low)"
+      },
+      {
+        "no": "14",
+        "text": "Low Speed Control and Feedback Test ( If any )"
+      },
+      {
+        "no": "15",
+        "text": "Medium Speed Control and Feedback Test ( If any )"
+      },
+      {
+        "no": "16",
+        "text": "High Speed Control and Feedback Test ( If any )"
+      },
+      {
+        "no": "17",
+        "text": "Supply Duct Air Static Pressure"
+      },
+      {
+        "no": "18",
+        "text": "Return Duct Air Static Pressure"
+      },
+      {
+        "no": "19",
+        "text": "Chilled Water Supply temperature"
+      },
+      {
+        "no": "20",
+        "text": "Chilled Water Return Temperature"
+      },
+      {
+        "no": "21",
+        "text": "Chilled Water Flow Rate"
+      },
+      {
+        "no": "22",
+        "text": "VAV Dampers Position feeback"
+      },
+      {
+        "no": "23",
+        "text": "VAV Damper Command (Open/Close/Modulate)"
+      },
+      {
+        "no": "24",
+        "text": "M. Dampers Position feeback"
+      },
+      {
+        "no": "25",
+        "text": "M. Damper Command (Open/Close/Modulate)"
+      },
+      {
+        "no": "26",
+        "text": "Hardwired safety interlocks ensure the dampers (e.g., fire/smoke dampers open/ close)"
+      },
+      {
+        "no": "27",
+        "text": "Interlock Status"
+      },
+      {
+        "no": "28",
+        "text": "Heater start / Stop Command ( If any)"
+      },
+      {
+        "no": "29",
+        "text": "Smoke Detection"
+      },
+      {
+        "no": "30",
+        "text": "Filter Status Alarms"
+      },
+      {
+        "no": "31",
+        "text": "Return Air CO2 Level"
+      },
+      {
+        "no": "32",
+        "text": "Condensate Drain Overflow Alarm ( if any)"
+      },
+      {
+        "no": "33",
+        "text": "Schedule Control Test"
       }
     ]
   }
