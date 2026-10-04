@@ -153,76 +153,94 @@ window.WEPL_CATALOG = {
   ],
   "mos": [
     {
-      "id": "T&C Method of Statement/1. METHOD OF STATEMENT FOR DUCT AIR LEAK TEST-R1.pdf",
-      "file": "1. METHOD OF STATEMENT FOR DUCT AIR LEAK TEST-R1.pdf",
-      "path": "T&C Method of Statement/1. METHOD OF STATEMENT FOR DUCT AIR LEAK TEST-R1.pdf",
-      "title": "1. METHOD OF STATEMENT FOR DUCT AIR LEAK TEST-R1"
+      "id": "1. METHOD OF STATEMENT FOR  DUCT AIR LEAK TEST-R1.pdf",
+      "file": "1. METHOD OF STATEMENT FOR  DUCT AIR LEAK TEST-R1.pdf",
+      "path": "1. METHOD OF STATEMENT FOR  DUCT AIR LEAK TEST-R1.pdf",
+      "title": "1. METHOD OF STATEMENT FOR DUCT AIR LEAK TEST-R1",
+      "local": "T&C Method of Statement/1. METHOD OF STATEMENT FOR DUCT AIR LEAK TEST-R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST -R1.pdf",
-      "file": "2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST -R1.pdf",
-      "path": "T&C Method of Statement/2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST -R1.pdf",
-      "title": "2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST -R1"
+      "id": "2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST-R1.pdf",
+      "file": "2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST-R1.pdf",
+      "path": "2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST-R1.pdf",
+      "title": "2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST -R1",
+      "local": "T&C Method of Statement/2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST -R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (REFRIGERANT)-R1 .pdf",
-      "file": "3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (REFRIGERANT)-R1 .pdf",
-      "path": "T&C Method of Statement/3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (REFRIGERANT)-R1 .pdf",
-      "title": "3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (REFRIGERANT)-R1"
+      "id": "3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (RE.pdf",
+      "file": "3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (RE.pdf",
+      "path": "3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (RE.pdf",
+      "title": "3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (REFRIGERANT)-R1",
+      "local": "T&C Method of Statement/3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (REFRIGERANT)-R1 .pdf"
     },
     {
-      "id": "T&C Method of Statement/4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU CHWP SYSTEM) R1.pdf",
-      "file": "4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU CHWP SYSTEM) R1.pdf",
-      "path": "T&C Method of Statement/4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU CHWP SYSTEM) R1.pdf",
-      "title": "4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU CHWP SYSTEM) R1"
+      "id": "4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "file": "4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "path": "4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "title": "4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU CHWP SYSTEM) R1",
+      "local": "T&C Method of Statement/4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU CHWP SYSTEM) R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (FCU DUCTED CHWP SYSTEM ) R1.pdf",
-      "file": "5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (FCU DUCTED CHWP SYSTEM ) R1.pdf",
-      "path": "T&C Method of Statement/5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (FCU DUCTED CHWP SYSTEM ) R1.pdf",
-      "title": "5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (FCU DUCTED CHWP SYSTEM ) R1"
+      "id": "5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VE.pdf",
+      "file": "5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VE.pdf",
+      "path": "5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VE.pdf",
+      "title": "5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (FCU DUCTED CHWP SYSTEM ) R1",
+      "local": "T&C Method of Statement/5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (FCU DUCTED CHWP SYSTEM ) R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU REF.PIPE SYSTEM) R1.pdf",
-      "file": "6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU REF.PIPE SYSTEM) R1.pdf",
-      "path": "T&C Method of Statement/6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU REF.PIPE SYSTEM) R1.pdf",
-      "title": "6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU REF.PIPE SYSTEM) R1"
+      "id": "6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "file": "6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "path": "6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "title": "6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU REF.PIPE SYSTEM) R1",
+      "local": "T&C Method of Statement/6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING (AHU REF.PIPE SYSTEM) R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING ( FCU DUCTED REF.PIPE SYSTEM) R1.pdf",
-      "file": "7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING ( FCU DUCTED REF.PIPE SYSTEM) R1.pdf",
-      "path": "T&C Method of Statement/7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING ( FCU DUCTED REF.PIPE SYSTEM) R1.pdf",
-      "title": "7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING ( FCU DUCTED REF.PIPE SYSTEM) R1"
+      "id": "7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "file": "7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "path": "7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf",
+      "title": "7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING ( FCU DUCTED REF.PIPE SYSTEM) R1",
+      "local": "T&C Method of Statement/7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION TESTING AND AIR BALANCING ( FCU DUCTED REF.PIPE SYSTEM) R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (CHWP FCU) SYSTEM AIR BALANCING- R1.pdf",
-      "file": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (CHWP FCU) SYSTEM AIR BALANCING- R1.pdf",
-      "path": "T&C Method of Statement/8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (CHWP FCU) SYSTEM AIR BALANCING- R1.pdf",
-      "title": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (CHWP FCU) SYSTEM AIR BALANCING- R1"
+      "id": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNI.pdf",
+      "file": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNI.pdf",
+      "path": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNI.pdf",
+      "title": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (CHWP FCU) SYSTEM AIR BALANCING- R1",
+      "local": "T&C Method of Statement/8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (CHWP FCU) SYSTEM AIR BALANCING- R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/9. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (VRF FCU) SYSTEM AIR BALANCING - R1.pdf",
-      "file": "9. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (VRF FCU) SYSTEM AIR BALANCING - R1.pdf",
-      "path": "T&C Method of Statement/9. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (VRF FCU) SYSTEM AIR BALANCING - R1.pdf",
-      "title": "9. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (VRF FCU) SYSTEM AIR BALANCING - R1"
+      "id": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOU.pdf",
+      "file": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOU.pdf",
+      "path": "8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOU.pdf",
+      "title": "9. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (VRF FCU) SYSTEM AIR BALANCING - R1",
+      "local": "T&C Method of Statement/9. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNIT (VRF FCU) SYSTEM AIR BALANCING - R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (FAF & EAF)-R1.pdf",
-      "file": "10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (FAF & EAF)-R1.pdf",
-      "path": "T&C Method of Statement/10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (FAF & EAF)-R1.pdf",
-      "title": "10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (FAF & EAF)-R1"
+      "id": "10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (.pdf",
+      "file": "10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (.pdf",
+      "path": "10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (.pdf",
+      "title": "10. METHOD OF STATEMENT FOR MECHANICAL VENTILATION FAN (FAF & EAF)-R1",
+      "local": "T&C Method of Statement/10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (FAF & EAF)-R1.pdf"
     },
     {
-      "id": "T&C Method of Statement/11. METHOD OF STATEMENT FOR ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV SYSTEMS.pdf",
-      "file": "11. METHOD OF STATEMENT FOR ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV SYSTEMS.pdf",
-      "path": "T&C Method of Statement/11. METHOD OF STATEMENT FOR ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV SYSTEMS.pdf",
-      "title": "11. METHOD OF STATEMENT FOR ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV SYSTEMS"
+      "id": "11. ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV S.pdf",
+      "file": "11. ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV S.pdf",
+      "path": "11. ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV S.pdf",
+      "title": "11. METHOD OF STATEMENT FOR ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV SYSTEMS",
+      "local": "T&C Method of Statement/11. METHOD OF STATEMENT FOR ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV SYSTEMS.pdf"
     },
     {
-      "id": "T&C Method of Statement/13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR ACMV EQUIPMENT-R1.pdf",
-      "file": "13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR ACMV EQUIPMENT-R1.pdf",
-      "path": "T&C Method of Statement/13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR ACMV EQUIPMENT-R1.pdf",
-      "title": "13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR ACMV EQUIPMENT-R1"
+      "id": "12. AIR BALANCING USING OF WITH EQUIPMENT-R1.pdf",
+      "file": "12. AIR BALANCING USING OF WITH EQUIPMENT-R1.pdf",
+      "path": "12. AIR BALANCING USING OF WITH EQUIPMENT-R1.pdf",
+      "title": "12. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VENTILATION (ACMV) SYSTEM TESTING, COMMISSIONING, AIR BALANCING USING OF WITH EQUIPMENT-R1"
+    },
+    {
+      "id": "13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR AC.pdf",
+      "file": "13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR AC.pdf",
+      "path": "13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR AC.pdf",
+      "title": "13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR ACMV EQUIPMENT-R1",
+      "local": "T&C Method of Statement/13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR ACMV EQUIPMENT-R1.pdf"
     }
   ],
   "preChecklist": [
@@ -307,22 +325,25 @@ window.WEPL_CATALOG = {
   ],
   "precon": [
     {
-      "id": "T&C Pre-con Survey Report/1. Chilled AHU_FCU  Pre-Con Check  List Report .xlsx - AHU_FCU- PCL-01.pdf",
-      "file": "1. Chilled AHU_FCU  Pre-Con Check  List Report .xlsx - AHU_FCU- PCL-01.pdf",
-      "path": "T&C Pre-con Survey Report/1. Chilled AHU_FCU  Pre-Con Check  List Report .xlsx - AHU_FCU- PCL-01.pdf",
-      "title": "1. Chilled AHU_FCU Pre-Con Check List Report - AHU_FCU- PCL-01"
+      "id": "1. Chilled AHU_FCU  Pre-Con Check  List Report  (1).pdf",
+      "file": "1. Chilled AHU_FCU  Pre-Con Check  List Report  (1).pdf",
+      "path": "1. Chilled AHU_FCU  Pre-Con Check  List Report  (1).pdf",
+      "title": "1. Chilled AHU_FCU Pre-Con Check List Report - AHU_FCU- PCL-01",
+      "local": "T&C Pre-con Survey Report/1. Chilled AHU_FCU  Pre-Con Check  List Report .xlsx - AHU_FCU- PCL-01.pdf"
     },
     {
-      "id": "T&C Pre-con Survey Report/2. Mechanical Fan  Pre-Con Check  List Report .xlsx - MVF- PCL-02 .pdf",
-      "file": "2. Mechanical Fan  Pre-Con Check  List Report .xlsx - MVF- PCL-02 .pdf",
-      "path": "T&C Pre-con Survey Report/2. Mechanical Fan  Pre-Con Check  List Report .xlsx - MVF- PCL-02 .pdf",
-      "title": "2. Mechanical Fan Pre-Con Check List Report - MVF- PCL-02"
+      "id": "2. Mechanical Fan  Pre-Con Check  List Report  (1).pdf",
+      "file": "2. Mechanical Fan  Pre-Con Check  List Report  (1).pdf",
+      "path": "2. Mechanical Fan  Pre-Con Check  List Report  (1).pdf",
+      "title": "2. Mechanical Fan Pre-Con Check List Report - MVF- PCL-02",
+      "local": "T&C Pre-con Survey Report/2. Mechanical Fan  Pre-Con Check  List Report .xlsx - MVF- PCL-02 .pdf"
     },
     {
-      "id": "T&C Pre-con Survey Report/3. Split Unit _VRF  Pre-Con  Check  List Report .xlsx - VRF-PCL-03.pdf",
-      "file": "3. Split Unit _VRF  Pre-Con  Check  List Report .xlsx - VRF-PCL-03.pdf",
-      "path": "T&C Pre-con Survey Report/3. Split Unit _VRF  Pre-Con  Check  List Report .xlsx - VRF-PCL-03.pdf",
-      "title": "3. Split Unit _VRF Pre-Con Check List Report - VRF-PCL-03"
+      "id": "3. Split Unit _VRF  Pre-Con  Check  List Report  (1).pdf",
+      "file": "3. Split Unit _VRF  Pre-Con  Check  List Report  (1).pdf",
+      "path": "3. Split Unit _VRF  Pre-Con  Check  List Report  (1).pdf",
+      "title": "3. Split Unit _VRF Pre-Con Check List Report - VRF-PCL-03",
+      "local": "T&C Pre-con Survey Report/3. Split Unit _VRF  Pre-Con  Check  List Report .xlsx - VRF-PCL-03.pdf"
     },
     {
       "id": "T&C Pre-con Survey Report/INVENTORY OF PRE-CON CHECK LIST  - Sheet1.pdf",
@@ -333,100 +354,116 @@ window.WEPL_CATALOG = {
   ],
   "trainingSlides": [
     {
-      "id": "Internal Training Slides/AIR TERMINALS.pdf",
+      "id": "AIR TERMINALS.pdf",
       "file": "AIR TERMINALS.pdf",
-      "path": "Internal Training Slides/AIR TERMINALS.pdf",
-      "title": "AIR TERMINALS"
+      "path": "AIR TERMINALS.pdf",
+      "title": "AIR TERMINALS",
+      "local": "Internal Training Slides/AIR TERMINALS.pdf"
     },
     {
-      "id": "Internal Training Slides/MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS.pdf",
+      "id": "MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS.pdf",
       "file": "MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS.pdf",
-      "path": "Internal Training Slides/MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS.pdf",
-      "title": "MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS"
+      "path": "MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS.pdf",
+      "title": "MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS",
+      "local": "Internal Training Slides/MAINTENANCE SPACE OPENING REQUIREMENT & TYPES OF DRAWINGS.pdf"
     },
     {
-      "id": "Internal Training Slides/DUCT SYSTEM & ACCESSORIES.pdf",
+      "id": "DUCT SYSTEM & ACCESSORIES.pdf",
       "file": "DUCT SYSTEM & ACCESSORIES.pdf",
-      "path": "Internal Training Slides/DUCT SYSTEM & ACCESSORIES.pdf",
-      "title": "DUCT SYSTEM & ACCESSORIES"
+      "path": "DUCT SYSTEM & ACCESSORIES.pdf",
+      "title": "DUCT SYSTEM & ACCESSORIES",
+      "local": "Internal Training Slides/DUCT SYSTEM & ACCESSORIES.pdf"
     },
     {
-      "id": "Internal Training Slides/PIPE ACCESSORIES & PROVISION CONSIDERATION.pdf",
+      "id": "PIPE ACCESSORIES & PROVISION CONSIDERATION.pdf",
       "file": "PIPE ACCESSORIES & PROVISION CONSIDERATION.pdf",
-      "path": "Internal Training Slides/PIPE ACCESSORIES & PROVISION CONSIDERATION.pdf",
-      "title": "PIPE ACCESSORIES & PROVISION CONSIDERATION"
+      "path": "PIPE ACCESSORIES & PROVISION CONSIDERATION.pdf",
+      "title": "PIPE ACCESSORIES & PROVISION CONSIDERATION",
+      "local": "Internal Training Slides/PIPE ACCESSORIES & PROVISION CONSIDERATION.pdf"
     },
     {
-      "id": "Internal Training Slides/PIPING SYSTEM CONNECTION (CHW,REF,CDP,HRU,CHILLER PLANT).pdf",
+      "id": "PIPING SYSTEM CONNECTION (CHW,REF,CDP,HRU,CHILLER PLANT).pdf",
       "file": "PIPING SYSTEM CONNECTION (CHW,REF,CDP,HRU,CHILLER PLANT).pdf",
-      "path": "Internal Training Slides/PIPING SYSTEM CONNECTION (CHW,REF,CDP,HRU,CHILLER PLANT).pdf",
-      "title": "PIPING SYSTEM CONNECTION (CHW, REF, CDP, HRU, CHILLER PLANT)"
+      "path": "PIPING SYSTEM CONNECTION (CHW,REF,CDP,HRU,CHILLER PLANT).pdf",
+      "title": "PIPING SYSTEM CONNECTION (CHW, REF, CDP, HRU, CHILLER PLANT)",
+      "local": "Internal Training Slides/PIPING SYSTEM CONNECTION (CHW,REF,CDP,HRU,CHILLER PLANT).pdf"
     },
     {
-      "id": "Internal Training Slides/SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS).pdf",
+      "id": "SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS).pdf",
       "file": "SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS).pdf",
-      "path": "Internal Training Slides/SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS).pdf",
-      "title": "SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS)"
+      "path": "SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS).pdf",
+      "title": "SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS)",
+      "local": "Internal Training Slides/SUPPORTING DETAILS (EQUIPMENTS, PIPES, DUCTS).pdf"
     },
     {
-      "id": "Internal Training Slides/DUCT HEATER SIZING & CONSIDERATION.pdf",
+      "id": "DUCT HEATER SIZING & CONSIDERATION.pdf",
       "file": "DUCT HEATER SIZING & CONSIDERATION.pdf",
-      "path": "Internal Training Slides/DUCT HEATER SIZING & CONSIDERATION.pdf",
-      "title": "DUCT HEATER SIZING & CONSIDERATION"
+      "path": "DUCT HEATER SIZING & CONSIDERATION.pdf",
+      "title": "DUCT HEATER SIZING & CONSIDERATION",
+      "local": "Internal Training Slides/DUCT HEATER SIZING & CONSIDERATION.pdf"
     },
     {
-      "id": "Internal Training Slides/VAVCAV & VENTURI CONTROL SYSTEM.pdf",
+      "id": "VAVCAV & VENTURI CONTROL SYSTEM.pdf",
       "file": "VAVCAV & VENTURI CONTROL SYSTEM.pdf",
-      "path": "Internal Training Slides/VAVCAV & VENTURI CONTROL SYSTEM.pdf",
-      "title": "VAVCAV & VENTURI CONTROL SYSTEM"
+      "path": "VAVCAV & VENTURI CONTROL SYSTEM.pdf",
+      "title": "VAVCAV & VENTURI CONTROL SYSTEM",
+      "local": "Internal Training Slides/VAVCAV & VENTURI CONTROL SYSTEM.pdf"
     },
     {
-      "id": "Internal Training Slides/STATIC PRESSURE CALCULATION.pdf",
+      "id": "STATIC PRESSURE CALCULATION.pdf",
       "file": "STATIC PRESSURE CALCULATION.pdf",
-      "path": "Internal Training Slides/STATIC PRESSURE CALCULATION.pdf",
-      "title": "STATIC PRESSURE CALCULATION"
+      "path": "STATIC PRESSURE CALCULATION.pdf",
+      "title": "STATIC PRESSURE CALCULATION",
+      "local": "Internal Training Slides/STATIC PRESSURE CALCULATION.pdf"
     },
     {
-      "id": "Internal Training Slides/Acesian Ecoflow Venturi Damper - Presentation (20230417).pdf",
+      "id": "Acesian Ecoflow Venturi Damper - Presentation (20230417).pdf",
       "file": "Acesian Ecoflow Venturi Damper - Presentation (20230417).pdf",
-      "path": "Internal Training Slides/Acesian Ecoflow Venturi Damper - Presentation (20230417).pdf",
-      "title": "Acesian Ecoflow Venturi Damper — Presentation (20230417)"
+      "path": "Acesian Ecoflow Venturi Damper - Presentation (20230417).pdf",
+      "title": "Acesian Ecoflow Venturi Damper — Presentation (20230417)",
+      "local": "Internal Training Slides/Acesian Ecoflow Venturi Damper - Presentation (20230417).pdf"
     },
     {
-      "id": "Internal Training Slides/AMV System description.pdf",
+      "id": "AMV System description.pdf",
       "file": "AMV System description.pdf",
-      "path": "Internal Training Slides/AMV System description.pdf",
-      "title": "AMV System Description"
+      "path": "AMV System description.pdf",
+      "title": "AMV System Description",
+      "local": "Internal Training Slides/AMV System description.pdf"
     },
     {
-      "id": "Internal Training Slides/EXAMPLE PSYCHOMETRIC CHART.pdf",
+      "id": "EXAMPLE PSYCHOMETRIC CHART.pdf",
       "file": "EXAMPLE PSYCHOMETRIC CHART.pdf",
-      "path": "Internal Training Slides/EXAMPLE PSYCHOMETRIC CHART.pdf",
-      "title": "EXAMPLE PSYCHOMETRIC CHART"
+      "path": "EXAMPLE PSYCHOMETRIC CHART.pdf",
+      "title": "EXAMPLE PSYCHOMETRIC CHART",
+      "local": "Internal Training Slides/EXAMPLE PSYCHOMETRIC CHART.pdf"
     },
     {
-      "id": "Internal Training Slides/PSYCHOMETRIC CHART PRESENTATION.pdf",
+      "id": "PSYCHOMETRIC CHART PRESENTATION.pdf",
       "file": "PSYCHOMETRIC CHART PRESENTATION.pdf",
-      "path": "Internal Training Slides/PSYCHOMETRIC CHART PRESENTATION.pdf",
-      "title": "PSYCHOMETRIC CHART PRESENTATION"
+      "path": "PSYCHOMETRIC CHART PRESENTATION.pdf",
+      "title": "PSYCHOMETRIC CHART PRESENTATION",
+      "local": "Internal Training Slides/PSYCHOMETRIC CHART PRESENTATION.pdf"
     },
     {
-      "id": "Internal Training Slides/Winner Engineering Internal Training Series - Module I.pdf",
+      "id": "Winner Engineering Internal Training Series - Module I.pdf",
       "file": "Winner Engineering Internal Training Series - Module I.pdf",
-      "path": "Internal Training Slides/Winner Engineering Internal Training Series - Module I.pdf",
-      "title": "Winner Engineering Internal Training Series — Module I"
+      "path": "Winner Engineering Internal Training Series - Module I.pdf",
+      "title": "Winner Engineering Internal Training Series — Module I",
+      "local": "Internal Training Slides/Winner Engineering Internal Training Series - Module I.pdf"
     },
     {
-      "id": "Internal Training Slides/Winner Engineering Internal Training Series - Module II.pdf",
+      "id": "Winner Engineering Internal Training Series - Module II.pdf",
       "file": "Winner Engineering Internal Training Series - Module II.pdf",
-      "path": "Internal Training Slides/Winner Engineering Internal Training Series - Module II.pdf",
-      "title": "Winner Engineering Internal Training Series — Module II"
+      "path": "Winner Engineering Internal Training Series - Module II.pdf",
+      "title": "Winner Engineering Internal Training Series — Module II",
+      "local": "Internal Training Slides/Winner Engineering Internal Training Series - Module II.pdf"
     },
     {
-      "id": "Internal Training Slides/Winner Engineering Internal Training Series - Module III.pdf",
+      "id": "Winner Engineering Internal Training Series - Module III.pdf",
       "file": "Winner Engineering Internal Training Series - Module III.pdf",
-      "path": "Internal Training Slides/Winner Engineering Internal Training Series - Module III.pdf",
-      "title": "Winner Engineering Internal Training Series — Module III"
+      "path": "Winner Engineering Internal Training Series - Module III.pdf",
+      "title": "Winner Engineering Internal Training Series — Module III",
+      "local": "Internal Training Slides/Winner Engineering Internal Training Series - Module III.pdf"
     }
   ],
   "preChecklistXlsx": [

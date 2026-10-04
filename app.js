@@ -2916,7 +2916,12 @@
     if (uploaded) {
       getUpload(pathOrId).then(function (r) { if (r) save(r.dataUrl, r.name || filename); });
     } else {
-      save(encodePath(pathOrId), filename);
+      const pub = publishedPdf(pathOrId);
+      if (pub && pub !== pathOrId) {
+        fetchPdfBytes(pub).then(function (bytes) {
+          save(URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })), filename);
+        }).catch(function () { save(encodePath(pathOrId), filename); });
+      } else save(encodePath(pathOrId), filename);
     }
   }
 
@@ -3028,11 +3033,58 @@
       return bytes;
     });
   }
+  function catalogLocal(path) {
+    const keys = ['testReports', 'mos', 'preChecklist', 'precon', 'trainingSlides'];
+    for (let i = 0; i < keys.length; i++) {
+      const list = CAT[keys[i]] || [];
+      for (let j = 0; j < list.length; j++) {
+        const item = list[j];
+        if (item.path === path || item.id === path || item.file === path) return item.local || '';
+      }
+    }
+    return '';
+  }
+  const MOS_V4 = {
+    '1': '1. METHOD OF STATEMENT FOR  DUCT AIR LEAK TEST-R1.pdf',
+    '2': '2. METHOD OF STATEMENT FOR CHILLED WATER PIPE PRESSURE TEST-R1.pdf',
+    '3': '3. METHOD OF STATEMENT FOR PRESSURE TESTING OF COPPER PIPE (RE.pdf',
+    '4': '4. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf',
+    '5': '5. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANICAL VE.pdf',
+    '6': '6. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf',
+    '7': '7. METHOD OF STATEMENT FOR AIR CONDITIONING & MECHANIC.pdf',
+    '8': '8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOUNTED UNI.pdf',
+    '9': '8. METHOD OF STATEMENT FOR CEILING CASSETTE & WALL MOU.pdf',
+    '10': '10.METHOD OF SATEMENT FOR MECHANICAL VENTILATION FAN (.pdf',
+    '11': '11. ROOM PRESSURE TESTING (POSITIVE & NEGATIVE) FOR ACMV S.pdf',
+    '12': '12. AIR BALANCING USING OF WITH EQUIPMENT-R1.pdf',
+    '13': '13. METHOD OF STATEMENT FOR LOCAL CONTROL PANEL FOR AC.pdf'
+  };
+  const PRECON_V4 = {
+    '1': '1. Chilled AHU_FCU  Pre-Con Check  List Report  (1).pdf',
+    '2': '2. Mechanical Fan  Pre-Con Check  List Report  (1).pdf',
+    '3': '3. Split Unit _VRF  Pre-Con  Check  List Report  (1).pdf'
+  };
+  function publishedPdf(path) {
+    const base = String(path || '').split('/').pop();
+    const num = (base.match(/^(\d+)/) || [])[1];
+    if (!num) return '';
+    if (/METHOD OF STATEMENT|ROOM PRESSURE TESTING|SATEMENT|AIR BALANCING USING OF WITH EQUIPMENT/i.test(path)) return MOS_V4[num] || '';
+    if (/Pre-Con Check|Pre-con Survey/i.test(path)) return PRECON_V4[num] || '';
+    return '';
+  }
   function openCatalogPdf(path, title) {
     const base = String(path || '').split('/').pop();
+    const local = catalogLocal(path);
     const choices = [];
-    [path, base, 'T&C Pre-Checklist/' + base].forEach(function (p) {
+    function add(p) {
       if (p && choices.indexOf(p) < 0) choices.push(p);
+    }
+    add(path);
+    add(base);
+    add(publishedPdf(path));
+    add(local);
+    ['T&C Pre-Checklist/', 'T&C Method of Statement/', 'T&C Pre-con Survey Report/', 'Internal Training Slides/'].forEach(function (folder) {
+      add(folder + base);
     });
     let chain = Promise.reject(new Error('start'));
     choices.forEach(function (p) {
@@ -3041,7 +3093,8 @@
     chain = chain.catch(function () {
       const box = document.getElementById('workBody');
       if (box) box.innerHTML = '<div class="h-full flex items-center justify-center text-slate-500">Opening the PDF from the uploaded file…</div>';
-      return zipPdfBytes(base.indexOf('Pre-Testing') >= 0 || base.indexOf('Pre-Checklist') >= 0 ? ('T&C Pre-Checklist/' + base) : path);
+      const zipPath = local || (base.indexOf('Pre-Testing') >= 0 || base.indexOf('Pre-Checklist') >= 0 ? ('T&C Pre-Checklist/' + base) : path);
+      return zipPdfBytes(zipPath);
     });
     chain.then(function (bytes) {
       renderPdfPreview(bytes, title || path);
