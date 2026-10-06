@@ -678,10 +678,39 @@
     </div>
   </footer>
 
+  <div id="roomAsk" class="hidden fixed inset-0 z-[200] items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/55" id="roomAskBackdrop"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-5" role="dialog" aria-modal="true">
+      <p id="roomAskText" class="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed"></p>
+      <div class="flex justify-end mt-5">
+        <button type="button" id="roomAskOk" class="px-4 py-2 rounded-lg text-xs font-bold text-white" style="background:#1E40AF">OK</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ROBUST JAVASCRIPT CAD & CALCULATION ENGINE -->
   <script>
     (function () {
       'use strict';
+      window.alert = function (message) {
+        var modal = document.getElementById('roomAsk');
+        var text = document.getElementById('roomAskText');
+        var ok = document.getElementById('roomAskOk');
+        var backdrop = document.getElementById('roomAskBackdrop');
+        if (!modal || !text || !ok) return;
+        text.textContent = String(message == null ? '' : message);
+        function close() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          ok.onclick = null;
+          if (backdrop) backdrop.onclick = null;
+        }
+        ok.onclick = close;
+        if (backdrop) backdrop.onclick = close;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        ok.focus();
+      };
 
       // =========================================================================
       // 1. DATA STATE & PRESETS

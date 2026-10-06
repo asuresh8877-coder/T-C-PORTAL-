@@ -211,6 +211,7 @@
   let selectedLouverId = null;
   let charts = {};
   let ductScene = null;
+  let duct2dPan = { x: 0, y: 0, forId: '' };
   let searchTimer = null;
   let libFilterTimer = null;
   let libFilter = '';
@@ -1088,13 +1089,16 @@
     html += '<div class="min-w-0"><h1 class="text-2xl font-extrabold text-slate-900 truncate">Welcome back, ' + esc(greetName) + '!</h1>';
     html += '<p class="text-sm text-slate-500">Your overview for today.</p>';
     html += '<p id="phoneShareLink" class="text-sm font-bold text-blue-800 mt-1"></p></div></div>';
+    html += '<div class="flex items-end gap-2 shrink-0">';
     html += '<label class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Project view';
     html += '<select id="dashProjectFilter" class="mt-1 block min-w-[220px] border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-800">';
     html += '<option value="">All projects (Overall)</option>';
     allProjects.forEach(function (p) {
       html += '<option value="' + esc(p.id) + '"' + (filterOk && p.id === filterId ? ' selected' : '') + '>' + esc(p.name) + '</option>';
     });
-    html += '</select></label></div>';
+    html += '</select></label>';
+    html += '<button type="button" id="dashNewProject" class="btn-navy btn-ico-new inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap">+ Add New Project</button>';
+    html += '</div></div>';
     html += '<div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">';
     cards.forEach(function (c) {
       html += '<div class="dash-kpi-card"><div class="dash-kpi-ico dash-kpi-' + c.tone + '">' + svgIcon(c.ico, 'w-5 h-5') + '</div>';
@@ -1157,6 +1161,8 @@
   }
   function bindDashboard() {
     showPhoneLink();
+    const dashNewProject = document.getElementById('dashNewProject');
+    if (dashNewProject) dashNewProject.onclick = function () { openNewReport('progress'); };
     const allProjects = visibleProjects();
     const filterId = dashProjectFilter;
     const filterOk = filterId && allProjects.some(function (p) { return p.id === filterId; });
@@ -1988,9 +1994,18 @@
     const nameEl = document.getElementById('userName');
     const roleEl = document.getElementById('userRole');
     const av = document.getElementById('userAvatar');
-    if (nameEl) nameEl.textContent = u ? (u.name || u.staffId || u.email) : '—';
-    if (roleEl) roleEl.textContent = u && authApi().roleLabel ? authApi().roleLabel(u) : '';
+    const displayName = u ? (u.name || u.staffId || u.email || '—') : '—';
+    const staffId = u ? (u.staffId || '') : '';
+    const email = u ? (u.email || '') : '';
+    if (nameEl) nameEl.textContent = displayName;
+    if (roleEl) roleEl.textContent = staffId;
     if (av) av.textContent = u ? String(u.name || u.staffId || 'U').charAt(0).toUpperCase() : '—';
+    const menuName = document.getElementById('userMenuName');
+    const menuId = document.getElementById('userMenuId');
+    const menuEmail = document.getElementById('userMenuEmail');
+    if (menuName) menuName.textContent = displayName;
+    if (menuId) menuId.textContent = staffId;
+    if (menuEmail) menuEmail.textContent = email;
     paintNotifyBadge();
   }
 
@@ -2343,12 +2358,14 @@
             }
             return alert('No AHU / FCU / MV FAN equipment found in this file.');
           }
-          if (!confirm(summarizeImport(res) + ' for “' + p.name + '”. Load these rows onto the storey sheets?')) return;
-          p.sheets = res.sheets;
-          selectedSheet = 0;
-          p.comments = p.comments || [];
-          p.comments.unshift({ id: uid(), author: 'Import', text: 'Imported from ' + file.name + ' — ' + res.count + ' equipment assigned by storey.', at: nowIso() });
-          saveState(); logActivity('progress', 'Imported schedule ' + file.name); renderView();
+          portalConfirm(summarizeImport(res) + ' for “' + p.name + '”. Load these rows onto the storey sheets?').then(function (ok) {
+            if (!ok) return;
+            p.sheets = res.sheets;
+            selectedSheet = 0;
+            p.comments = p.comments || [];
+            p.comments.unshift({ id: uid(), author: 'Import', text: 'Imported from ' + file.name + ' — ' + res.count + ' equipment assigned by storey.', at: nowIso() });
+            saveState(); logActivity('progress', 'Imported schedule ' + file.name); renderView();
+          });
         }).catch(function (err) { alert(err.message || 'Could not read this file.'); });
       };
       inp.click();
@@ -2361,29 +2378,35 @@
       saveState(); logActivity('progress', 'Updated project ' + p.name); renderView();
     };
     document.getElementById('btnDelProj').onclick = function () {
-      if (!confirm('Delete this project progress report?')) return;
-      state.projects = state.projects.filter(function (x) { return x.id !== p.id; });
-      selectedProjectId = state.projects[0] ? state.projects[0].id : null;
-      saveState(); logActivity('progress', 'Deleted project ' + p.name); renderView();
+      portalConfirm('Delete this project progress report?').then(function (ok) {
+        if (!ok) return;
+        state.projects = state.projects.filter(function (x) { return x.id !== p.id; });
+        selectedProjectId = state.projects[0] ? state.projects[0].id : null;
+        saveState(); logActivity('progress', 'Deleted project ' + p.name); renderView();
+      });
     };
     document.getElementById('btnAddSheet').onclick = function () {
-      const n = prompt('Sheet name', 'Sheet ' + (p.sheets.length + 1));
-      if (!n) return;
-      p.sheets.push({ id: uid(), name: n.trim(), items: [] });
-      selectedSheet = p.sheets.length - 1;
-      saveState(); renderView();
+      portalPrompt('Sheet name', 'Sheet ' + (p.sheets.length + 1)).then(function (n) {
+        if (!n) return;
+        p.sheets.push({ id: uid(), name: n.trim(), items: [] });
+        selectedSheet = p.sheets.length - 1;
+        saveState(); renderView();
+      });
     };
     document.getElementById('btnRenameSheet').onclick = function () {
       const sh = p.sheets[selectedSheet];
-      const n = prompt('Rename sheet', sh.name);
-      if (!n) return;
-      sh.name = n.trim(); saveState(); renderView();
+      portalPrompt('Rename sheet', sh.name).then(function (n) {
+        if (!n) return;
+        sh.name = n.trim(); saveState(); renderView();
+      });
     };
     document.getElementById('btnDelSheet').onclick = function () {
       if (p.sheets.length < 2) return alert('Keep at least one sheet.');
-      if (!confirm('Delete this sheet?')) return;
-      p.sheets.splice(selectedSheet, 1);
-      selectedSheet = 0; saveState(); renderView();
+      portalConfirm('Delete this sheet?').then(function (ok) {
+        if (!ok) return;
+        p.sheets.splice(selectedSheet, 1);
+        selectedSheet = 0; saveState(); renderView();
+      });
     };
     document.getElementById('btnAddRow').onclick = function () {
       p.sheets[selectedSheet].items.push(emptyItem('AHU'));
@@ -2396,14 +2419,14 @@
         const listKey = inp.getAttribute('data-list');
         let v = inp.value;
         if (v === '__add__') {
-          const name = prompt(listKey === 'workers' ? 'Add worker name' : 'Add new dropdown option');
-          if (!name || !name.trim()) { renderView(); return; }
-          const list = getList(listKey);
-          if (list.indexOf(name.trim()) < 0) list.push(name.trim());
-          v = name.trim();
-          p.sheets[selectedSheet].items[i][f] = v;
-          saveState();
-          renderView();
+          portalPrompt(listKey === 'workers' ? 'Add worker name' : 'Add new dropdown option', '').then(function (name) {
+            if (!name || !name.trim()) { renderView(); return; }
+            const list = getList(listKey);
+            if (list.indexOf(name.trim()) < 0) list.push(name.trim());
+            p.sheets[selectedSheet].items[i][f] = name.trim();
+            saveState();
+            renderView();
+          });
           return;
         }
         if (f === 'outstanding') v = Number(v);
@@ -2443,11 +2466,12 @@
     document.querySelectorAll('[data-list-add]').forEach(function (b) {
       b.addEventListener('click', function () {
         const key = b.getAttribute('data-list-add');
-        const name = prompt('New option');
-        if (!name || !name.trim()) return;
-        getList(key).push(name.trim());
-        saveState();
-        openListsEditor();
+        portalPrompt('New option', '').then(function (name) {
+          if (!name || !name.trim()) return;
+          getList(key).push(name.trim());
+          saveState();
+          openListsEditor();
+        });
       });
     });
     document.querySelectorAll('[data-list-del]').forEach(function (b) {
@@ -2826,12 +2850,14 @@
       modal.classList.add('flex');
       return;
     }
-    if (!confirm('Remove this document from the library view? Attached originals can be restored later.')) return;
-    const edit = getEditRecord(id);
-    edit.hidden = true;
-    saveState();
-    logActivity(view, 'Removed a document from the library');
-    renderView();
+    portalConfirm('Remove this document from the library view? Attached originals can be restored later.').then(function (ok) {
+      if (!ok) return;
+      const edit = getEditRecord(id);
+      edit.hidden = true;
+      saveState();
+      logActivity(view, 'Removed a document from the library');
+      renderView();
+    });
   }
 
   function storeReplacedFile(item, file, after) {
@@ -3624,7 +3650,7 @@
   /* ---------- Room (unchanged calculator in iframe) ---------- */
   function renderRoom() {
     return '<div class="flex items-center justify-between mb-3"><div><h1 class="text-2xl font-extrabold">Room Surface Area Calculator</h1><p class="text-sm text-slate-500">Original calculator is unchanged and opened in the workspace below.</p></div><a href="room-airflow.html" target="_blank" class="text-xs font-bold text-blue-700">Open in new tab →</a></div>' +
-      '<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="room-airflow.html?v=room7" title="Room Surface Area Calculator" class="w-full h-full border-0"></iframe></div>';
+      '<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="room-airflow.html?v=room8" title="Room Surface Area Calculator" class="w-full h-full border-0"></iframe></div>';
   }
 
   /* ---------- Psychrometric (air properties calculator in iframe) ---------- */
@@ -3779,7 +3805,7 @@
     if (!t.testPa) t.testPa = CLASS_PA[t.pressureClass] || 1000;
     const c = ductCalc(t);
     let html = weplDocHeaderHtml('DUCT LEAKAGE TEST REPORT', 'Section D · DW/144 — Class A 500 Pa · B 1000 Pa · C 2000 Pa · D 2500 Pa');
-    html += '<style>.duct-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.duct-fit-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-fit-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}</style>';
+    html += '<style>.duct-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.duct-fit-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-fit-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}.duct-pan{position:absolute;right:8px;bottom:8px;z-index:3;display:grid;grid-template-columns:28px 28px 28px;grid-template-rows:28px 28px 28px;gap:3px;pointer-events:none}.duct-pan-btn{pointer-events:auto;cursor:pointer !important;width:28px;height:28px;padding:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;font-size:14px;line-height:1;box-shadow:0 2px 6px rgba(15,23,42,.28) !important}.duct-pan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(15,23,42,.35) !important}</style>';
     const ductTool = 'duct-tool-btn px-3 py-2 text-xs font-bold rounded-xl';
     html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4">';
     html += '<button id="btnDuctPdf" type="button" class="' + ductTool + ' text-white" style="background:#1E40AF;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Download test form</button>';
@@ -3832,8 +3858,8 @@
     html += '<p class="text-[11px] mt-1 text-slate-600">Class ' + t.pressureClass + ' @ ' + t.testPa + ' Pa · k=' + c.k + ' · Limit = A × k × p^0.65</p></div></div>';
 
     html += '<div class="xl:col-span-7"><div class="space-y-4" style="width:92%">';
-    html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold flex justify-between items-center"><span>2D duct drawing with size — drag to hand-draw a straight run</span><span class="text-slate-400">Fittings connected in order</span></div><canvas id="duct2d" class="block w-full bg-[#f8fafc] cursor-crosshair" style="height:440px" height="440"></canvas></div>';
-    html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold">3D isometric view — orbit / zoom · connected run</div><div id="duct3d" class="h-[380px] bg-slate-900"></div></div>';
+    html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold flex justify-between items-center"><span>2D duct drawing with size — drag to hand-draw a straight run</span><span class="text-slate-400">Fittings connected in order</span></div><div class="relative"><canvas id="duct2d" class="block w-full bg-[#f8fafc] cursor-crosshair" style="height:440px" height="440"></canvas>' + ductPanPad('2d') + '</div></div>';
+    html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold">3D isometric view — orbit / zoom · connected run</div><div class="relative"><div id="duct3d" class="h-[380px] bg-slate-900"></div>' + ductPanPad('3d') + '</div></div>';
     html += '</div></div></div>';
     return html;
   }
@@ -3886,6 +3912,54 @@
     });
     initDuct2D(t);
     initDuct3D(t);
+    document.querySelectorAll('[data-duct-pan]').forEach(function (pad) {
+      const which = pad.getAttribute('data-duct-pan');
+      pad.querySelectorAll('[data-pan]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dir = btn.getAttribute('data-pan');
+          if (which === '2d') panDuct2D(t, dir);
+          else panDuct3D(dir);
+        });
+      });
+    });
+  }
+  function ductPanPad(which) {
+    function btn(dir, label, cell) {
+      return '<button type="button" data-pan="' + dir + '" aria-label="Scroll ' + dir + '" class="duct-pan-btn" style="' + cell + '">' + label + '</button>';
+    }
+    return '<div class="duct-pan" data-duct-pan="' + which + '">' +
+      btn('up', '\u2191', 'grid-column:2;grid-row:1') +
+      btn('left', '\u2190', 'grid-column:1;grid-row:2') +
+      btn('right', '\u2192', 'grid-column:3;grid-row:2') +
+      btn('down', '\u2193', 'grid-column:2;grid-row:3') +
+      '</div>';
+  }
+  function panDuct2D(t, dir) {
+    const step = 48;
+    if (duct2dPan.forId !== t.id) { duct2dPan.x = 0; duct2dPan.y = 0; duct2dPan.forId = t.id; }
+    if (dir === 'up') duct2dPan.y -= step;
+    else if (dir === 'down') duct2dPan.y += step;
+    else if (dir === 'left') duct2dPan.x -= step;
+    else if (dir === 'right') duct2dPan.x += step;
+    initDuct2D(t);
+  }
+  function panDuct3D(dir) {
+    if (!ductScene || !ductScene.camera || !ductScene.controls || typeof THREE === 'undefined') return;
+    const camera = ductScene.camera;
+    const controls = ductScene.controls;
+    camera.updateMatrixWorld();
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+    const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+    const move = new THREE.Vector3();
+    const step = 0.55;
+    if (dir === 'left') move.addScaledVector(right, -step);
+    else if (dir === 'right') move.addScaledVector(right, step);
+    else if (dir === 'up') move.addScaledVector(up, step);
+    else if (dir === 'down') move.addScaledVector(up, -step);
+    camera.position.add(move);
+    controls.target.add(move);
   }
 
   function ductFitTransform(layout, W, H, pad) {
@@ -3930,10 +4004,13 @@
     canvas.height = Math.floor(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const W = rect.width;
+    if (duct2dPan.forId !== t.id) { duct2dPan.x = 0; duct2dPan.y = 0; duct2dPan.forId = t.id; }
     ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, W, H);
+    ctx.translate(duct2dPan.x, duct2dPan.y);
     ctx.strokeStyle = '#e2e8f0';
-    for (let gx = 0; gx < W; gx += 20) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-    for (let gy = 0; gy < H; gy += 20) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+    const gridPad = 1200;
+    for (let gx = -gridPad; gx < W + gridPad; gx += 20) { ctx.beginPath(); ctx.moveTo(gx, -gridPad); ctx.lineTo(gx, H + gridPad); ctx.stroke(); }
+    for (let gy = -gridPad; gy < H + gridPad; gy += 20) { ctx.beginPath(); ctx.moveTo(-gridPad, gy); ctx.lineTo(W + gridPad, gy); ctx.stroke(); }
 
     const layout = layoutDuctRun(t.fittings);
     const tf = ductFitTransform(layout, W, H, 64);
@@ -4181,7 +4258,7 @@
       controls.update();
       renderer.render(scene, camera);
     }
-    ductScene = { renderer: renderer, raf: 0 };
+    ductScene = { renderer: renderer, raf: 0, camera: camera, controls: controls };
     tick();
   }
 
@@ -5603,6 +5680,96 @@
     const el = document.getElementById(id);
     el.classList.add('hidden'); el.classList.remove('flex');
   }
+  let portalAskQueue = [];
+  let portalAskOpen = null;
+  function portalAsk(opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      portalAskQueue.push({ opts: opts, resolve: resolve });
+      showNextPortalAsk();
+    });
+  }
+  function showNextPortalAsk() {
+    if (portalAskOpen || !portalAskQueue.length) return;
+    const job = portalAskQueue.shift();
+    const modal = document.getElementById('modalPortalAsk');
+    const text = document.getElementById('portalAskText');
+    const input = document.getElementById('portalAskInput');
+    const okBtn = document.getElementById('portalAskOk');
+    const cancelBtn = document.getElementById('portalAskCancel');
+    const backdrop = document.getElementById('portalAskBackdrop');
+    const mode = job.opts.mode || 'alert';
+    if (!modal || !text || !okBtn) {
+      job.resolve(mode === 'confirm' ? false : (mode === 'prompt' ? null : undefined));
+      showNextPortalAsk();
+      return;
+    }
+    portalAskOpen = job;
+    text.textContent = String(job.opts.message == null ? '' : job.opts.message);
+    if (input) {
+      if (mode === 'prompt') {
+        input.classList.remove('hidden');
+        input.value = job.opts.value == null ? '' : String(job.opts.value);
+      } else {
+        input.classList.add('hidden');
+        input.value = '';
+      }
+    }
+    if (cancelBtn) cancelBtn.classList.toggle('hidden', mode === 'alert');
+    function finish(val) {
+      if (portalAskOpen !== job) return;
+      portalAskOpen = null;
+      document.removeEventListener('keydown', onKey);
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      okBtn.onclick = null;
+      if (cancelBtn) cancelBtn.onclick = null;
+      if (backdrop) backdrop.onclick = null;
+      job.resolve(val);
+      showNextPortalAsk();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (mode === 'alert') finish(undefined);
+        else if (mode === 'prompt') finish(null);
+        else finish(false);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        okBtn.click();
+      }
+    }
+    okBtn.onclick = function () {
+      if (mode === 'confirm') finish(true);
+      else if (mode === 'prompt') finish(input ? input.value : '');
+      else finish(undefined);
+    };
+    if (cancelBtn) cancelBtn.onclick = function () {
+      if (mode === 'prompt') finish(null);
+      else if (mode === 'confirm') finish(false);
+      else finish(undefined);
+    };
+    if (backdrop) backdrop.onclick = function () {
+      if (cancelBtn) cancelBtn.click();
+      else finish(undefined);
+    };
+    document.addEventListener('keydown', onKey);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(function () {
+      if (mode === 'prompt' && input) { input.focus(); input.select(); }
+      else okBtn.focus();
+    }, 0);
+  }
+  function portalConfirm(message) {
+    return portalAsk({ mode: 'confirm', message: message });
+  }
+  function portalPrompt(message, value) {
+    return portalAsk({ mode: 'prompt', message: message, value: value });
+  }
+  window.alert = function (message) {
+    portalAsk({ mode: 'alert', message: message });
+  };
   function openWork(title, html) {
     document.getElementById('workTitle').textContent = title;
     document.getElementById('workBody').innerHTML = html;
@@ -7915,11 +8082,26 @@
     html += '</div></div>';
     html += '<div id="tncProjSheet" class="tnc-proj-sheet">';
     html += '<div class="tnc-sheet-head"><strong>Choose Project</strong><button type="button" class="tnc-sheet-x" data-tnc-sheet-close="1" aria-label="Close">×</button></div>';
-    html += '<div class="tnc-proj-row flex gap-2 overflow-x-auto pb-1">';
-    (state.projects || []).filter(function (pr) { return !authApi().canProject || authApi().canProject(currentUser(), pr.id); }).forEach(function (pr) {
-      html += '<button type="button" data-tnc-proj="' + pr.id + '" class="btn-shadow shrink-0 px-3 py-2 rounded-xl border text-left text-sm ' + (p && p.id === pr.id ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-200') + '"><p class="font-bold">' + esc(pr.name) + '</p><p class="text-[11px] text-slate-500">' + esc(pr.code || '') + (pr.location ? ' · ' + esc(pr.location) : '') + '</p></button>';
+    html += '<div class="tnc-proj-row">';
+    html += '<p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Project</p>';
+    html += '<div class="tnc-proj-pick" id="tncProjectPick">';
+    const tncProjects = (state.projects || []).filter(function (pr) { return !authApi().canProject || authApi().canProject(currentUser(), pr.id); });
+    const tncCurrent = tncProjects.find(function (pr) { return p && pr.id === p.id; }) || null;
+    function tncProjDetail(pr) { return [pr.code || '', pr.location || ''].filter(Boolean).join(' · '); }
+    html += '<button type="button" class="tnc-proj-pick-btn" aria-haspopup="listbox" aria-expanded="false">';
+    html += '<span class="min-w-0"><strong>' + esc(tncCurrent ? tncCurrent.name : 'No project') + '</strong>';
+    if (tncCurrent && tncProjDetail(tncCurrent)) html += '<span class="tnc-proj-pick-sub">' + esc(tncProjDetail(tncCurrent)) + '</span>';
+    html += '</span><span class="tnc-proj-pick-chev" aria-hidden="true">▾</span></button>';
+    html += '<div class="tnc-proj-pick-menu" role="listbox">';
+    tncProjects.forEach(function (pr) {
+      const on = !!(p && p.id === pr.id);
+      const detail = tncProjDetail(pr);
+      html += '<button type="button" role="option" data-tnc-proj="' + esc(pr.id) + '" class="tnc-proj-opt' + (on ? ' is-on' : '') + '" aria-selected="' + (on ? 'true' : 'false') + '">';
+      html += '<strong>' + esc(pr.name) + '</strong>';
+      if (detail) html += '<span>' + esc(detail) + '</span>';
+      html += '</button>';
     });
-    html += '</div></div></div>';
+    html += '</div></div></div></div></div>';
 
     if (!p) return html + '<p class="text-slate-500 p-4">Create a project to generate the T&amp;C workflow.</p></div>';
 
@@ -16268,7 +16450,8 @@
   function openPhotoRowDeleteModal(p, stageId, rowId) {
     const modal = document.getElementById('modalPhotoRowDel');
     if (!modal) {
-      if (window.confirm('Delete this inspection row?')) {
+      portalConfirm('Delete this inspection row?').then(function (ok) {
+        if (!ok) return;
         if (deleteInspectionRow(p, stageId, rowId)) {
           const scroller = document.getElementById('tncStageScroll');
           tncKeepPlace = {
@@ -16277,7 +16460,7 @@
           };
           renderView();
         }
-      }
+      });
       return;
     }
     modal.setAttribute('data-row', rowId);
@@ -17720,9 +17903,32 @@
     document.querySelectorAll('[data-tnc-sheet-close]').forEach(function (b) {
       b.addEventListener('click', function () { closeTncSheets(); });
     });
-    document.querySelectorAll('[data-tnc-proj]').forEach(function (b) {
-      b.addEventListener('click', function () { selectedProjectId = b.getAttribute('data-tnc-proj'); tncOpenDocId = null; renderView(); });
-    });
+    const tncProjectPick = document.getElementById('tncProjectPick');
+    if (tncProjectPick) {
+      const tncProjBtn = tncProjectPick.querySelector('.tnc-proj-pick-btn');
+      if (tncProjBtn) tncProjBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const open = tncProjectPick.classList.toggle('is-open');
+        tncProjBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      tncProjectPick.querySelectorAll('[data-tnc-proj]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          selectedProjectId = b.getAttribute('data-tnc-proj');
+          tncOpenDocId = null;
+          renderView();
+        });
+      });
+    }
+    if (!bindProjectTnc._projDoc) {
+      bindProjectTnc._projDoc = true;
+      document.addEventListener('click', function (e) {
+        const openPick = document.getElementById('tncProjectPick');
+        if (!openPick || !openPick.classList.contains('is-open') || openPick.contains(e.target)) return;
+        openPick.classList.remove('is-open');
+        const openBtn = openPick.querySelector('.tnc-proj-pick-btn');
+        if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+      });
+    }
     document.querySelectorAll('[data-tnc-track]').forEach(function (b) {
       b.addEventListener('click', function () {
         tncTrackId = b.getAttribute('data-tnc-track');
@@ -17839,7 +18045,11 @@
         }
         if (act === 'precon-delete-pack') {
           if (!isAdmin()) return;
-          if (!confirm('Remove this merged Pre-Construction report and return this equipment to Review (Tested By)?')) return;
+          portalConfirm('Remove this merged Pre-Construction report and return this equipment to Review (Tested By)?').then(function (ok) {
+            if (!ok) return;
+            applyPreconAct(pNow, act, tag);
+          });
+          return;
         }
         applyPreconAct(pNow, act, tag);
       });
@@ -17925,12 +18135,14 @@
         const key = b.getAttribute('data-precon-rm') || '';
         const name = b.getAttribute('data-fname') || 'this file';
         if (!pNow || !tag || !key) return;
-        if (!confirm('Remove "' + name + '" from ' + tag + '?')) return;
-        if (key.indexOf('cal:') === 0) unlinkCalFromEquip(pNow, tag, key.slice(4));
-        preconMarkOmit(pNow, tag, key);
-        preconReviewTag = tag;
-        saveState();
-        renderView();
+        portalConfirm('Remove "' + name + '" from ' + tag + '?').then(function (ok) {
+          if (!ok) return;
+          if (key.indexOf('cal:') === 0) unlinkCalFromEquip(pNow, tag, key.slice(4));
+          preconMarkOmit(pNow, tag, key);
+          preconReviewTag = tag;
+          saveState();
+          renderView();
+        });
       });
     });
     document.querySelectorAll('[data-precon-repl-doc]').forEach(function (b) {
@@ -18995,7 +19207,8 @@
         const folder = tncCalFolderById(tncCalFolder);
         const f = findCalFile(p, folder, b.getAttribute('data-cal-del'));
         if (!f) return;
-        if (!confirm('Remove this certificate from the folder view?')) return;
+        portalConfirm('Remove this certificate from the folder view?').then(function (ok) {
+          if (!ok) return;
         if (f.catalog && f.path) p.tnc.calDeleted.push(f.path);
         if (f.uploadId) {
           p.tnc.calUploads[tncCalFolder] = (p.tnc.calUploads[tncCalFolder] || []).filter(function (u) { return u.id !== f.uploadId; });
@@ -19004,6 +19217,7 @@
         p.tnc.calSelected = (p.tnc.calSelected || []).filter(function (c) { return !((f.path && c.path === f.path) || (f.uploadId && c.uploadId === f.uploadId)); });
         if (tncCalOpenId && !findCalCert(p, tncCalOpenId)) tncCalOpenId = null;
         saveState(); renderView();
+        });
       });
     });
     document.querySelectorAll('[data-cal-open]').forEach(function (b) {
@@ -22553,9 +22767,10 @@
     });
     document.querySelectorAll('[data-repo-reject]').forEach(function (b) {
       b.addEventListener('click', function () {
-        const reason = prompt('Enter the reason for rejection (visible to Tested By, Witness and Verify By):');
-        if (!reason || !reason.trim()) return;
-        rejectPackage(p, reason.trim(), b.getAttribute('data-repo-reject'));
+        portalPrompt('Enter the reason for rejection (visible to Tested By, Witness and Verify By):', '').then(function (reason) {
+          if (!reason || !reason.trim()) return;
+          rejectPackage(p, reason.trim(), b.getAttribute('data-repo-reject'));
+        });
       });
     });
   }
@@ -25633,7 +25848,6 @@
         setSidebarCollapsed(!document.getElementById('app').classList.contains('sidebar-collapsed'));
       });
       on('sidebarScrim', closeMobile);
-      on('btnNewReport', function () { openNewReport('progress'); });
       const search = document.getElementById('globalSearch');
       if (search) search.addEventListener('input', function (e) {
         clearTimeout(searchTimer);
