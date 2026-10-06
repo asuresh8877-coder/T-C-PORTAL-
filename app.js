@@ -176,8 +176,11 @@
   let tncCsvBusy = false;
   let tncCsvPass = {};
   let admUserQuery = '';
+  let libAccessSig = '';
+  let libAccessUserId = '';
   let admRoleDdCloser = null;
   let dashProjectFilter = '';
+  let dashChartMode = 'bar';
   const REPORT_SYSTEM_OPTS = ['Chilled Water Pipe System', 'Refrigerant Pipe System'];
   const REPORT_VRV_SYSTEM_OPTS = ['VRV', 'SPLIT', 'VRF'];
   const REPORT_GRILLE_SYSTEM_OPTS = ['FCU', 'AHU', 'PAU', 'FAU', 'EF', 'SF', 'ACMV'];
@@ -908,8 +911,8 @@
       }
       const active = view === n.id;
       const btnClass = active
-        ? 'flex items-center rounded-full transition-all duration-300 group relative text-left bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg hover:shadow-xl w-full px-4 py-3'
-        : 'flex items-center rounded-full transition-all duration-300 group relative text-left w-full px-4 py-3 text-slate-300 hover:bg-white/10';
+        ? 'nav-item is-on flex items-center rounded-full transition-all duration-300 group relative text-left bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg hover:shadow-xl w-full px-4 py-3'
+        : 'nav-item flex items-center rounded-full transition-all duration-300 group relative text-left w-full px-4 py-3 text-slate-300 hover:bg-white/10';
       const iconClass = 'nav-ico nav-ico-' + n.id + ' w-6 h-6 mr-4 flex-shrink-0';
       const titleClass = active
         ? 'text-sm font-semibold text-white transition-colors duration-300'
@@ -917,7 +920,7 @@
       const descClass = active
         ? 'text-xs mt-1 text-blue-100 transition-colors duration-300'
         : 'text-xs mt-1 text-slate-500 group-hover:text-slate-300 transition-colors duration-300';
-      html += '<button type="button" data-nav="' + n.id + '" class="nav-item ' + btnClass + '">' +
+      html += '<button type="button" data-nav="' + n.id + '" title="' + esc(n.label) + '" class="' + btnClass + '">' +
         svgIcon(n.icon, iconClass) +
         '<div class="flex-1 min-w-0">' +
         '<p class="' + titleClass + '">' + esc(n.label) + '</p>' +
@@ -1064,6 +1067,40 @@
     }
   }
 
+  function dashProgressStatus(pct, total) {
+    if (!total || pct < 10) return { label: 'Just Started', tone: 'start' };
+    if (pct >= 100) return { label: 'Completed', tone: 'done' };
+    return { label: 'In Progress', tone: 'go' };
+  }
+  function dashProgressTable(projects) {
+    let equip = 0, done = 0, out = 0;
+    let html = '<div class="dash-progress-table-wrap"><table class="dash-progress-table">';
+    html += '<thead><tr><th>Project</th><th>Equipment</th><th>Completed</th><th>Outstanding</th><th>Progress</th><th>Status</th></tr></thead><tbody>';
+    if (!projects.length) {
+      html += '<tr><td colspan="6" class="dash-progress-empty">No project</td></tr>';
+    }
+    projects.forEach(function (p) {
+      const s = projectStats(p);
+      equip += s.total;
+      done += s.done;
+      out += s.outstanding;
+      const st = dashProgressStatus(s.pct, s.total);
+      const showPct = Math.round(s.pct);
+      html += '<tr><td class="dash-progress-name"><span class="dash-progress-project"><span class="dash-view-ico" aria-hidden="true">' + svgIcon('building', 'w-4 h-4') + '</span><span>' + esc(p.name) + '</span></span></td>';
+      html += '<td>' + s.total + '</td>';
+      html += '<td class="dash-progress-done">' + s.done + '</td>';
+      html += '<td class="dash-progress-out">' + s.outstanding + '</td>';
+      html += '<td><span class="dash-progress-bar"><span style="width:' + Math.max(0, Math.min(100, s.pct)) + '%"></span></span><span class="dash-progress-pct">' + showPct + '%</span></td>';
+      html += '<td><span class="dash-progress-status dash-progress-status-' + st.tone + '">' + st.label + '</span></td></tr>';
+    });
+    if (projects.length) {
+      const pct = equip ? Math.round(done / equip * 100) : 0;
+      html += '<tr class="dash-progress-total"><td>Total</td><td>' + equip + '</td><td class="dash-progress-done">' + done + '</td><td class="dash-progress-out">' + out + '</td>';
+      html += '<td><strong>' + pct + '%</strong></td><td></td></tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+  }
   function renderDashboard() {
     const allProjects = visibleProjects();
     const filterId = dashProjectFilter;
@@ -1090,13 +1127,33 @@
     html += '<p class="text-sm text-slate-500">Your overview for today.</p>';
     html += '<p id="phoneShareLink" class="text-sm font-bold text-blue-800 mt-1"></p></div></div>';
     html += '<div class="flex items-end gap-2 shrink-0">';
-    html += '<label class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Project view';
-    html += '<select id="dashProjectFilter" class="mt-1 block min-w-[220px] border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-800">';
-    html += '<option value="">All projects (Overall)</option>';
+    html += '<div class="dash-view-wrap">';
+    html += '<p class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Project view</p>';
+    html += '<div class="dash-view" id="dashProjectPick">';
+    html += '<select id="dashProjectFilter" class="hidden" tabindex="-1" aria-hidden="true">';
+    html += '<option value=""' + (filterOk ? '' : ' selected') + '>All projects (Overall)</option>';
     allProjects.forEach(function (p) {
       html += '<option value="' + esc(p.id) + '"' + (filterOk && p.id === filterId ? ' selected' : '') + '>' + esc(p.name) + '</option>';
     });
-    html += '</select></label>';
+    html += '</select>';
+    function dashViewRow(value, name, sub, ico, on) {
+      return '<button type="button" class="dash-view-opt' + (on ? ' is-on' : '') + '" role="option" data-dash-view="' + esc(value) + '" aria-selected="' + (on ? 'true' : 'false') + '">' +
+        '<span class="dash-view-ico">' + svgIcon(ico, 'w-4 h-4') + '</span>' +
+        '<span class="min-w-0"><strong>' + esc(name) + '</strong>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + '</span></button>';
+    }
+    const viewName = filterOk ? filterProject.name : 'All projects (Overall)';
+    const viewSub = filterOk ? [filterProject.code || '', filterProject.location || ''].filter(Boolean).join(' · ') : '';
+    html += '<button type="button" class="dash-view-btn" aria-haspopup="listbox" aria-expanded="false">';
+    html += '<span class="dash-view-ico">' + svgIcon(filterOk ? 'building' : 'home', 'w-4 h-4') + '</span>';
+    html += '<span class="min-w-0"><strong>' + esc(viewName) + '</strong>' + (viewSub ? '<span>' + esc(viewSub) + '</span>' : '') + '</span>';
+    html += '<span class="dash-view-chev" aria-hidden="true">▾</span></button>';
+    html += '<div class="dash-view-menu" role="listbox">';
+    html += dashViewRow('', 'All projects (Overall)', '', 'home', !filterOk);
+    allProjects.forEach(function (p) {
+      const sub = [p.code || '', p.location || ''].filter(Boolean).join(' · ');
+      html += dashViewRow(p.id, p.name, sub, 'building', !!(filterOk && p.id === filterId));
+    });
+    html += '</div></div></div>';
     html += '<button type="button" id="dashNewProject" class="btn-navy btn-ico-new inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap">+ Add New Project</button>';
     html += '</div></div>';
     html += '<div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">';
@@ -1109,9 +1166,18 @@
     html += '</div>';
 
     html += '<div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-5">';
-    html += '<div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-4"><div class="flex items-center justify-between gap-2 mb-3"><h2 class="font-extrabold flex items-center gap-2 min-w-0">';
+    html += '<div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-4"><div class="flex flex-wrap items-center justify-between gap-2 mb-3">';
+    html += '<h2 class="font-extrabold flex items-center gap-2 min-w-0">';
     html += '<span class="dash-sec-ico dash-sec-chart" aria-hidden="true">' + svgIcon('chart', 'w-4 h-4') + '</span><span>Work Progress Analysis</span></h2>';
-    html += '<button type="button" data-nav="progress" class="dash-open-reports-btn">Open Reports</button></div><canvas id="dashHist" height="120"></canvas></div>';
+    html += '<div class="flex flex-wrap items-center gap-2">';
+    html += '<div class="dash-chart-switch" role="group" aria-label="Work progress view">';
+    html += '<button type="button" class="dash-chart-tab' + (dashChartMode !== 'table' ? ' is-on' : '') + '" data-dash-chart="bar">Bar view</button>';
+    html += '<button type="button" class="dash-chart-tab' + (dashChartMode === 'table' ? ' is-on' : '') + '" data-dash-chart="table">Table view</button>';
+    html += '</div>';
+    html += '<button type="button" data-nav="progress" class="dash-open-reports-btn">Open Reports</button></div></div>';
+    if (dashChartMode === 'table') html += dashProgressTable(viewProjects);
+    else html += '<canvas id="dashHist" height="120"></canvas>';
+    html += '</div>';
     html += '<div class="space-y-4">';
     html += '<div class="bg-white rounded-2xl border border-slate-200 p-4"><h2 class="font-extrabold mb-3 flex items-center gap-2">';
     html += '<span class="dash-sec-ico dash-sec-actions" aria-hidden="true">' + svgIcon('zap', 'w-4 h-4') + '</span><span>Quick Actions</span></h2><div class="space-y-2">';
@@ -1203,11 +1269,52 @@
     document.querySelectorAll('[data-nav]').forEach(function (b) {
       b.addEventListener('click', function () { navigate(b.getAttribute('data-nav')); });
     });
+    document.querySelectorAll('[data-dash-chart]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const next = b.getAttribute('data-dash-chart') === 'table' ? 'table' : 'bar';
+        if (dashChartMode === next) return;
+        dashChartMode = next;
+        renderView();
+      });
+    });
     const filt = document.getElementById('dashProjectFilter');
     if (filt) {
       filt.addEventListener('change', function () {
         dashProjectFilter = filt.value || '';
         renderView();
+      });
+    }
+    const pick = document.getElementById('dashProjectPick');
+    if (pick && filt) {
+      const btn = pick.querySelector('.dash-view-btn');
+      if (btn) btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const open = pick.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      pick.querySelectorAll('[data-dash-view]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const next = b.getAttribute('data-dash-view') || '';
+          pick.classList.remove('is-open');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+          if ((filt.value || '') !== next) {
+            filt.value = next;
+            filt.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+    }
+    if (!bindDashboard._viewDoc) {
+      bindDashboard._viewDoc = true;
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.dash-view.is-open').forEach(function (p) {
+          p.classList.remove('is-open');
+          const b = p.querySelector('.dash-view-btn');
+          if (b) b.setAttribute('aria-expanded', 'false');
+        });
       });
     }
   }
@@ -2118,18 +2225,31 @@
     html += '<div class="shrink-0 bg-slate-100 space-y-3 pb-3 z-20 border-b border-slate-200/80 shadow-[0_8px_16px_-12px_rgb(15_23_42_/_0.35)]">';
     html += '<div class="flex flex-wrap items-center justify-between gap-3"><div><h1 class="text-2xl font-extrabold flex items-center gap-2"><span class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center">' + sheetIcon('LEVEL 1') + '</span>Project Progress Report</h1><p class="text-sm text-slate-500">One sheet per storey · Excel / PDF equipment schedule import · live T&amp;C totals.</p></div><div class="flex flex-wrap gap-2"><button id="btnImportSched" class="btn-shadow px-3 py-2 text-xs font-bold rounded-xl border bg-white inline-flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M8 12l4-4m0 0l4 4m-4-4v12"/></svg>Import Excel / PDF</button><button id="btnEditLists" class="btn-shadow px-3 py-2 text-xs font-bold rounded-xl border bg-white">Edit dropdowns</button><button id="btnAddProject" class="btn-navy px-3 py-2 text-xs font-bold rounded-xl">+ New project</button></div></div>';
 
-    html += '<div class="flex gap-2 overflow-x-auto pb-1">';
-    state.projects.forEach(function (pr) {
+    html += '<div class="prog-proj-pick">';
+    html += '<p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Project</p>';
+    html += '<div class="dash-view" id="progProjectPick">';
+    const progCurrent = (state.projects || []).find(function (pr) { return p && pr.id === p.id; }) || null;
+    const progCurStats = progCurrent ? projectStats(progCurrent) : null;
+    html += '<button type="button" class="dash-view-btn" aria-haspopup="listbox" aria-expanded="false">';
+    html += '<span class="dash-view-ico">' + svgIcon('building', 'w-4 h-4') + '</span>';
+    html += '<span class="min-w-0"><strong>' + esc(progCurrent ? progCurrent.name : 'No project') + '</strong>';
+    if (progCurStats) html += '<span>' + progCurStats.pct + '% · ' + progCurStats.outstanding + ' outstanding</span>';
+    html += '</span><span class="dash-view-chev" aria-hidden="true">▾</span></button>';
+    html += '<div class="dash-view-menu" role="listbox">';
+    (state.projects || []).forEach(function (pr) {
       const s = projectStats(pr);
-      html += '<button type="button" data-sel-project="' + pr.id + '" class="btn-shadow shrink-0 px-3 py-2 rounded-xl border text-left text-sm ' + (p && p.id === pr.id ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-200') + '"><p class="font-bold">' + esc(pr.name) + '</p><p class="text-[11px] text-slate-500">' + s.pct + '% · ' + s.outstanding + ' outstanding</p></button>';
+      const on = !!(p && p.id === pr.id);
+      html += '<button type="button" data-sel-project="' + esc(pr.id) + '" class="dash-view-opt' + (on ? ' is-on' : '') + '" role="option" aria-selected="' + (on ? 'true' : 'false') + '">';
+      html += '<span class="dash-view-ico">' + svgIcon('building', 'w-4 h-4') + '</span>';
+      html += '<span class="min-w-0"><strong>' + esc(pr.name) + '</strong><span>' + s.pct + '% · ' + s.outstanding + ' outstanding</span></span></button>';
     });
-    html += '</div>';
+    html += '</div></div></div>';
 
     if (!p) return html + '<p class="text-slate-500">No projects yet.</p></div></div>';
     const st = projectStats(p);
     const hasItems = (p.sheets || []).some(function (sh) { return (sh.items || []).length; });
 
-    html += '<div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm"><div class="flex flex-wrap justify-between gap-3"><div><input id="projName" class="font-extrabold text-lg bg-transparent outline-none border-b border-transparent focus:border-blue-400" value="' + esc(p.name) + '" /><div class="flex flex-wrap gap-2 mt-2 text-xs"><input id="projCode" class="border rounded-lg px-2 py-1" value="' + esc(p.code) + '" placeholder="Code"/><input id="projDate" type="date" class="border rounded-lg px-2 py-1" value="' + esc(p.date) + '"/><input id="projLoc" class="border rounded-lg px-2 py-1" value="' + esc(p.location) + '" placeholder="Location"/></div></div><div class="flex gap-2 items-start"><button id="btnSaveProj" class="btn-navy px-4 py-2 text-xs font-bold rounded-lg">Save</button><button id="btnDelProj" class="btn-shadow px-3 py-2 text-xs font-bold rounded-lg border border-red-200 text-red-600 bg-white">Delete</button></div></div></div>';
+    html += '<div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm"><div class="flex flex-wrap justify-between gap-3"><div><input id="projName" class="font-extrabold text-lg bg-transparent outline-none border-b border-transparent focus:border-blue-400" value="' + esc(p.name) + '" /><div class="flex flex-wrap gap-2 mt-2 text-xs"><input id="projCode" class="border rounded-lg px-2 py-1" value="' + esc(p.code) + '" placeholder="Code"/><input id="projDate" type="date" class="border rounded-lg px-2 py-1" value="' + esc(p.date) + '"/><input id="projLoc" class="border rounded-lg px-2 py-1" value="' + esc(p.location) + '" placeholder="Location"/></div></div><div class="flex gap-2 items-start"><button id="btnSaveProj" class="btn-navy px-4 py-2 text-xs font-bold rounded-lg">Save</button>' + (isAdmin() ? '<button id="btnDelProj" class="btn-shadow px-3 py-2 text-xs font-bold rounded-lg border border-red-200 text-red-600 bg-white" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)">Delete</button>' : '') + '</div></div></div>';
     html += '</div>';
 
     html += '<div class="flex-1 min-h-0 overflow-auto space-y-4 pb-4">';
@@ -2335,6 +2455,26 @@
     document.querySelectorAll('[data-sel-project]').forEach(function (b) {
       b.addEventListener('click', function () { selectedProjectId = b.getAttribute('data-sel-project'); selectedSheet = 0; renderView(); });
     });
+    const progPick = document.getElementById('progProjectPick');
+    if (progPick) {
+      const progBtn = progPick.querySelector('.dash-view-btn');
+      if (progBtn) progBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const open = progPick.classList.toggle('is-open');
+        progBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if (!bindProgress._viewDoc) {
+      bindProgress._viewDoc = true;
+      document.addEventListener('click', function () {
+        const pick = document.getElementById('progProjectPick');
+        if (!pick) return;
+        pick.classList.remove('is-open');
+        const b = pick.querySelector('.dash-view-btn');
+        if (b) b.setAttribute('aria-expanded', 'false');
+      });
+    }
     document.querySelectorAll('[data-sheet]').forEach(function (b) {
       b.addEventListener('click', function () { selectedSheet = Number(b.getAttribute('data-sheet')); renderView(); });
     });
@@ -2377,7 +2517,8 @@
       p.location = document.getElementById('projLoc').value;
       saveState(); logActivity('progress', 'Updated project ' + p.name); renderView();
     };
-    document.getElementById('btnDelProj').onclick = function () {
+    const delProjBtn = document.getElementById('btnDelProj');
+    if (delProjBtn) delProjBtn.onclick = function () {
       portalConfirm('Delete this project progress report?').then(function (ok) {
         if (!ok) return;
         state.projects = state.projects.filter(function (x) { return x.id !== p.id; });
@@ -2454,9 +2595,9 @@
     const labels = { perfStatus: 'Internal performance', workers: 'Worker names (Perf. tested by)', rtoStatus: 'RTO Witness / BMS' };
     let html = '<p class="text-xs text-slate-500 mb-3">Add, rename or delete options used in the progress report dropdowns.</p>';
     Object.keys(labels).forEach(function (key) {
-      html += '<div class="mb-4"><div class="flex items-center justify-between mb-2"><h4 class="font-extrabold text-sm">' + labels[key] + '</h4><button type="button" data-list-add="' + key + '" class="text-xs font-bold text-blue-700">+ Add</button></div>';
+      html += '<div class="mb-4"><div class="flex items-center justify-between mb-2"><h4 class="font-extrabold text-sm">' + labels[key] + '</h4><button type="button" data-list-add="' + key + '" class="list-editor-btn px-2.5 py-1 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)">+ Add</button></div>';
       getList(key).forEach(function (opt, i) {
-        html += '<div class="flex gap-2 mb-1.5"><input data-list-edit="' + key + '" data-li="' + i + '" class="flex-1 border rounded-lg px-2 py-1.5 text-sm" value="' + esc(opt) + '"/><button type="button" data-list-del="' + key + '" data-li="' + i + '" class="px-2 text-red-600 text-xs font-bold">Delete</button></div>';
+        html += '<div class="flex gap-2 mb-1.5"><input data-list-edit="' + key + '" data-li="' + i + '" class="flex-1 border rounded-lg px-2 py-1.5 text-sm" value="' + esc(opt) + '"/><button type="button" data-list-del="' + key + '" data-li="' + i + '" class="list-editor-btn shrink-0 px-2.5 py-1 text-xs font-bold text-red-600 bg-white border border-red-200 rounded-lg" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)">Delete</button></div>';
       });
       html += '</div>';
     });
@@ -2600,6 +2741,65 @@
     return libraryItems(view).find(function (it) { return it.id === id; });
   }
 
+  function libPdfDownloadLimited(key) {
+    return key === 'test-reports' || key === 'mos' || key === 'pre-checklist' || key === 'precon' || key === 'training-slides';
+  }
+  function libBtnGrant() {
+    if (isAdmin()) return { download: true, edit: true, delete: true };
+    const u = currentUser();
+    const g = (u && u.libBtnAccess) || {};
+    return { download: !!g.download, edit: !!g.edit, delete: !!g.delete };
+  }
+  function libAskLabels(req) {
+    const parts = [];
+    if (req && req.download) parts.push('Download');
+    if (req && req.edit) parts.push('Edit');
+    if (req && req.delete) parts.push('Delete');
+    return parts.join(', ');
+  }
+  function canDownloadLibFile(key, fileName) {
+    if (!libPdfDownloadLimited(key) || !isPdfFile(fileName || '')) return true;
+    return libBtnGrant().download;
+  }
+  function canEditLibFile(key, fileName) {
+    if (!libPdfDownloadLimited(key) || !isPdfFile(fileName || '')) return true;
+    return libBtnGrant().edit;
+  }
+  function canDeleteLibFile(key, fileName, preCheck) {
+    if (libPdfDownloadLimited(key) && isPdfFile(fileName || '')) return libBtnGrant().delete;
+    return !preCheck || isAdmin();
+  }
+  function syncLibAccessFields() {
+    if (!authApi().applyUserFields) return Promise.resolve(false);
+    return fetch('/api/auth', { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) return false;
+      return r.json();
+    }).then(function (data) {
+      if (!data || !data.users) return false;
+      const locals = {};
+      authApi().users().forEach(function (u) { locals[u.id] = u; });
+      (data.users || []).forEach(function (su) {
+        if (!su || !su.id) return;
+        const loc = locals[su.id];
+        const localReq = loc && loc.libBtnRequest;
+        const serverAt = (su.libBtnRequest && su.libBtnRequest.at) || '';
+        if (localReq && localReq.status === 'pending' && (localReq.at || '') > serverAt) {
+          if (su.libBtnAccess) authApi().applyUserFields(su.id, { libBtnAccess: su.libBtnAccess });
+          return;
+        }
+        authApi().applyUserFields(su.id, {
+          libBtnAccess: su.libBtnAccess || null,
+          libBtnRequest: su.libBtnRequest || null
+        });
+      });
+      const sig = JSON.stringify((authApi().users() || []).map(function (u) {
+        return [u.id, u.libBtnAccess || null, u.libBtnRequest || null];
+      }));
+      if (sig === libAccessSig) return false;
+      libAccessSig = sig;
+      return true;
+    }).catch(function () { return false; });
+  }
   function renderLibrary(id) {
     const m = libMeta(id);
     const mode = getLibView(m.key);
@@ -2629,6 +2829,22 @@
     }
     html += '</div></div>';
 
+    if (!adminLib && libPdfDownloadLimited(m.key)) {
+      const me = currentUser();
+      const grant = libBtnGrant();
+      const req = me && me.libBtnRequest;
+      const allowed = libAskLabels(grant);
+      html += '<div class="lib-access-ask">';
+      html += '<p>PDF files show <strong>Preview</strong> only. Download, Edit, and Delete stay hidden until an admin allows them for you.</p>';
+      if (allowed) html += '<p class="lib-access-note">Allowed for you: ' + esc(allowed) + '</p>';
+      if (req && req.status === 'pending') html += '<p class="lib-access-note">Request waiting for admin: ' + esc(libAskLabels(req)) + '</p>';
+      html += '<div class="lib-access-row">';
+      html += '<label><input type="checkbox" id="libAskDl"' + (req && req.status === 'pending' && req.download ? ' checked' : '') + '> Download</label>';
+      html += '<label><input type="checkbox" id="libAskEd"' + (req && req.status === 'pending' && req.edit ? ' checked' : '') + '> Edit</label>';
+      html += '<label><input type="checkbox" id="libAskDel"' + (req && req.status === 'pending' && req.delete ? ' checked' : '') + '> Delete</label>';
+      html += '<button type="button" id="libAskSend" class="btn-navy px-3 py-1.5 text-xs font-bold rounded-lg" style="cursor:pointer">Request from Admin</button>';
+      html += '</div></div>';
+    }
     html += '<div class="flex flex-wrap items-center justify-between gap-2">';
     html += '<input id="libFilter" type="search" value="' + esc(libFilter) + '" placeholder="Filter ' + nounPlural + ' by title or type…" class="w-full sm:w-96 border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-blue-500" />';
     html += '<p class="text-xs text-slate-500">' + items.length + ' shown · ' + attachedShown + ' attached · ' + userUploads(m.key).length + ' uploaded' + (hidden ? ' · ' + hidden + ' hidden' : '') + '</p>';
@@ -2649,27 +2865,34 @@
       html += '</tr></thead><tbody>';
       items.forEach(function (it, i) {
         const k = it.kind || fileKind(it.fileName);
+        const allowDl = canDownloadLibFile(m.key, it.fileName);
+        const allowEd = canEditLibFile(m.key, it.fileName);
+        const allowDel = canDeleteLibFile(m.key, it.fileName, preCheck);
         html += '<tr class="border-t border-slate-100 hover:bg-slate-50 align-middle">';
         html += '<td class="px-3 py-3 font-black text-slate-400">' + (preCheck ? (i + 1) : (it.num === '↑' ? '↑' : (i + 1))) + '</td>';
         html += '<td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2 py-1 rounded-lg border ' + k.chip + '">' + esc(k.ext) + '</span></td>';
         html += '<td class="px-3 py-3"><p class="font-bold leading-snug text-slate-900">' + esc(it.title) + '</p>' + (it.notes ? '<p class="text-[11px] text-slate-500 mt-0.5">' + esc(it.notes) + '</p>' : '') + '</td>';
         html += '<td class="px-3 py-3"><span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ' + (it.isUpload ? 'bg-teal-50 text-teal-700 border-teal-200' : it.uploaded ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-600 border-slate-200') + '">' + esc(it.source) + '</span></td>';
-        html += '<td class="px-3 py-3 text-right"><div class="lib-actions' + (preCheck ? ' lib-precheck' : '') + '">' + docActionButtons(it, true, !preCheck || adminLib) + '</div></td></tr>';
+        html += '<td class="px-3 py-3 text-right"><div class="lib-actions' + (preCheck ? ' lib-precheck' : '') + '">' + docActionButtons(it, true, allowDel, allowDl, allowEd) + '</div></td></tr>';
       });
       html += '</tbody></table></div>';
     } else {
       html += '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-2">';
       items.forEach(function (it, i) {
         const k = it.kind || fileKind(it.fileName);
+        const allowDl = canDownloadLibFile(m.key, it.fileName);
+        const allowEd = canEditLibFile(m.key, it.fileName);
+        const allowDel = canDeleteLibFile(m.key, it.fileName, preCheck);
+        const royalHead = preCheck || libPdfDownloadLimited(m.key);
         html += '<article class="doc-card bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col min-h-[280px]">';
-        html += '<div class="' + (preCheck ? 'precheck-card-head' : 'bg-gradient-to-r ' + k.bg) + ' px-4 py-3 text-white flex items-center justify-between gap-3">';
+        html += '<div class="' + (royalHead ? 'precheck-card-head' : 'bg-gradient-to-r ' + k.bg) + ' px-4 py-3 text-white flex items-center justify-between gap-3">';
         html += '<div class="flex items-center gap-3 min-w-0"><span class="w-11 h-11 rounded-xl bg-white/20 backdrop-blur text-sm font-black flex items-center justify-center shrink-0">' + esc(k.ext) + '</span>';
         html += '<div class="min-w-0"><p class="text-[10px] font-extrabold uppercase tracking-widest text-white/80">' + esc(k.label) + '</p><p class="text-xs font-bold truncate">' + (preCheck ? ('Document ' + (i + 1)) : (it.num === '↑' ? 'Uploaded' : 'Document ' + (i + 1))) + '</p></div></div>';
         html += '<span class="text-[10px] font-extrabold uppercase px-2 py-1 rounded-full bg-white/15">' + esc(it.source) + '</span></div>';
         html += '<div class="p-4 flex flex-col flex-1">';
         html += '<h3 class="font-extrabold text-[15px] leading-snug text-slate-900">' + esc(it.title) + '</h3>';
         if (it.notes) html += '<p class="text-[12px] text-slate-500 mt-1.5 line-clamp-2">' + esc(it.notes) + '</p>';
-        html += '<div class="mt-auto pt-4 ' + (preCheck ? 'flex flex-wrap justify-end gap-2 lib-precheck' : 'grid grid-cols-4 gap-2') + '">' + docActionButtons(it, false, !preCheck || adminLib) + '</div></div></article>';
+        html += '<div class="mt-auto pt-4"><div class="lib-actions' + (preCheck ? ' lib-precheck' : '') + '">' + docActionButtons(it, true, allowDel, allowDl, allowEd) + '</div></div></article>';
       });
       html += '</div>';
     }
@@ -2677,19 +2900,23 @@
     return html;
   }
 
-  function docActionButtons(item, compact, allowDelete) {
+  function docActionButtons(item, compact, allowDelete, allowDownload, allowEdit) {
     const u = item.uploaded ? '1' : '0';
     const id = esc(item.fileId);
     const oid = esc(item.id);
     const fname = esc(item.fileName);
     const showDelete = allowDelete !== false;
+    const showDownload = allowDownload !== false;
+    const showEdit = allowEdit !== false;
     const cls = compact ? 'px-3 text-[11px]' : 'px-2 py-2 text-[11px] w-full h-9';
     const mk = function (extra) {
       return '<button type="button" class="' + cls + ' btn-action inline-flex items-center justify-center font-bold rounded-lg ' + extra + '" ';
     };
-    let html = mk('btn-preview') + 'data-preview="' + id + '" data-uploaded="' + u + '" data-title="' + esc(item.title) + '" data-fname="' + fname + '" title="Preview">Preview</button>' +
-      mk('btn-download btn-ico-dl border-0') + 'data-download="' + id + '" data-uploaded="' + u + '" data-fname="' + fname + '" title="Download">' + svgIcon('download', 'w-3.5 h-3.5') + ' Download</button>' +
-      mk('btn-edit') + 'data-edit-doc="' + oid + '" title="Edit">Edit</button>';
+    let html = mk('btn-preview') + 'data-preview="' + id + '" data-uploaded="' + u + '" data-title="' + esc(item.title) + '" data-fname="' + fname + '" title="Preview">Preview</button>';
+    if (showDownload) {
+      html += mk('btn-download btn-ico-dl border-0') + 'data-download="' + id + '" data-uploaded="' + u + '" data-fname="' + fname + '" title="Download">' + svgIcon('download', 'w-3.5 h-3.5') + ' Download</button>';
+    }
+    if (showEdit) html += mk('btn-edit') + 'data-edit-doc="' + oid + '" title="Edit">Edit</button>';
     if (showDelete) {
       html += mk('btn-delete') + 'data-del-doc="' + oid + '" data-del-name="' + esc(item.title || item.fileName) + '" title="Delete">Delete</button>';
     }
@@ -2778,17 +3005,49 @@
       });
     });
     document.querySelectorAll('[data-download]').forEach(function (b) {
-      b.addEventListener('click', function () { downloadDoc(b.getAttribute('data-download'), b.getAttribute('data-uploaded') === '1', b.getAttribute('data-fname')); });
+      b.addEventListener('click', function () {
+        const fname = b.getAttribute('data-fname') || '';
+        if (!canDownloadLibFile(view, fname)) return;
+        downloadDoc(b.getAttribute('data-download'), b.getAttribute('data-uploaded') === '1', fname);
+      });
     });
     document.querySelectorAll('[data-edit-doc]').forEach(function (b) {
-      b.addEventListener('click', function () { openDocEditor(b.getAttribute('data-edit-doc')); });
+      b.addEventListener('click', function () {
+        const item = findLibItem(b.getAttribute('data-edit-doc'));
+        if (item && !canEditLibFile(view, item.fileName)) return;
+        openDocEditor(b.getAttribute('data-edit-doc'));
+      });
     });
     document.querySelectorAll('[data-del-doc]').forEach(function (b) {
       b.addEventListener('click', function () {
+        const item = findLibItem(b.getAttribute('data-del-doc'));
+        if (item && !canDeleteLibFile(view, item.fileName, view === 'pre-checklist')) return;
         deleteLibDoc(b.getAttribute('data-del-doc'), b.getAttribute('data-del-name') || '');
       });
     });
+    const askSend = document.getElementById('libAskSend');
+    if (askSend) askSend.onclick = function () {
+      const me = currentUser();
+      if (!me || isAdmin() || !authApi().updateUser) return;
+      const download = !!(document.getElementById('libAskDl') && document.getElementById('libAskDl').checked);
+      const edit = !!(document.getElementById('libAskEd') && document.getElementById('libAskEd').checked);
+      const del = !!(document.getElementById('libAskDel') && document.getElementById('libAskDel').checked);
+      if (!download && !edit && !del) {
+        alert('Select Download, Edit, or Delete to request.');
+        return;
+      }
+      const req = { download: download, edit: edit, delete: del, at: nowIso(), status: 'pending', name: me.name || me.staffId || '' };
+      authApi().updateUser(me.id, { libBtnRequest: req });
+      libAccessSig = '';
+      alert('Request sent to Admin for ' + libAskLabels(req) + '.');
+      renderView();
+    };
     bindLibDeleteModal();
+    if (libPdfDownloadLimited(view) || view === 'admin') {
+      syncLibAccessFields().then(function (changed) {
+        if (changed && (view === 'admin' || libPdfDownloadLimited(view))) renderView();
+      });
+    }
   }
 
   function getEditRecord(id) {
@@ -5581,13 +5840,115 @@
   }
 
   /* ---------- New report popup ---------- */
+  function nrPickHtml(selectId, selectClass, options, selected) {
+    let html = '<div class="nr-pick">';
+    html += '<select' + (selectId ? ' id="' + selectId + '"' : '') + ' class="hidden' + (selectClass ? ' ' + selectClass : '') + '" tabindex="-1" aria-hidden="true">';
+    options.forEach(function (o) {
+      html += '<option value="' + esc(o.value) + '"' + (o.value === selected ? ' selected' : '') + '>' + esc(o.label) + '</option>';
+    });
+    html += '</select>';
+    html += '<button type="button" class="nr-pick-btn" aria-haspopup="listbox" aria-expanded="false">';
+    html += '<span class="min-w-0"><strong class="nr-pick-label"></strong><span class="nr-pick-sub"></span></span>';
+    html += '<span class="nr-pick-chev" aria-hidden="true">▾</span></button>';
+    html += '<div class="nr-pick-menu" role="listbox">';
+    options.forEach(function (o) {
+      html += '<button type="button" role="option" class="nr-pick-opt" data-value="' + esc(o.value) + '" data-label="' + esc(o.label) + '"' + (o.sub ? ' data-sub="' + esc(o.sub) + '"' : '') + '>';
+      html += '<strong>' + esc(o.label) + '</strong>';
+      if (o.sub) html += '<span>' + esc(o.sub) + '</span>';
+      html += '</button>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+  function closeNrPicks() {
+    document.querySelectorAll('.nr-pick.is-open').forEach(function (p) {
+      p.classList.remove('is-open');
+      const b = p.querySelector('.nr-pick-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+  function placeNrMenu(pick) {
+    const btn = pick.querySelector('.nr-pick-btn');
+    const menu = pick.querySelector('.nr-pick-menu');
+    if (!btn || !menu) return;
+    const r = btn.getBoundingClientRect();
+    menu.style.position = 'fixed';
+    menu.style.left = r.left + 'px';
+    menu.style.width = r.width + 'px';
+    menu.style.right = 'auto';
+    menu.style.top = (r.bottom + 6) + 'px';
+    const mh = menu.offsetHeight;
+    if (r.bottom + 8 + mh > window.innerHeight - 8) menu.style.top = Math.max(8, r.top - mh - 6) + 'px';
+  }
+  function bindNrPick(pick) {
+    if (!pick || pick.__nrBound) return;
+    pick.__nrBound = true;
+    const sel = pick.querySelector('select');
+    const btn = pick.querySelector('.nr-pick-btn');
+    const label = pick.querySelector('.nr-pick-label');
+    const sub = pick.querySelector('.nr-pick-sub');
+    function sync() {
+      const value = sel ? sel.value : '';
+      let chosen = null;
+      pick.querySelectorAll('.nr-pick-opt').forEach(function (b) {
+        const on = b.getAttribute('data-value') === value;
+        if (on) chosen = b;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      if (label) label.textContent = chosen ? (chosen.getAttribute('data-label') || '') : '';
+      if (sub) sub.textContent = chosen ? (chosen.getAttribute('data-sub') || '') : '';
+    }
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const open = pick.classList.contains('is-open');
+      closeNrPicks();
+      if (!open) {
+        pick.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+        placeNrMenu(pick);
+      }
+    });
+    pick.querySelectorAll('.nr-pick-opt').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const next = b.getAttribute('data-value') || '';
+        closeNrPicks();
+        if (sel && sel.value !== next) {
+          sel.value = next;
+          sync();
+          sel.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+    sync();
+    if (!bindNrPick._doc) {
+      bindNrPick._doc = true;
+      document.addEventListener('click', function () { closeNrPicks(); });
+      window.addEventListener('resize', function () { closeNrPicks(); });
+      const panel = document.querySelector('#modalNew .overflow-y-auto');
+      if (panel) panel.addEventListener('scroll', function () { closeNrPicks(); });
+    }
+  }
   function openNewReport(preset) {
     const body = document.getElementById('newReportBody');
-    let html = '<label class="text-xs font-bold text-slate-500">Report type</label><select id="nrType" class="w-full border rounded-xl px-3 py-2 mb-4 font-semibold">';
-    [['progress', 'Project Progress Report'], ['project-tnc', 'Project T&C workflow'], ['duct', 'Duct Leak Test'], ['louver', 'Louver Airflow Table'], ['issues', 'Technical Issue Analysis']].forEach(function (o) {
-      html += '<option value="' + o[0] + '"' + (preset === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
-    });
-    html += '</select><div id="nrFields"></div><div class="flex justify-end gap-2 mt-4"><button data-close="modalNew" class="btn-shadow px-3 py-2 text-xs font-bold rounded-lg border bg-white">Cancel</button><button id="nrSubmit" class="btn-navy px-4 py-2 text-xs font-bold rounded-lg">Create</button></div>';
+    const typeOptions = [
+      { value: 'progress', label: 'Project Progress Report' },
+      { value: 'project-tnc', label: 'Project T&C workflow' },
+      { value: 'duct', label: 'Duct Leak Test' },
+      { value: 'louver', label: 'Louver Airflow Table' },
+      { value: 'issues', label: 'Technical Issue Analysis' }
+    ];
+    const reqOptions = [
+      { value: 'precon', label: 'Pre-Construction' },
+      { value: 'airflow', label: 'T&C Check List & Airflow Report' },
+      { value: 'both', label: 'Both', sub: 'Pre-Construction and T&C Check List & Airflow Report' }
+    ];
+    let html = '<label class="text-xs font-bold text-slate-500 block mb-1">Report type</label>';
+    html += nrPickHtml('nrType', '', typeOptions, preset || 'progress');
+    html += '<div id="nrFields"></div><div class="flex justify-end gap-2 mt-4"><button data-close="modalNew" class="btn-shadow px-3 py-2 text-xs font-bold rounded-lg border bg-white">Cancel</button><button id="nrSubmit" class="btn-navy px-4 py-2 text-xs font-bold rounded-lg">Create</button></div>';
     body.innerHTML = html;
     const paint = function () {
       const type = document.getElementById('nrType').value;
@@ -5599,7 +5960,9 @@
         const add = function () {
           const row = document.createElement('div');
           row.className = 'p-3 rounded-xl bg-slate-50 border border-slate-200 nr-proj space-y-2';
-          row.innerHTML = '<div class="grid grid-cols-1 sm:grid-cols-3 gap-2">' +
+          row.innerHTML = '<label class="block text-[11px] font-bold text-slate-500">Project requirement</label>' +
+            nrPickHtml('', 'np-req', reqOptions, 'both') +
+            '<div class="grid grid-cols-1 sm:grid-cols-3 gap-2">' +
             '<input class="border rounded-lg px-2 py-1.5 text-sm np-name" placeholder="Project name"/>' +
             '<input class="border rounded-lg px-2 py-1.5 text-sm np-code" placeholder="Code"/>' +
             '<input class="border rounded-lg px-2 py-1.5 text-sm np-loc" placeholder="Location"/>' +
@@ -5610,6 +5973,7 @@
             '<input type="file" accept=".pdf,.xlsx,.xls,.csv,application/pdf,text/csv" class="hidden np-file"/>' +
             '</label><p class="np-status text-[11px] text-slate-500">No file yet — empty storey sheets will be created.</p>';
           document.getElementById('nrProjList').appendChild(row);
+          bindNrPick(row.querySelector('.nr-pick'));
           row.querySelector('.np-file').addEventListener('change', function () {
             const file = this.files && this.files[0];
             const status = row.querySelector('.np-status');
@@ -5635,24 +5999,36 @@
       }
     };
     document.getElementById('nrType').onchange = paint;
+    bindNrPick(document.getElementById('nrType').closest('.nr-pick'));
     paint();
     document.getElementById('nrSubmit').onclick = function () {
       const type = document.getElementById('nrType').value;
       if (type === 'progress' || type === 'project-tnc') {
+        let lastReq = '';
         document.querySelectorAll('.nr-proj').forEach(function (row) {
           const name = row.querySelector('.np-name').value.trim();
           if (!name) return;
           const imported = row.__import;
           const sheets = imported && imported.sheets ? imported.sheets : DEFAULT_SHEETS.map(function (n) { return { id: uid(), name: n, items: [] }; });
+          const reqEl = row.querySelector('.np-req');
+          const reqRaw = reqEl ? reqEl.value : 'both';
+          const req = (reqRaw === 'precon' || reqRaw === 'airflow') ? reqRaw : 'both';
           const p = {
             id: uid(), name: name, code: row.querySelector('.np-code').value,
             date: new Date().toISOString().slice(0, 10), location: row.querySelector('.np-loc').value, client: '',
+            tncRequirement: req,
             sheets: sheets, comments: imported && imported.count ? [{ id: uid(), author: 'Import', text: 'Created from equipment schedule — ' + imported.count + ' items on ' + imported.levels + ' storeys.', at: nowIso() }] : []
           };
           ensureProjectTnc(p);
           state.projects.unshift(p);
           selectedProjectId = p.id;
+          lastReq = req;
         });
+        if (lastReq === 'precon' || lastReq === 'airflow') {
+          tncTrackId = lastReq;
+          const opened = tncTrackById(lastReq);
+          if (opened) tncStageId = tncDefaultStageId(opened);
+        }
         saveState(); logActivity(type, 'Created project and generated T&C workflow documents'); closeModal('modalNew'); navigate(type === 'project-tnc' ? 'project-tnc' : 'progress');
       } else if (type === 'duct') {
         const n = sampleDuct();
@@ -8066,11 +8442,26 @@
     return '<label class="dash-action-btn cursor-pointer">' + svgIcon(icon, 'dash-action-ico') + '<span>' + label + '</span><input ' + inputAttrs + ' class="hidden"></label>';
   }
 
+  function projectTncTracks(p) {
+    const all = (tncData().tracks || []);
+    const req = (p && p.tncRequirement) || 'both';
+    if (req === 'precon') return all.filter(function (t) { return t.id === 'precon'; });
+    if (req === 'airflow') return all.filter(function (t) { return t.id === 'airflow'; });
+    return all;
+  }
   function renderProjectTnc() {
     const T = tncData();
     const p = getProject();
     if (p) ensureProjectTnc(p);
     if (p && tncRepoFolder === 'fld-' + (p.id || 'main')) tncRepoFolder = '';
+    if (p) {
+      const allowed = projectTncTracks(p);
+      if (allowed.length && !allowed.some(function (t) { return t.id === tncTrackId; })) {
+        tncTrackId = allowed[0].id;
+        tncStageId = tncDefaultStageId(allowed[0]);
+        tncOpenDocId = null;
+      }
+    }
     const track = tncTrackById(tncTrackId);
     if (track && !(track.stages || []).some(function (s) { return s.id === tncStageId; })) tncStageId = tncDefaultStageId(track);
     const stage = tncStageById(track, tncStageId);
@@ -8126,8 +8517,9 @@
     html += '<span class="min-w-0"><strong class="block truncate">' + esc(p.name) + '</strong>';
     html += '<span class="block text-[11px] font-semibold text-slate-500 truncate">' + esc(p.code || '') + (p.location ? ' · ' + esc(p.location) : '') + '</span></span>';
     html += '<span class="tnc-phone-chev" aria-hidden="true">›</span></button>';
+    const shownTracks = projectTncTracks(p);
     html += '<div class="tnc-phone-tracks">';
-    (T.tracks || []).forEach(function (tr) {
+    shownTracks.forEach(function (tr) {
       html += '<button type="button" data-tnc-track="' + tr.id + '" class="tnc-phone-track ' + (track && track.id === tr.id ? 'is-on' : '') + '">' + esc(tr.short || tr.name) + '</button>';
     });
     html += '</div>';
@@ -8140,8 +8532,8 @@
     html += '<div class="tnc-split flex-1 min-h-0 flex gap-3 pt-3">';
     html += '<aside id="tncRail" class="tnc-rail shrink-0 w-[280px] max-w-full overflow-y-auto pr-1">';
     html += '<div class="tnc-rail-head"><strong>Workflow</strong><button type="button" class="tnc-sheet-x" data-tnc-sheet-close="1" aria-label="Close">×</button></div>';
-    html += '<div class="tnc-rail-tracks grid grid-cols-2 gap-1 mb-3 bg-white rounded-xl p-1 border border-slate-200">';
-    (T.tracks || []).forEach(function (tr) {
+    html += '<div class="tnc-rail-tracks grid ' + (shownTracks.length > 1 ? 'grid-cols-2' : 'grid-cols-1') + ' gap-1 mb-3 bg-white rounded-xl p-1 border border-slate-200">';
+    shownTracks.forEach(function (tr) {
       html += '<button type="button" data-tnc-track="' + tr.id + '" class="rounded-lg px-2 py-2 text-[11px] font-extrabold ' + (track && track.id === tr.id ? 'btn-navy' : 'text-slate-600 hover:bg-slate-50') + '">' + esc(tr.short || tr.name) + '</button>';
     });
     html += '</div>';
@@ -12139,7 +12531,7 @@
           html += '<p class="min-w-0 flex-1 text-xs font-bold truncate">' + esc(c.name) + '</p>';
           html += dashActionBtn('data-cal-cert-preview="' + c.id + '"', 'form', 'Preview');
           html += dashActionBtn('data-cal-slot-replace="' + c.id + '" data-cal-slot-tag="' + esc(equipTag) + '"', 'pencil', 'Replace');
-          html += '<button type="button" class="text-red-600 text-[11px] font-bold px-2" data-cal-slot-remove="' + c.id + '" data-cal-slot-tag="' + esc(equipTag) + '">Remove</button>';
+          if (isAdmin()) html += '<button type="button" class="cal-file-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-red-200 text-red-600 bg-white" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)" data-cal-slot-remove="' + c.id + '" data-cal-slot-tag="' + esc(equipTag) + '">Remove</button>';
           html += '</div>';
         });
         html += '</div>';
@@ -12183,8 +12575,9 @@
           html += complete
             ? '<span class="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-600 text-white">Complete</span>'
             : tncStatusChip(expired ? 'draft' : c.status);
-          html += '<button type="button" class="btn-shadow px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white" data-cal-cert-preview="' + c.id + '">Preview</button>';
-          html += '<button type="button" class="text-red-600 text-xs font-bold" data-cal-cert-remove="' + c.id + '">Remove</button></div>';
+          html += '<button type="button" class="cal-file-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-slate-800" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)" data-cal-cert-preview="' + c.id + '">Preview</button>';
+          if (isAdmin()) html += '<button type="button" class="cal-file-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-red-200 text-red-600 bg-white" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)" data-cal-cert-remove="' + c.id + '">Remove</button>';
+          html += '</div>';
         });
         html += '</div>';
       }
@@ -12226,7 +12619,7 @@
       html += '<td class="px-3 py-2 text-[12px]">PDF Document</td>';
       html += '<td class="px-3 py-2 text-[12px]">' + fmtBytes(f.size) + '</td>';
       html += '<td class="px-3 py-2"><div class="flex flex-wrap gap-1 justify-end">';
-      html += '<button type="button" class="btn-shadow px-2 py-1 text-[11px] font-bold rounded-lg border bg-white" data-cal-preview="' + esc(f.key) + '">Preview</button>';
+      html += '<button type="button" class="cal-file-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-slate-800" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)" data-cal-preview="' + esc(f.key) + '">Preview</button>';
       if (!expired) {
         if (linkedHere) {
           html += '<span class="inline-flex items-center px-2.5 py-1 text-[11px] font-extrabold uppercase rounded-lg bg-emerald-600 text-white">Selected</span>';
@@ -12240,7 +12633,7 @@
         }
       }
       if (expired) html += '<label class="btn-shadow px-2 py-1 text-[11px] font-bold rounded-lg border border-red-300 text-red-700 bg-white cursor-pointer">Replace<input data-cal-replace="' + esc(f.key) + '" type="file" class="hidden" accept=".pdf,image/*"></label>';
-      html += '<button type="button" class="text-red-600 text-[11px] font-bold px-2" data-cal-del="' + esc(f.key) + '">Delete</button>';
+      if (isAdmin()) html += '<button type="button" class="cal-file-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-red-200 text-red-600 bg-white" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)" data-cal-del="' + esc(f.key) + '">Delete</button>';
       html += '</div></td></tr>';
     });
     html += '</tbody></table></div>';
@@ -17149,6 +17542,7 @@
       b.addEventListener('click', function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
+        if (!isAdmin()) return;
         const tag = b.getAttribute('data-cal-slot-tag') || activeCalEquipTag();
         const id = b.getAttribute('data-cal-slot-remove');
         if (!tag || !id) return;
@@ -17237,7 +17631,7 @@
                 );
               }
               html += dashActionBtn('data-cal-slot-replace="' + c.id + '" data-cal-slot-tag="' + esc(tag) + '"', 'pencil', 'Replace');
-              html += '<button type="button" class="text-red-600 text-[11px] font-bold px-2" data-cal-slot-remove="' + c.id + '" data-cal-slot-tag="' + esc(tag) + '">Remove</button>';
+              if (isAdmin()) html += '<button type="button" class="cal-file-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-red-200 text-red-600 bg-white" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.18)" data-cal-slot-remove="' + c.id + '" data-cal-slot-tag="' + esc(tag) + '">Remove</button>';
               html += '</div>';
             });
             html += '</div>';
@@ -19204,6 +19598,7 @@
     });
     document.querySelectorAll('[data-cal-del]').forEach(function (b) {
       b.addEventListener('click', function () {
+        if (!isAdmin()) return;
         const folder = tncCalFolderById(tncCalFolder);
         const f = findCalFile(p, folder, b.getAttribute('data-cal-del'));
         if (!f) return;
@@ -19296,6 +19691,7 @@
     });
     document.querySelectorAll('[data-cal-cert-remove]').forEach(function (b) {
       b.addEventListener('click', function () {
+        if (!isAdmin()) return;
         const id = b.getAttribute('data-cal-cert-remove');
         ensureCalEquipLinks(p);
         Object.keys(p.tnc.calEquipLinks || {}).forEach(function (tag) {
@@ -19354,6 +19750,7 @@
       b.addEventListener('click', function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
+        if (!isAdmin()) return;
         const tag = b.getAttribute('data-cal-slot-tag') || activeCalEquipTag();
         const id = b.getAttribute('data-cal-slot-remove');
         if (!tag || !id) return;
@@ -25428,6 +25825,25 @@
     });
     const empty = document.getElementById('admUserEmpty');
     if (empty) empty.hidden = shown > 0;
+    fitAdmUserScroll();
+  }
+  function fitAdmUserScroll() {
+    const box = document.querySelector('.adm-user-scroll');
+    if (!box) return;
+    requestAnimationFrame(function () {
+      if (!box.isConnected) return;
+      const rows = [];
+      box.querySelectorAll('tbody tr').forEach(function (tr) { if (!tr.hidden) rows.push(tr); });
+      if (rows.length <= 12) {
+        box.style.maxHeight = 'none';
+        return;
+      }
+      const table = box.querySelector('table');
+      if (!table) return;
+      const top = table.getBoundingClientRect().top;
+      const bottom = rows[11].getBoundingClientRect().bottom;
+      box.style.maxHeight = Math.ceil(bottom - top + 2) + 'px';
+    });
   }
   function renderAdmin() {
     if (!isAdmin()) return '<p class="p-6 text-slate-500">Admin access only.</p>';
@@ -25435,7 +25851,7 @@
     const users = A.users();
     let html = '<div class="adm-page"><div class="flex items-center gap-2"><span class="adm-page-ico">' + svgIcon('users', 'w-6 h-6') + '</span><h1 class="text-2xl font-extrabold">Admin Panel</h1></div><p class="text-sm text-slate-500 mt-1">Create users, assign Tested By / Witness By / Verify By roles, and grant project access. Revoke or reassign at any time.</p>';
     html += '<div class="bg-white rounded-2xl border p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">';
-    html += '<label class="font-bold text-slate-500">Name<input id="admName" class="mt-1 w-full border rounded-lg px-2 py-1.5"/></label>';
+    html += '<label class="font-bold text-slate-500">Staff Full Name<input id="admName" class="mt-1 w-full border rounded-lg px-2 py-1.5" placeholder="Enter staff full name"/></label>';
     html += '<label class="font-bold text-slate-500">Staff ID<input id="admStaff" class="mt-1 w-full border rounded-lg px-2 py-1.5" placeholder="Used as the default password"/></label>';
     html += '<label class="font-bold text-slate-500">Work email<input id="admEmail" class="mt-1 w-full border rounded-lg px-2 py-1.5"/></label>';
     html += '<label class="font-bold text-slate-500">Temporary password';
@@ -25469,17 +25885,28 @@
     html += '<button type="button" id="btnAdmCreate" class="btn-navy px-4 py-2 text-xs font-bold rounded-xl">Create user</button>';
     html += '<p id="admCreateErr" class="hidden text-xs font-bold text-red-600"></p>';
     html += '</div></div>';
+    html += renderLibAccessAdmin(users);
     html += '<div class="bg-white rounded-2xl border overflow-hidden">';
     html += '<div class="p-3 border-b border-slate-100"><div class="adm-user-search">';
     html += svgIcon('search', 'adm-user-search-ico w-4 h-4');
-    html += '<input id="admUserSearch" class="w-full border rounded-lg px-3 py-2 text-sm" value="' + esc(admUserQuery) + '" placeholder="Search by name, staff ID, or email" autocomplete="off"/>';
+    html += '<input id="admUserSearch" class="w-full border rounded-lg px-3 py-2 text-sm" value="' + esc(admUserQuery) + '" placeholder="Search by staff full name, staff ID, or email" autocomplete="off"/>';
     html += '</div></div>';
-    html += '<div class="overflow-auto"><table class="w-full text-sm min-w-[840px]"><thead class="bg-slate-50 text-[11px] uppercase text-slate-500"><tr>';
-    ['Name', 'Staff ID / Email', 'Role', 'Projects', 'Password', 'Status', 'Action'].forEach(function (h) { html += '<th class="px-3 py-2 text-left">' + h + '</th>'; });
+    html += '<div class="adm-user-scroll"><table class="w-full text-sm min-w-[840px]"><thead class="bg-slate-50 text-[11px] uppercase text-slate-500"><tr>';
+    [
+      ['users', 'Staff Full Name'],
+      ['form', 'Staff ID / Email'],
+      ['clipboard', 'Role'],
+      ['building', 'Projects'],
+      ['eye', 'Password'],
+      ['checkcircle', 'Status'],
+      ['users', 'Action']
+    ].forEach(function (h) {
+      html += '<th class="px-3 py-2 text-left"><span class="adm-th">' + svgIcon(h[0], 'w-3.5 h-3.5') + '<span>' + h[1] + '</span></span></th>';
+    });
     html += '</tr></thead><tbody>';
     users.forEach(function (u) {
       const hay = [u.name, u.staffId, u.email].join(' ');
-      html += '<tr class="border-t" data-adm-row="' + u.id + '" data-adm-hay="' + esc(hay) + '"><td class="px-3 py-2 font-bold">' + esc(u.name) + '</td>';
+      html += '<tr class="border-t" data-adm-row="' + u.id + '" data-adm-hay="' + esc(hay) + '"><td class="px-3 py-2 font-bold"><span class="adm-name-cell"><span class="adm-name-ico">' + svgIcon('users', 'w-4 h-4') + '</span><span>' + esc(u.name) + '</span></span></td>';
       html += '<td class="px-3 py-2 text-xs">' + esc(u.staffId) + '<br>' + esc(u.email) + '</td>';
       html += '<td class="px-3 py-2 text-xs">' + esc(A.roleLabel(u)) + '</td>';
       html += '<td class="px-3 py-2 text-xs">' + ((u.projectIds || []).map(function (id) {
@@ -25506,6 +25933,63 @@
     return html;
   }
 
+  function renderLibAccessAdmin(users) {
+    const people = (users || []).filter(function (u) { return u && u.portalRole !== 'admin' && u.active !== false; });
+    const pending = people.filter(function (u) { return u.libBtnRequest && u.libBtnRequest.status === 'pending'; });
+    let html = '<div class="bg-white rounded-2xl border p-4">';
+    html += '<h2 class="font-extrabold">PDF library buttons</h2>';
+    html += '<p class="text-xs text-slate-500 mt-1">Public users and Tested By see Preview only on T&amp;C Test Report, Method of Statement, Pre-Checklist, Precon Survey Report, and Internal Training Slides. Choose the person and the buttons they may use.</p>';
+    if (pending.length) {
+      html += '<p class="text-xs font-bold text-amber-800 mt-2">Waiting: ';
+      html += pending.map(function (u) { return esc(u.name || u.staffId) + ' (' + esc(libAskLabels(u.libBtnRequest)) + ')'; }).join(' · ');
+      html += '</p>';
+    } else {
+      html += '<p class="text-xs text-slate-400 mt-2">No button requests waiting.</p>';
+    }
+    if (!people.length) {
+      html += '<p class="text-xs text-slate-500 mt-3">No users to assign.</p></div>';
+      return html;
+    }
+    const picked = people.find(function (u) { return u.id === libAccessUserId; }) || pending[0] || people[0];
+    libAccessUserId = picked.id;
+    const grant = picked.libBtnAccess || {};
+    const ask = picked.libBtnRequest && picked.libBtnRequest.status === 'pending' ? picked.libBtnRequest : {};
+    function libPersonIcon(u) {
+      if (u && u.portalRole === 'witness') return 'eye';
+      if (u && u.portalRole === 'verify') return 'check';
+      if (u && u.portalRole === 'tested') return 'clipboard';
+      return 'users';
+    }
+    html += '<div class="mt-3 flex flex-wrap items-end gap-3">';
+    html += '<div><p class="text-xs font-bold text-slate-500">Person</p>';
+    html += '<div class="dash-view lib-person-pick" id="libPersonPick">';
+    html += '<select id="libAccessUser" class="hidden" tabindex="-1" aria-hidden="true">';
+    people.forEach(function (u) {
+      html += '<option value="' + esc(u.id) + '"' + (u.id === picked.id ? ' selected' : '') + '>' + esc(u.name || u.staffId) + '</option>';
+    });
+    html += '</select>';
+    const pickedWait = picked.libBtnRequest && picked.libBtnRequest.status === 'pending';
+    html += '<button type="button" class="dash-view-btn" aria-haspopup="listbox" aria-expanded="false">';
+    html += '<span class="dash-view-ico">' + svgIcon(libPersonIcon(picked), 'w-4 h-4') + '</span>';
+    html += '<span class="min-w-0"><strong>' + esc(picked.name || picked.staffId) + '</strong>';
+    html += '<span>' + esc(authApi().roleLabel(picked)) + (pickedWait ? ' · requested' : '') + '</span></span>';
+    html += '<span class="dash-view-chev" aria-hidden="true">▾</span></button>';
+    html += '<div class="dash-view-menu" role="listbox">';
+    people.forEach(function (u) {
+      const wait = u.libBtnRequest && u.libBtnRequest.status === 'pending';
+      const on = u.id === picked.id;
+      html += '<button type="button" class="dash-view-opt' + (on ? ' is-on' : '') + '" role="option" data-lib-person="' + esc(u.id) + '" aria-selected="' + (on ? 'true' : 'false') + '">';
+      html += '<span class="dash-view-ico">' + svgIcon(libPersonIcon(u), 'w-4 h-4') + '</span>';
+      html += '<span class="min-w-0"><strong>' + esc(u.name || u.staffId) + '</strong><span>' + esc(authApi().roleLabel(u)) + (wait ? ' · requested' : '') + '</span></span></button>';
+    });
+    html += '</div></div></div>';
+    html += '<label class="lib-access-chip"><input type="checkbox" id="libAccessDl"' + ((grant.download || ask.download) ? ' checked' : '') + '><span class="lib-access-chip-ico">' + svgIcon('download', 'w-3.5 h-3.5') + '</span><span>Download</span></label>';
+    html += '<label class="lib-access-chip"><input type="checkbox" id="libAccessEd"' + ((grant.edit || ask.edit) ? ' checked' : '') + '><span class="lib-access-chip-ico">' + svgIcon('pencil', 'w-3.5 h-3.5') + '</span><span>Edit</span></label>';
+    html += '<label class="lib-access-chip"><input type="checkbox" id="libAccessDel"' + ((grant.delete || ask.delete) ? ' checked' : '') + '><span class="lib-access-chip-ico">' + svgIcon('trash', 'w-3.5 h-3.5') + '</span><span>Delete</span></label>';
+    html += '<button type="button" id="libAccessSave" class="btn-navy px-3 py-1.5 text-xs font-bold rounded-lg" style="cursor:pointer">Save access</button>';
+    html += '</div></div>';
+    return html;
+  }
   function admRoleDdHtml(id, options) {
     const cur = options[0] || { value: '', label: '—', icon: '' };
     let html = '<div class="adm-role-dd" data-adm-role-dd="' + esc(id) + '">';
@@ -25583,9 +26067,77 @@
     };
     document.addEventListener('click', admRoleDdCloser);
   }
+  function bindLibAccessAdmin() {
+    const sel = document.getElementById('libAccessUser');
+    const save = document.getElementById('libAccessSave');
+    const pick = document.getElementById('libPersonPick');
+    if (sel) sel.onchange = function () {
+      libAccessUserId = sel.value;
+      renderView();
+    };
+    if (pick && sel) {
+      const btn = pick.querySelector('.dash-view-btn');
+      if (btn) btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const open = pick.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      pick.querySelectorAll('[data-lib-person]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const next = b.getAttribute('data-lib-person') || '';
+          pick.classList.remove('is-open');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+          if ((sel.value || '') !== next) {
+            sel.value = next;
+            sel.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+    }
+    if (!bindLibAccessAdmin._doc) {
+      bindLibAccessAdmin._doc = true;
+      document.addEventListener('click', function () {
+        const openPick = document.getElementById('libPersonPick');
+        if (!openPick) return;
+        openPick.classList.remove('is-open');
+        const b = openPick.querySelector('.dash-view-btn');
+        if (b) b.setAttribute('aria-expanded', 'false');
+      });
+    }
+    if (!save) return;
+    save.onclick = function () {
+      if (!isAdmin() || !authApi().updateUser) return;
+      const id = (document.getElementById('libAccessUser') || {}).value || '';
+      const person = authApi().users().find(function (u) { return u.id === id; });
+      if (!person) return;
+      const access = {
+        download: !!(document.getElementById('libAccessDl') && document.getElementById('libAccessDl').checked),
+        edit: !!(document.getElementById('libAccessEd') && document.getElementById('libAccessEd').checked),
+        delete: !!(document.getElementById('libAccessDel') && document.getElementById('libAccessDel').checked)
+      };
+      const prev = person.libBtnRequest;
+      const request = prev && prev.status === 'pending'
+        ? Object.assign({}, prev, { status: 'granted', grantedAt: nowIso() })
+        : (prev || null);
+      authApi().updateUser(id, { libBtnAccess: access, libBtnRequest: request });
+      libAccessUserId = id;
+      libAccessSig = '';
+      const who = person.name || person.staffId || 'This person';
+      const labels = libAskLabels(access);
+      alert(labels ? (who + ' can use ' + labels + ' on PDF library files.') : (who + ' can preview PDF library files only.'));
+      renderView();
+    };
+  }
   function bindAdmin() {
     const btn = document.getElementById('btnAdmCreate');
     if (!btn) return;
+    bindLibAccessAdmin();
+    syncLibAccessFields().then(function (changed) {
+      if (changed && view === 'admin') renderView();
+    });
     bindAdmRoleDds();
     bindGridCombos();
     filterAdmUsers();

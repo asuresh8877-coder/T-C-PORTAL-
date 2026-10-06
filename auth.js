@@ -286,6 +286,16 @@
     return { ok: true, user: u };
   }
 
+  function applyUserFields(id, fields) {
+    var u = store.users.find(function (x) { return x.id === id; });
+    if (!u) return false;
+    Object.keys(fields || {}).forEach(function (k) {
+      if (k === 'passwordHash' || k === 'id' || k === 'passwordHint') return;
+      u[k] = fields[k];
+    });
+    return true;
+  }
+
   function notify(n) {
     store.notifications = store.notifications || [];
     store.notifications.unshift({
@@ -384,6 +394,7 @@
     setPassword: setPassword,
     createUser: createUser,
     updateUser: updateUser,
+    applyUserFields: applyUserFields,
     users: function () {
       var admin = currentUser() && currentUser().portalRole === 'admin';
       return store.users.map(function (u) {
