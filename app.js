@@ -966,10 +966,12 @@
     if (isLg()) return;
     document.getElementById('sidebar').classList.add('-translate-x-full');
     document.getElementById('sidebarScrim').classList.add('hidden');
+    document.getElementById('app').classList.remove('mobile-menu-open');
   }
   function openMobile() {
     document.getElementById('sidebar').classList.remove('-translate-x-full');
     document.getElementById('sidebarScrim').classList.remove('hidden');
+    document.getElementById('app').classList.add('mobile-menu-open');
   }
 
   function projectStats(p) {
@@ -1126,7 +1128,7 @@
     html += '<div class="min-w-0"><h1 class="text-2xl font-extrabold text-slate-900 truncate">Welcome back, ' + esc(greetName) + '!</h1>';
     html += '<p class="text-sm text-slate-500">Your overview for today.</p>';
     html += '<p id="phoneShareLink" class="text-sm font-bold text-blue-800 mt-1"></p></div></div>';
-    html += '<div class="flex items-end gap-2 shrink-0">';
+    html += '<div class="dash-project-tools flex items-end gap-2 shrink-0">';
     html += '<div class="dash-view-wrap">';
     html += '<p class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Project view</p>';
     html += '<div class="dash-view" id="dashProjectPick">';
@@ -3909,18 +3911,18 @@
   /* ---------- Room (unchanged calculator in iframe) ---------- */
   function renderRoom() {
     return '<div class="flex items-center justify-between mb-3"><div><h1 class="text-2xl font-extrabold">Room Surface Area Calculator</h1><p class="text-sm text-slate-500">Original calculator is unchanged and opened in the workspace below.</p></div><a href="room-airflow.html" target="_blank" class="text-xs font-bold text-blue-700">Open in new tab →</a></div>' +
-      '<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="room-airflow.html?v=room8" title="Room Surface Area Calculator" class="w-full h-full border-0"></iframe></div>';
+      '<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="room-airflow.html?v=room10" title="Room Surface Area Calculator" class="w-full h-full border-0"></iframe></div>';
   }
 
   /* ---------- Psychrometric (air properties calculator in iframe) ---------- */
   function renderPsychrometric() {
-    return '<div class="flex items-center justify-between mb-3"><div><h1 class="text-2xl font-extrabold">Psychrometric Calculator</h1><p class="text-sm text-slate-500">Calculate and visualize air properties across cooling, heating, mixing, and humidity-control processes.</p></div><a href="psychrometric.html" target="_blank" class="text-xs font-bold text-amber-700">Open in new tab →</a></div>' +
-      '<div class="bg-white rounded-2xl border border-amber-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="psychrometric.html?v=psy8" title="Psychrometric Calculator" class="w-full h-full border-0"></iframe></div>';
+    return '<div class="psy-page-head flex items-center justify-between mb-3"><div><h1 class="text-2xl font-extrabold">Psychrometric Calculator</h1><p class="text-sm text-slate-500">Calculate and visualize air properties across cooling, heating, mixing, and humidity-control processes.</p></div><a href="psychrometric.html" target="_blank" class="text-xs font-bold text-amber-700">Open in new tab →</a></div>' +
+      '<div class="psy-frame bg-white rounded-2xl border border-amber-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="psychrometric.html?v=psy11" title="Psychrometric Calculator" class="w-full h-full border-0"></iframe></div>';
   }
 
   function renderDuctSizing() {
     return '<div class="flex items-center justify-between mb-3"><div><h1 class="text-2xl font-extrabold">Duct Sizing Calculator</h1><p class="text-sm text-slate-500">Professional HVAC engineering tool — airflow, duct size, material roughness, velocity, pressure loss &amp; sound.</p></div><a href="duct-sizing.html" target="_blank" class="text-xs font-bold text-cyan-700">Open in new tab →</a></div>' +
-      '<div class="bg-white rounded-2xl border border-cyan-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="duct-sizing.html?v=duct2" title="Duct Sizing Calculator" class="w-full h-full border-0"></iframe></div>';
+      '<div class="bg-white rounded-2xl border border-cyan-200 overflow-hidden h-[calc(100vh-10rem)]"><iframe src="duct-sizing.html?v=duct3" title="Duct Sizing Calculator" class="w-full h-full border-0"></iframe></div>';
   }
 
   function renderGrilleSizing() {
@@ -4063,13 +4065,13 @@
     selectedDuctId = t.id;
     if (!t.testPa) t.testPa = CLASS_PA[t.pressureClass] || 1000;
     const c = ductCalc(t);
-    let html = weplDocHeaderHtml('DUCT LEAKAGE TEST REPORT', 'Section D · DW/144 — Class A 500 Pa · B 1000 Pa · C 2000 Pa · D 2500 Pa');
-    html += '<style>.duct-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.duct-fit-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-fit-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}.duct-pan{position:absolute;right:8px;bottom:8px;z-index:3;display:grid;grid-template-columns:28px 28px 28px;grid-template-rows:28px 28px 28px;gap:3px;pointer-events:none}.duct-pan-btn{pointer-events:auto;cursor:pointer !important;width:28px;height:28px;padding:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;font-size:14px;line-height:1;box-shadow:0 2px 6px rgba(15,23,42,.28) !important}.duct-pan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(15,23,42,.35) !important}</style>';
+    let html = '<div class="duct-report-head">' + weplDocHeaderHtml('DUCT LEAKAGE TEST REPORT', 'Section D · DW/144 — Class A 500 Pa · B 1000 Pa · C 2000 Pa · D 2500 Pa') + '</div>';
+    html += '<style>.duct-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.duct-fit-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.duct-fit-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}.duct-pan{position:absolute;right:8px;bottom:8px;z-index:3;display:grid;grid-template-columns:28px 28px 28px;grid-template-rows:28px 28px 28px;gap:3px;pointer-events:none}.duct-pan-btn{pointer-events:auto;cursor:pointer !important;width:28px;height:28px;padding:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;font-weight:700;font-size:14px;line-height:1;box-shadow:0 2px 6px rgba(15,23,42,.28) !important}.duct-pan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(15,23,42,.35) !important}.duct-dl-short{display:none}@media (max-width:1023px){.duct-report-head img,.duct-report-head p{display:none !important}.duct-report-head > div{background:transparent !important;border:0 !important;box-shadow:none !important;padding:0 0 .35rem !important;margin-bottom:.25rem !important}.duct-report-head .border-l-2{border-left-width:0 !important;padding-left:0 !important}.duct-report-head h2{font-size:1.05rem;line-height:1.25}.duct-dl-full{display:none !important}.duct-dl-short{display:inline !important}.duct-tool-row{flex-wrap:nowrap !important;justify-content:flex-start;gap:.35rem}.duct-tool-row .duct-tool-btn{flex:0 0 auto;padding:.4rem .45rem;font-size:10px;white-space:nowrap}.duct-views{width:100% !important;max-width:100%}.duct-views canvas,#duct3d,#duct3d canvas{max-width:100% !important;width:100% !important}.duct-views > .bg-white > .flex{flex-wrap:wrap;gap:.25rem}#duct2d{height:320px !important}#duct3d{height:280px !important}}</style>';
     const ductTool = 'duct-tool-btn px-3 py-2 text-xs font-bold rounded-xl';
-    html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4">';
-    html += '<button id="btnDuctPdf" type="button" class="' + ductTool + ' text-white" style="background:#1E40AF;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Download test form</button>';
+    html += '<div class="duct-tool-row flex flex-wrap items-center justify-end gap-2 mb-4">';
+    html += '<button id="btnDuctPdf" type="button" class="' + ductTool + ' text-white" style="background:#1E40AF;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)"><span class="duct-dl-full">Download test form</span><span class="duct-dl-short">Download</span></button>';
     html += '<button id="btnNewDuct" type="button" class="' + ductTool + ' bg-blue-600 text-white" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">+ New section</button>';
-    html += '<button id="btnDelDuct" type="button" class="' + ductTool + ' border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Delete</button>';
+    if (isAdmin()) html += '<button id="btnDelDuct" type="button" class="' + ductTool + ' border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Delete</button>';
     html += '<button id="btnCloseDuct" type="button" class="' + ductTool + ' border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)">Close</button></div>';
     html += '<div class="flex gap-2 overflow-x-auto mb-4">';
     state.ductTests.forEach(function (d) {
@@ -4103,7 +4105,7 @@
         ductNum(i, 'w', f.w) + ductNum(i, 'h', f.h) + ductNum(i, 'w2', f.w2) + ductNum(i, 'h2', f.h2) +
         ductNum(i, 'length', f.length) + ductNum(i, 'radius', f.radius) + ductNum(i, 'angle', f.angle) +
         '<td>' + fittingArea(f).toFixed(3) + '</td>' +
-        '<td class="py-1 pl-1"><button type="button" data-del-fit="' + i + '" title="Delete fitting" class="duct-fit-del px-2 py-0.5 text-[10px] font-bold rounded-md border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.24)">Delete</button></td></tr>';
+        (isAdmin() ? '<td class="py-1 pl-1"><button type="button" data-del-fit="' + i + '" title="Delete fitting" class="duct-fit-del px-2 py-0.5 text-[10px] font-bold rounded-md border border-red-200 bg-white text-red-600" style="cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.24)">Delete</button></td>' : '<td></td>') + '</tr>';
     });
     html += '</tbody></table></div></div>';
 
@@ -4116,7 +4118,7 @@
     html += '<p class="mt-3 text-lg font-black">' + (c.pass ? 'PASS — leakage requirement satisfied' : 'FAIL — exceeds permitted leakage') + '</p>';
     html += '<p class="text-[11px] mt-1 text-slate-600">Class ' + t.pressureClass + ' @ ' + t.testPa + ' Pa · k=' + c.k + ' · Limit = A × k × p^0.65</p></div></div>';
 
-    html += '<div class="xl:col-span-7"><div class="space-y-4" style="width:92%">';
+    html += '<div class="xl:col-span-7"><div class="duct-views space-y-4" style="width:92%">';
     html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold flex justify-between items-center"><span>2D duct drawing with size — drag to hand-draw a straight run</span><span class="text-slate-400">Fittings connected in order</span></div><div class="relative"><canvas id="duct2d" class="block w-full bg-[#f8fafc] cursor-crosshair" style="height:440px" height="440"></canvas>' + ductPanPad('2d') + '</div></div>';
     html += '<div class="bg-white rounded-2xl border overflow-hidden"><div class="px-4 py-2 border-b text-xs font-bold">3D isometric view — orbit / zoom · connected run</div><div class="relative"><div id="duct3d" class="h-[380px] bg-slate-900"></div>' + ductPanPad('3d') + '</div></div>';
     html += '</div></div></div>';
@@ -4138,7 +4140,9 @@
       n.fittings = [defaultFitting('rect', null)];
       state.ductTests.push(n); selectedDuctId = n.id; saveState(); logActivity('duct', 'Created duct leak section'); renderView();
     };
-    document.getElementById('btnDelDuct').onclick = function () {
+    const btnDelDuct = document.getElementById('btnDelDuct');
+    if (btnDelDuct) btnDelDuct.onclick = function () {
+      if (!isAdmin()) return;
       if (state.ductTests.length < 2) return alert('Keep at least one section.');
       state.ductTests = state.ductTests.filter(function (d) { return d.id !== t.id; });
       selectedDuctId = state.ductTests[0].id; saveState(); renderView();
@@ -4167,7 +4171,10 @@
       });
     });
     document.querySelectorAll('[data-del-fit]').forEach(function (b) {
-      b.addEventListener('click', function () { t.fittings.splice(Number(b.getAttribute('data-del-fit')), 1); saveState(); renderView(); });
+      b.addEventListener('click', function () {
+        if (!isAdmin()) return;
+        t.fittings.splice(Number(b.getAttribute('data-del-fit')), 1); saveState(); renderView();
+      });
     });
     initDuct2D(t);
     initDuct3D(t);
@@ -4812,14 +4819,14 @@
     selectedLouverId = t.id;
     const fa = t.freeArea || '0.70';
     const total = t.rows.reduce(function (a, r) { rowCmh(r, fa); return a + (Number(r.cmh) || 0); }, 0);
-    let html = weplDocHeaderHtml('MECHANICAL LOUVER AIRFLOW TEST', 'Air flow measurement report');
-    html += '<style>.lv-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.lv-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.lv-row-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.lv-row-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}</style>';
+    let html = '<div class="lv-report-head">' + weplDocHeaderHtml('MECHANICAL LOUVER AIRFLOW TEST', 'Air flow measurement report') + '</div>';
+    html += '<style>.lv-tool-btn{cursor:pointer !important;box-shadow:0 3px 8px rgba(15,23,42,.28) !important;transition:transform .16s ease,box-shadow .16s ease}.lv-tool-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -4px rgba(15,23,42,.4) !important}.lv-row-del{cursor:pointer !important;box-shadow:0 2px 6px rgba(15,23,42,.24) !important;transition:transform .16s ease,box-shadow .16s ease}.lv-row-del:hover{transform:translateY(-1px);box-shadow:0 6px 12px -4px rgba(185,28,28,.5) !important}.lv-short{display:none}@media (max-width:1023px){.lv-report-head img,.lv-report-head p{display:none !important}.lv-report-head > div{background:transparent !important;border:0 !important;box-shadow:none !important;padding:0 0 .35rem !important;margin-bottom:.25rem !important}.lv-report-head .border-l-2{border-left-width:0 !important;padding-left:0 !important}.lv-report-head h2{font-size:1.05rem;line-height:1.25}.lv-tool-row{flex-wrap:nowrap !important;justify-content:flex-start;gap:.35rem}.lv-tool-row .lv-tool-btn{flex:0 0 auto;padding:.4rem .45rem;font-size:10px;white-space:nowrap}.lv-full{display:none}.lv-short{display:inline}}</style>';
     const lvTool = 'lv-tool-btn px-3 py-2 text-xs font-bold rounded-xl';
     const lvShadow = 'cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.28)';
-    html += '<div class="flex flex-wrap items-center justify-end gap-2 mb-4">';
-    html += '<button id="btnLouverPdf" type="button" class="' + lvTool + ' text-white" style="background:#1E40AF;' + lvShadow + '">Download test form</button>';
-    html += '<button id="btnNewLouver" type="button" class="' + lvTool + ' bg-teal-600 text-white" style="' + lvShadow + '">+ New table</button>';
-    html += '<button id="btnDelLouver" type="button" class="' + lvTool + ' border border-red-200 bg-white text-red-600" style="' + lvShadow + '">Delete table</button>';
+    html += '<div class="lv-tool-row flex flex-wrap items-center justify-end gap-2 mb-4">';
+    html += '<button id="btnLouverPdf" type="button" class="' + lvTool + ' text-white" style="background:#1E40AF;' + lvShadow + '"><span class="lv-full">Download test form</span><span class="lv-short">Download</span></button>';
+    html += '<button id="btnNewLouver" type="button" class="' + lvTool + ' bg-teal-600 text-white" style="' + lvShadow + '"><span class="lv-full">+ New table</span><span class="lv-short">New table</span></button>';
+    html += '<button id="btnDelLouver" type="button" class="' + lvTool + ' border border-red-200 bg-white text-red-600" style="' + lvShadow + '"><span class="lv-full">Delete table</span><span class="lv-short">Delete</span></button>';
     html += '<button id="btnCloseLouver" type="button" class="' + lvTool + ' border border-red-200 bg-white text-red-600" style="' + lvShadow + '">Close</button></div>';
     html += '<div class="flex gap-2 overflow-x-auto mb-4">';
     state.louverTables.forEach(function (tb) {
@@ -10174,7 +10181,7 @@
     const headerSub = stage.standalone
       ? ('Main source folder · ' + track.short + ' · ' + p.name)
       : ('Stage ' + (loopGroup ? loopGroup.n : stage.n) + ' · ' + track.short + ' · ' + p.name);
-    let html = weplDocHeaderHtml(headerTitle, headerSub);
+    let html = '<div class="tnc-stage-banner">' + weplDocHeaderHtml(headerTitle, headerSub) + '</div>';
     html += '<p class="text-sm text-slate-600 mb-4">' + esc(useLoop ? (loopGroup.hint || stage.hint) : stage.hint) + '</p>';
     if (track.id === 'precon' && !preconStageWritable(stage)) {
       html += '<p class="precon-view-note">View only. You can open this stage and see equipment status. Editing and approval stay with the assigned role.</p>';
@@ -15603,7 +15610,7 @@
     });
     html += '</select>';
     html += '<div id="tncFormDdPanel" class="tnc-form-dd-panel" role="listbox">';
-    html += '<div class="tnc-form-dd-head"><span>Forms</span><span class="tnc-form-dd-count"></span></div>';
+    html += '<div class="tnc-form-dd-head"><span>Forms</span><span class="tnc-form-dd-meta"><span class="tnc-form-dd-count"></span><button type="button" id="tncFormDdClose" class="tnc-form-dd-close">Close</button></span></div>';
     html += '<div class="tnc-form-dd-empty" hidden>No matching form.</div>';
     html += '<div class="tnc-form-dd-list">';
     docs.forEach(function (doc) {
@@ -15692,11 +15699,40 @@
     const wrap = document.getElementById('tncFormDd');
     const field = wrap && wrap.querySelector('.tnc-form-dd-field');
     const panel = document.getElementById('tncFormDdPanel');
+    const list = panel && panel.querySelector('.tnc-form-dd-list');
     if (!field || !panel) return;
     const r = field.getBoundingClientRect();
-    panel.style.top = (r.bottom + 6) + 'px';
-    panel.style.left = r.left + 'px';
-    panel.style.width = Math.min(Math.max(r.width, 320), 560) + 'px';
+    const gap = 6;
+    const edge = 8;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const phone = vw <= 1023;
+    const width = phone
+      ? Math.min(Math.max(r.width, 240), vw - edge * 2)
+      : Math.min(Math.max(r.width, 320), 560);
+    let left = r.left;
+    if (phone && left + width > vw - edge) left = Math.max(edge, vw - edge - width);
+    panel.style.width = width + 'px';
+    panel.style.left = left + 'px';
+    const items = list ? Array.from(list.querySelectorAll('.tnc-form-dd-item')).filter(function (el) { return !el.hidden; }) : [];
+    const rowH = (items[0] && items[0].offsetHeight) || 56;
+    let need = 40;
+    const shown = Math.min(3, items.length || 3);
+    for (let i = 0; i < shown; i++) need += (items[i] && items[i].offsetHeight) || rowH;
+    const below = vh - r.bottom - gap - edge;
+    const above = r.top - gap - edge;
+    const openUp = below < need && above > below;
+    if (list) list.style.maxHeight = '';
+    if (openUp) {
+      const room = Math.max(need, Math.min(above, 420));
+      panel.style.top = 'auto';
+      panel.style.bottom = (vh - r.top + gap) + 'px';
+      if (list) list.style.maxHeight = Math.max(rowH * 3, Math.min(360, room - 40)) + 'px';
+    } else {
+      panel.style.bottom = 'auto';
+      panel.style.top = (r.bottom + gap) + 'px';
+      if (phone && list && below < 400) list.style.maxHeight = Math.max(rowH * 3, Math.min(360, below - 40)) + 'px';
+    }
   }
   function freezeTncCheckHead() {
     document.querySelectorAll('.tnc-check-wrap thead').forEach(function (head) {
@@ -15798,6 +15834,14 @@
           filterItems(true);
           if (inp) inp.focus();
         }
+      });
+    }
+    const closeBtn = document.getElementById('tncFormDdClose');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(false);
       });
     }
     wrap.addEventListener('mousedown', function (e) {
@@ -26396,6 +26440,7 @@
         if (el) el.onclick = fn;
       };
       on('btnMenu', openMobile);
+      on('btnSidebarClose', closeMobile);
       on('btnCollapse', function () {
         setSidebarCollapsed(!document.getElementById('app').classList.contains('sidebar-collapsed'));
       });

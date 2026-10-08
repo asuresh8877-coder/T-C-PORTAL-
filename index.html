@@ -2038,8 +2038,8 @@
       box-shadow: 0 8px 16px -6px rgb(15 23 42 / 0.28), 0 2px 4px rgb(15 23 42 / 0.1);
     }
 
-    #workspace button:not(.btn-navy):not(.btn-pill):not(.pw-icon-btn):not(.photo-tool-btn):not(.dash-action-btn):not(.dash-open-reports-btn):not(.nr-add-proj-btn):not(.equip-step):not(.equip-breakdown-card):not(.tnc-stage):not(.tnc-substep):not(.od-meas-dd-btn):not(.od-meas-dd-opt):not(.od-combo-btn):not(.od-combo-opt):not(.od-combo-pill-x):not(.tnc-form-dd-item):not(.tnc-form-dd-chevron):not(.adm-revoke-btn):not(.adm-restore-btn):not(.adm-role-btn):not(.adm-role-opt):not(.merge-tab):not(.equip-acc-head):not(.tnc-file-del-btn):not(.ack-cmt-toggle):not(.ack-cmt-opt):not(.btn-witness-submit):not(.btn-witness-submitted):not(.qcalc-tab):not(.nr-pick-btn):not(.nr-pick-opt):not(.dash-view-btn):not(.dash-view-opt):not(.dash-chart-tab),
-    [id^="modal"] button:not(.btn-navy):not(.btn-pill):not(.pw-icon-btn):not(.photo-tool-btn):not(.dash-action-btn):not(.dash-open-reports-btn):not(.nr-add-proj-btn):not(.equip-step):not(.equip-breakdown-card):not(.tnc-stage):not(.tnc-substep):not(.od-meas-dd-btn):not(.od-meas-dd-opt):not(.od-combo-btn):not(.od-combo-opt):not(.od-combo-pill-x):not(.tnc-form-dd-item):not(.tnc-form-dd-chevron):not(.adm-revoke-btn):not(.adm-restore-btn):not(.adm-role-btn):not(.adm-role-opt):not(.merge-tab):not(.equip-acc-head):not(.tnc-file-del-btn):not(.ack-cmt-toggle):not(.ack-cmt-opt):not(.qcalc-tab):not(.nr-pick-btn):not(.nr-pick-opt):not(.dash-view-btn):not(.dash-view-opt):not(.dash-chart-tab) {
+    #workspace button:not(.btn-navy):not(.btn-pill):not(.pw-icon-btn):not(.photo-tool-btn):not(.dash-action-btn):not(.dash-open-reports-btn):not(.nr-add-proj-btn):not(.equip-step):not(.equip-breakdown-card):not(.tnc-stage):not(.tnc-substep):not(.od-meas-dd-btn):not(.od-meas-dd-opt):not(.od-combo-btn):not(.od-combo-opt):not(.od-combo-pill-x):not(.tnc-form-dd-item):not(.tnc-form-dd-chevron):not(.tnc-form-dd-close):not(.adm-revoke-btn):not(.adm-restore-btn):not(.adm-role-btn):not(.adm-role-opt):not(.merge-tab):not(.equip-acc-head):not(.tnc-file-del-btn):not(.ack-cmt-toggle):not(.ack-cmt-opt):not(.btn-witness-submit):not(.btn-witness-submitted):not(.qcalc-tab):not(.nr-pick-btn):not(.nr-pick-opt):not(.dash-view-btn):not(.dash-view-opt):not(.dash-chart-tab),
+    [id^="modal"] button:not(.btn-navy):not(.btn-pill):not(.pw-icon-btn):not(.photo-tool-btn):not(.dash-action-btn):not(.dash-open-reports-btn):not(.nr-add-proj-btn):not(.equip-step):not(.equip-breakdown-card):not(.tnc-stage):not(.tnc-substep):not(.od-meas-dd-btn):not(.od-meas-dd-opt):not(.od-combo-btn):not(.od-combo-opt):not(.od-combo-pill-x):not(.tnc-form-dd-item):not(.tnc-form-dd-chevron):not(.tnc-form-dd-close):not(.adm-revoke-btn):not(.adm-restore-btn):not(.adm-role-btn):not(.adm-role-opt):not(.merge-tab):not(.equip-acc-head):not(.tnc-file-del-btn):not(.ack-cmt-toggle):not(.ack-cmt-opt):not(.qcalc-tab):not(.nr-pick-btn):not(.nr-pick-opt):not(.dash-view-btn):not(.dash-view-opt):not(.dash-chart-tab) {
       box-shadow: 0 2px 4px rgb(15 23 42 / 0.12), 0 1px 2px rgb(15 23 42 / 0.08);
     }
 
@@ -3640,6 +3640,182 @@
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
+    }
+
+    .sidebar-phone-head {
+      display: none;
+    }
+
+    @media (max-width: 1023px) {
+      .tnc-stage-banner {
+        display: none;
+      }
+
+      .doc-card .lib-actions {
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        gap: 0.35rem;
+      }
+
+      .doc-card .lib-actions button {
+        min-width: 0;
+        flex: 1 1 0;
+        padding-left: 0.3rem;
+        padding-right: 0.3rem;
+        font-size: 11px;
+      }
+
+      .dash-project-tools {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        flex-shrink: 1;
+      }
+
+      .dash-project-tools .dash-view-wrap {
+        min-width: 0;
+        flex: 1 1 0;
+        width: auto;
+      }
+
+      .dash-project-tools .dash-view,
+      .dash-project-tools .dash-view-btn {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .dash-project-tools #dashNewProject {
+        flex: 0 0 auto;
+        max-width: 100%;
+      }
+
+      #topbar {
+        height: auto;
+        flex-wrap: wrap;
+        align-items: center;
+        row-gap: 0.4rem;
+        column-gap: 0.25rem;
+        padding-top: 0.45rem;
+        padding-bottom: 0.45rem;
+      }
+
+      #topMenuBtns {
+        order: 1;
+      }
+
+      #topBrand {
+        order: 2;
+        min-width: 0;
+      }
+
+      #topbar .top-brand-text {
+        display: none;
+      }
+
+      #topNotify {
+        order: 3;
+        margin-left: auto;
+      }
+
+      #topUser {
+        order: 4;
+      }
+
+      #topbar > #topSearch {
+        order: 5;
+        flex: 1 1 100%;
+        max-width: none;
+        margin-left: 0;
+      }
+
+      #sidebar {
+        top: 0;
+        z-index: 60;
+        width: min(22rem, 86vw);
+      }
+
+      #sidebarScrim {
+        top: 0;
+        z-index: 55;
+      }
+
+      #app.mobile-menu-open #topbar {
+        visibility: hidden;
+      }
+
+      .sidebar-phone-head {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.9rem 0.75rem 0.9rem 1rem;
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .sidebar-phone-logo {
+        height: 2rem;
+        width: auto;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
+      .sidebar-phone-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1.15;
+        color: #0f172a;
+      }
+
+      .sidebar-phone-sub {
+        margin-top: 0.1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+        color: #64748b;
+      }
+
+      .sidebar-close {
+        width: 2.25rem;
+        height: 2.25rem;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #334155;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        box-shadow: none;
+      }
+
+      .sidebar-close:hover {
+        background: #f1f5f9;
+      }
+
+      .psy-page-head {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+
+      .psy-page-head > div {
+        min-width: 0;
+        flex: 1 1 100%;
+      }
+
+      .psy-page-head h1 {
+        font-size: 1.15rem;
+        line-height: 1.25;
+      }
+
+      .psy-frame {
+        width: 100%;
+        max-width: 100%;
+      }
     }
 
     @media (min-width: 1024px) {
@@ -5983,6 +6159,36 @@
       color: #94a3b8;
     }
 
+    .tnc-form-dd-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .tnc-form-dd-close {
+      display: none;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: none;
+      line-height: 1.4;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    @media (max-width: 1023px) {
+      .tnc-form-dd-close {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+
     .tnc-form-dd-list {
       max-height: 360px;
       overflow-y: auto;
@@ -6923,15 +7129,15 @@
     <!-- TOP BAR -->
     <header id="topbar"
       class="h-16 bg-white border-b border-gray-200 flex items-center gap-3 px-3 sm:px-5 shrink-0 z-50">
-      <div class="flex items-center space-x-3">
+      <div id="topBrand" class="flex items-center space-x-3 min-w-0">
         <img src="wepl_logo.png" alt="Company Logo" class="h-7 w-auto object-contain"
           onerror="this.style.display='none'">
-        <div>
+        <div class="top-brand-text">
           <span class="text-xl font-bold text-gray-900">T&amp;C PORTAL</span>
           <p class="text-xs text-gray-500 font-medium">ACMV SYSTEM</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div id="topMenuBtns" class="flex items-center gap-2">
         <button id="btnCollapse" type="button" class="icon-button hidden lg:inline-flex" title="Collapse sidebar">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -6952,7 +7158,7 @@
           </svg>
         </button>
       </div>
-      <div class="flex-1 relative max-w-xl ml-auto">
+      <div id="topSearch" class="flex-1 relative max-w-xl ml-auto">
         <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor"
           viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -6964,7 +7170,7 @@
           class="hidden absolute left-0 right-0 top-11 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
         </div>
       </div>
-      <div class="relative">
+      <div id="topNotify" class="relative">
         <button id="btnNotify" type="button" class="icon-button inline-flex relative" title="Notifications">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -6977,7 +7183,7 @@
           class="hidden absolute right-0 top-11 w-80 max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl z-50">
         </div>
       </div>
-      <div class="relative">
+      <div id="topUser" class="relative">
         <button id="btnUserMenu" type="button"
           class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-50 text-left">
           <span
@@ -7027,6 +7233,20 @@
       <!-- SIDEBAR -->
       <aside id="sidebar"
         class="fixed lg:static top-16 lg:top-auto bottom-0 left-0 z-40 w-[272px] bg-slate-900 text-slate-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-all duration-200">
+        <div class="sidebar-phone-head">
+          <img src="wepl_logo.png" alt="Company Logo" class="sidebar-phone-logo" onerror="this.style.display='none'">
+          <div class="min-w-0 flex-1">
+            <p class="sidebar-phone-title">T&amp;C PORTAL</p>
+            <p class="sidebar-phone-sub">ACMV SYSTEM</p>
+          </div>
+          <button type="button" id="btnSidebarClose" class="sidebar-close" title="Close" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
         <nav id="sideNav" class="flex-1 overflow-y-auto py-3 px-2 space-y-1"></nav>
         <div class="p-3 border-t border-white/10 text-[10px] text-slate-500 font-mono">ISO / ACMV Commissioning · 2026
         </div>
@@ -7224,7 +7444,7 @@
       });
     }
   </script>
-  <script src="app.js?v=project-tnc401"></script>
+  <script src="app.js?v=project-tnc418"></script>
 </body>
 
 </html>

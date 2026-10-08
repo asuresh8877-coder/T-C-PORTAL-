@@ -67,6 +67,42 @@
       user-select: none !important;
     }
 
+    .room-export-short { display: none; }
+
+    @media (max-width: 1023px) {
+      header > div {
+        height: auto !important;
+        min-height: 3.25rem;
+        flex-wrap: wrap !important;
+        align-items: center;
+        row-gap: 0.45rem;
+        padding-top: 0.45rem;
+        padding-bottom: 0.45rem;
+      }
+
+      .room-brand,
+      .room-report-title {
+        display: none !important;
+      }
+
+      .room-header-tools {
+        width: 100%;
+        flex-wrap: wrap !important;
+        gap: 0.35rem;
+      }
+
+      #btnExportPDF .room-export-full { display: none !important; }
+      #btnExportPDF .room-export-short { display: inline !important; }
+
+      #btnCopyReport {
+        background-color: #1E40AF !important;
+      }
+
+      #btnCopyReport:hover {
+        background-color: #1e3a8a !important;
+      }
+    }
+
     @media print {
       body { background: white !important; color: black !important; }
       .no-print { display: none !important; }
@@ -81,7 +117,7 @@
     <div class="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand Logo + Capitalized Title + Airflow Icon -->
-      <div class="flex items-center space-x-3 sm:space-x-4">
+      <div class="room-brand flex items-center space-x-3 sm:space-x-4">
         
         <!-- Logo or Fallback -->
         <a href="index.html" class="flex items-center" title="Back to WEPL T&C Portal">
@@ -94,7 +130,7 @@
         <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
 
         <!-- Header Title & Airflow Badge -->
-        <div class="flex flex-col">
+        <div class="room-report-title flex flex-col">
           <div class="flex items-center space-x-2">
             
             <!-- Beautiful Airflow & Surface Area Icon -->
@@ -117,7 +153,7 @@
       </div>
 
       <!-- Quick Preset & Global Controls -->
-      <div class="flex items-center space-x-2 sm:space-x-3 no-print">
+      <div class="room-header-tools flex items-center space-x-2 sm:space-x-3 no-print">
         
         <div class="relative" id="roomPresetWrap">
           <button type="button" id="btnRoomPreset" class="inline-flex items-center gap-2 max-w-[15rem] bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-3 py-1.5 hover:bg-slate-50 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer" title="Choose a room shape">
@@ -165,7 +201,8 @@
           <svg class="w-4 h-4 mr-1.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
-          <span>Export Engineering PDF</span>
+          <span class="room-export-full">Export Engineering PDF</span>
+          <span class="room-export-short">Export PDF</span>
         </button>
 
       </div>
@@ -461,7 +498,7 @@
                 <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
                   T&C Calculation Engine
                 </span>
-                <h2 class="text-sm sm:text-base font-black text-slate-900 mt-0.5 uppercase tracking-tight">
+                <h2 class="room-report-title text-sm sm:text-base font-black text-slate-900 mt-0.5 uppercase tracking-tight">
                   ROOM SURFACE AREA & AIR FLOW REPORT
                 </h2>
               </div>
@@ -2751,7 +2788,8 @@ Generated via WEPL Testing & Commissioning Engineering Portal`;
             <svg class="w-4 h-4 mr-1.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            <span>Export Engineering PDF</span>
+            <span class="room-export-full">Export Engineering PDF</span>
+            <span class="room-export-short">Export PDF</span>
           `;
           btnExportPDF.disabled = false;
         }
